@@ -21,9 +21,14 @@ export class Game extends PubSub<'tick'> {
 
     public stop() {
         clearInterval(this.loop)
+        this.loop = undefined
     }
 
-    private tick() {
+    public isRunning() {
+        return this.loop !== undefined
+    }
+
+    public tick() {
         this.word.tick()
         this.actors.forEach((actor) => {
             actor.tick()

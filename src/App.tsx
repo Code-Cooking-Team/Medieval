@@ -5,6 +5,7 @@ import { LumberjackCabin } from '+game/actors/LumberjackCabin'
 import { Tree } from '+game/actors/Tree'
 import { Game } from '+game/Game'
 import { Word } from '+game/Word'
+import styled from '@emotion/styled'
 import { useEffect, useState } from 'react'
 
 const game = new Game(new Word())
@@ -48,27 +49,55 @@ function App() {
         }
     }, [])
 
+    const isRunning = game.isRunning()
+
     return (
-        <div className="word">
-            <div className="word-origin">
-                {game.word.tiles.map((row, y) => (
-                    <div key={y} className="row">
-                        {row.map(({ id, name }, x) => (
-                            <div
-                                key={id}
-                                className={`tile ${name}`}
-                                style={{ width: DEV_TILES_SIZE, height: DEV_TILES_SIZE }}
-                                onClick={() => lumberjack.goTo([x, y])}
-                            >{`${x},${y}`}</div>
-                        ))}
-                    </div>
-                ))}
-                {game.actors.map((actor) => (
-                    <ActorView key={actor.id} actor={actor} />
-                ))}
+        <>
+            <Interface>
+                <button
+                    onClick={() => {
+                        isRunning ? game.stop() : game.start()
+                        render((n) => n + 1)
+                    }}
+                >
+                    {isRunning ? 'Stop' : 'Start'}
+                </button>
+
+                {!isRunning && <button onClick={() => game.tick()}>Tick</button>}
+            </Interface>
+            <div className="word">
+                <div className="word-origin">
+                    {game.word.tiles.map((row, y) => (
+                        <div key={y} className="row">
+                            {row.map(({ id, name }, x) => (
+                                <div
+                                    key={id}
+                                    className={`tile ${name}`}
+                                    style={{
+                                        width: DEV_TILES_SIZE,
+                                        height: DEV_TILES_SIZE,
+                                    }}
+                                    onClick={() => lumberjack.goTo([x, y])}
+                                >{`${x},${y}`}</div>
+                            ))}
+                        </div>
+                    ))}
+                    {game.actors.map((actor) => (
+                        <ActorView key={actor.id} actor={actor} />
+                    ))}
+                </div>
             </div>
-        </div>
+        </>
     )
 }
+
+const Interface = styled.div({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: '10px',
+})
 
 export default App

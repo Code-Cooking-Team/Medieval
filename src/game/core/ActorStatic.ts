@@ -6,8 +6,8 @@ import { ActorType, Position } from '../types'
 export abstract class ActorStatic {
     public id = uuid()
     public type: ActorType = ActorType.Empty
-    public hp = 100
     public maxHp = 100
+    public hp = this.maxHp
 
     constructor(public game: Game, public position: Position) {}
 
