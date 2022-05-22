@@ -1,16 +1,18 @@
+import { Game } from '+game/Game'
 import { Path, Position } from '+game/types'
-import { Word } from '+game/Word'
 import EasyStar from 'easystarjs'
 
 export class Pathfinding {
     private easystar = new EasyStar.js()
+    private instanceId?: number
 
     private unsubscribe: () => void
 
-    constructor(private word: Word) {
-        this.unsubscribe = this.word.subscribe(() => {
-            this.recalculate()
+    constructor(private game: Game) {
+        this.unsubscribe = this.game.word.subscribe(() => {
+            this.loadTilesGrid()
         })
+        this.loadTilesGrid()
     }
 
     public tick() {
@@ -21,21 +23,48 @@ export class Pathfinding {
         this.unsubscribe()
     }
 
-    public path([sx, sy]: Position, [ex, ey]: Position) {
+    public findPath([sx, sy]: Position, [ex, ey]: Position) {
+        this.loadTilesGrid()
+
+        if (this.isFinding())
+            throw new Error(
+                '[Pathfinding] findPath is already in use, call cancelPath() first',
+            )
+
         return new Promise<Path>((resolve) => {
-            this.easystar.findPath(sx, sy, ex, ey, (path) => {
+            const instanceId = this.easystar.findPath(sx, sy, ex, ey, (path) => {
+                this.instanceId = undefined
                 path?.shift()
                 resolve(path)
             })
+            this.instanceId = instanceId
         })
     }
 
-    public recalculate() {
-        const tiles = this.word.tiles.map((row) =>
+    public cancelPath() {
+        if (this.isFinding()) this.easystar.cancelPath(this.instanceId!)
+        this.instanceId = undefined
+    }
+
+    public isFinding() {
+        return this.instanceId !== undefined
+    }
+
+    public loadTilesGrid() {
+        const tiles = this.game.word.tiles.map((row) =>
             row.map((tile) => (tile.walkable ? 1 : 0)),
         )
+
+        this.easystar.removeAllAdditionalPointCosts()
+
+        this.game.actors.forEach((actor) => {
+            const [x, y] = actor.position
+            this.easystar.setAdditionalPointCost(x, y, 3)
+        })
+
         this.easystar.setGrid(tiles)
         this.easystar.setAcceptableTiles([1])
         this.easystar.enableDiagonals()
+        this.easystar.enableCornerCutting()
     }
 }

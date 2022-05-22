@@ -4,14 +4,12 @@ import { ActorStatic } from './ActorStatic'
 import { Pathfinding } from './Pathfinding'
 
 export abstract class Actor extends ActorStatic {
-    private path: Path = null
+    public path: Path = null
     private pf: Pathfinding
 
     constructor(public game: Game, public position: Position) {
         super(game, position)
-
-        this.pf = new Pathfinding(game.word)
-        this.pf.recalculate()
+        this.pf = new Pathfinding(game)
     }
 
     public tick() {
@@ -28,6 +26,12 @@ export abstract class Actor extends ActorStatic {
     }
 
     public async goTo(position: Position) {
-        this.path = await this.pf.path(this.position, position)
+        const path = await this.pf.findPath(this.position, position)
+        this.path = path
+        return path
+    }
+
+    public cancelPath() {
+        this.path = null
     }
 }

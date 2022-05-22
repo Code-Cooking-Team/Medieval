@@ -5,6 +5,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: rgb(18, 20, 30);
+    overflow: hidden;
 }
 
 #root {
@@ -50,18 +51,6 @@ code {
 
 .tile.Water {
     background-color: rgb(22, 130, 188);
-}
-
-.actor {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50px;
-    height: 50px;
-    background-color: rgb(232, 138, 7);
-    transform-style: preserve-3d;
-    transition: all 200ms linear;
-    transform: translate3d(50%, 50%, 25px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
 }
 
 .actor.Tree {
