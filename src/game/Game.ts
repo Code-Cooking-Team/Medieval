@@ -42,41 +42,34 @@ export class Game extends PubSub<'tick'> {
 
     public findActorByRange(
         position: Position,
-        condition: (actor: ActorStatic) => boolean,
         range: number,
+        additionalCondition?: (actor: ActorStatic) => boolean,
     ) {
         return this.actors.find((actor) => {
-            const [x, y] = actor.position
-            if (distanceBetweenPoints([x, y], position) > range) return false
-            return condition(actor)
+            if (distanceBetweenPoints(actor.position, position) > range) return false
+            return additionalCondition?.(actor) ?? true
         })
     }
 
     public findActorsByType(type: string, isAlive = true) {
         return this.actors.filter((actor) => {
-            return actor.type === type && isAlive && actor.hp > 0
+            if (isAlive && actor.hp <= 0) return false
+            return actor.type === type
         })
     }
 
     public findActorsByPosition(position: Position, range: number, isAlive = true) {
         return this.actors.filter((actor) => {
-            const [x, y] = actor.position
-            return (
-                distanceBetweenPoints([x, y], position) <= range &&
-                isAlive &&
-                actor.hp > 0
-            )
+            if (isAlive && actor.hp <= 0) return false
+            return distanceBetweenPoints(actor.position, position) <= range
         })
     }
 
-    public findClosestActorByType(type: string, [x, y]: Position, isAlive = true) {
+    public findClosestActorByType(type: string, position: Position, isAlive = true) {
         const actors = this.findActorsByType(type, isAlive)
         return actors.reduce((prev, curr) => {
-            const [px, py] = prev.position
-            const [cx, cy] = curr.position
-
-            const prevDist = distanceBetweenPoints([px, py], [x, y])
-            const currDist = distanceBetweenPoints([cx, cy], [x, y])
+            const prevDist = distanceBetweenPoints(prev.position, position)
+            const currDist = distanceBetweenPoints(curr.position, position)
 
             return currDist < prevDist ? curr : prev
         }, actors[0])

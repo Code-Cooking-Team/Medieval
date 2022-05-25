@@ -95,8 +95,8 @@ export class Lumberjack extends Actor {
         if (this.state === LumberjackState.GoingToCabin) {
             const cabin = this.game.findActorByRange(
                 this.position,
-                (actor) => actor.type === ActorType.LumberjackCabin,
                 0,
+                (actor) => actor.type === ActorType.LumberjackCabin,
             )
             if (cabin) {
                 this.cancelPath() // Needed?
