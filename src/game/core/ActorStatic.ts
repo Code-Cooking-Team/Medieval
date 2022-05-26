@@ -28,4 +28,8 @@ export abstract class ActorStatic {
     public isDead() {
         return this.hp <= 0
     }
+
+    public debug(): string {
+        return `[${this.type}]\nhp: ${this.hp}/${this.maxHp}`
+    }
 }

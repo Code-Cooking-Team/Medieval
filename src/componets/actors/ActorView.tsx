@@ -28,9 +28,13 @@ export const ActorView = ({ actor }: ActorViewProps) => {
                 backgroundColor: actorTypeColors[type],
             }}
             isDead={actor.isDead()}
+            onClick={() => {
+                console.log(actor.debug())
+            }}
         >
             {(rest as any).state && <Status>{(rest as any).state}</Status>}
             <Name>{type}</Name>
+            <Debug>{actor.debug()}</Debug>
             <Hp hp={hp} maxHp={maxHp} />
         </Container>
     )
@@ -71,4 +75,9 @@ const Status = styled.div({
     left: -50,
     right: -50,
     fontSize: '0.8em',
+})
+
+const Debug = styled.div({
+    fontSize: '0.3em',
+    whiteSpace: 'pre',
 })

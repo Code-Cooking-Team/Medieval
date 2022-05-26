@@ -23,12 +23,12 @@ export const Hp = ({ hp, maxHp }: HpProps) => {
 
 const Container = styled.div({
     position: 'absolute',
-    top: 0,
+    top: -4,
     left: 0,
     width: '100%',
-    height: '4px',
+    height: 2,
     backgroundColor: '#000',
-    borderRadius: '2px',
+    borderRadius: 2,
     overflow: 'hidden',
 })
 
@@ -37,5 +37,5 @@ const Bar = styled.div({
     top: 0,
     left: 0,
     height: '100%',
-    borderRadius: '2px',
+    borderRadius: 2,
 })

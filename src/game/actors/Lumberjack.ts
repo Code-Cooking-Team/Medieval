@@ -67,7 +67,8 @@ export class Lumberjack extends Actor {
 
         if (this.state === LumberjackState.ChoppingATree) {
             if (this.tree) {
-                this.collectedTreeHP += this.tree.hit(choppingSpeed * Math.random())
+                const damage = Math.round(choppingSpeed * Math.random())
+                this.collectedTreeHP += this.tree.hit(damage)
 
                 if (this.collectedTreeHP >= capacity) {
                     this.state = LumberjackState.FullINeedCabin
@@ -120,5 +121,10 @@ export class Lumberjack extends Actor {
         }
 
         super.tick()
+    }
+
+    public debug() {
+        const title = super.debug()
+        return `${title}\nstate: ${this.state}\ntree: ${Math.round(this.collectedTreeHP)}`
     }
 }

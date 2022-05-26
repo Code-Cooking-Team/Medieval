@@ -1,18 +1,17 @@
-import { Actor } from '+game/core/Actor'
+import { ActorStatic } from '+game/core/ActorStatic'
 import { ActorType } from '+game/types'
 
-export class LumberjackCabin extends Actor {
+export class LumberjackCabin extends ActorStatic {
     public type = ActorType.LumberjackCabin
 
     private collectedRawTreeHP = 0
-    private collectedReadyTreeHP = 0
 
     public collectRawTree(hp: number) {
         this.collectedRawTreeHP += hp
     }
 
-    public woodPlaning(hp: number) {
-        this.collectedRawTreeHP -= hp
-        this.collectedReadyTreeHP += hp
+    public debug() {
+        const title = super.debug()
+        return `${title}\ntree: ${Math.round(this.collectedRawTreeHP)}`
     }
 }
