@@ -32,7 +32,7 @@ export class Word extends PubSub<'update'> {
     }
 }
 
-abstract class Tile {
+export abstract class Tile {
     public id = uuid()
     public name: string = 'Tile'
     public walkable: boolean = true
