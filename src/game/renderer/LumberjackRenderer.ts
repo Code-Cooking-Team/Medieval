@@ -13,6 +13,8 @@ export class LumberjackRenderer extends ActorRenderer {
     public createActorModel(actor: Actor, tile: Tile) {
         const group = super.createActorModel(actor, tile)
         const body = new Mesh(this.geometry, this.material)
+        body.castShadow = true
+        body.receiveShadow = true
         body.scale.y = 2
         body.position.y = 0.5
         group.add(body)

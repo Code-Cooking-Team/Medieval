@@ -1,7 +1,14 @@
 import { Actor } from '+game/core/Actor'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/Word'
-import { BoxGeometry, Clock, Mesh, MeshStandardMaterial, OctahedronGeometry } from 'three'
+import {
+    BoxGeometry,
+    Clock,
+    Mesh,
+    MeshStandardMaterial,
+    OctahedronGeometry,
+    PointLight,
+} from 'three'
 import { ActorRenderer } from './lib/ActorRenderer'
 
 export class LumberjackCabinRenderer extends ActorRenderer {
@@ -26,7 +33,12 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         const [x, y] = actor.position
 
         const wall = new Mesh(this.wallGeometry, this.wallMaterial)
+        wall.castShadow = true
+        wall.receiveShadow = true
+
         const roof = new Mesh(this.roofGeometry, this.roofMaterial)
+        roof.castShadow = true
+        roof.receiveShadow = true
 
         wall.position.y = 1
         roof.rotation.y = Math.PI / 4
@@ -34,6 +46,7 @@ export class LumberjackCabinRenderer extends ActorRenderer {
 
         wall.name = 'wall'
         roof.name = 'roof'
+
         group.add(wall)
         group.add(roof)
 

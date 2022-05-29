@@ -3,6 +3,7 @@ import { Tree } from '+game/actors/Tree'
 import { Actor } from '+game/core/Actor'
 import { ActorType, Position } from '+game/types'
 import { Tile } from '+game/Word'
+import { random } from '+helpers/basic'
 import {
     Clock,
     CylinderGeometry,
@@ -38,15 +39,23 @@ export class TreeRenderer extends ActorRenderer {
         const group = super.createActorModel(actor, tile)
 
         const bough = new Mesh(this.boughGeometry, this.boughMaterial)
+        bough.castShadow = true
+        bough.receiveShadow = true
         bough.name = 'bough'
         bough.position.y = 3 / 2
 
         const branches = new Mesh(this.branchesGeometry, this.branchesMaterial)
+        branches.castShadow = true
+        branches.receiveShadow = true
         branches.name = 'branches'
         branches.position.y = 3 / 2 + 2
+        branches.rotateY(random(0, Math.PI))
 
         group.add(bough)
         group.add(branches)
+
+        const treeSize = random(0.5, 1)
+        group.scale.set(treeSize, random(0.5, 1), treeSize)
 
         return group
     }

@@ -6,12 +6,16 @@ import { ActorStatic } from './core/ActorStatic'
 import { Position } from './types'
 import { Word } from './Word'
 
-export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved'> {
+export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordUpdate'> {
     loop: any
     public actors: ActorStatic[] = []
 
     constructor(public word: Word) {
         super()
+
+        this.word.subscribe(() => {
+            this.publish('wordUpdate')
+        })
     }
 
     public start() {

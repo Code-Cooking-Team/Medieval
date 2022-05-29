@@ -6,7 +6,7 @@ import { Tree } from '+game/actors/Tree'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
-import { Word } from '+game/Word'
+import { BuildingTile, Word } from '+game/Word'
 import styled from '@emotion/styled'
 import { entries, toPairs } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
@@ -14,17 +14,13 @@ import { useEffect, useRef, useState } from 'react'
 const game = new Game(new Word())
 const renderer = new Renderer(game)
 
-const tree = new Tree(game, [1, 1])
-game.addActor(tree)
-tree.hit(9999)
-
-game.addActor(new Tree(game, [3, 3]))
-game.addActor(new Tree(game, [6, 6]))
-game.addActor(new Tree(game, [16 - 1, 14 - 1]))
-game.addActor(new Tree(game, [10, 0]))
-game.addActor(new Tree(game, [12, 2]))
-game.addActor(new Tree(game, [6, 5]))
-game.addActor(new Tree(game, [11, 13]))
+game.word.tiles.forEach((row, y) => {
+    row.forEach((tile, x) => {
+        if (tile.walkable && Math.random() < tile.treeChance) {
+            game.addActor(new Tree(game, [x, y]))
+        }
+    })
+})
 
 const buildings = {
     LumberjackCabin: ([x, y]: Position) => {
@@ -33,6 +29,21 @@ const buildings = {
 
         game.addActor(cabin)
         game.addActor(lumberjack)
+
+        const currTail = game.word.getTile([x, y])
+        const tail = new BuildingTile()
+        tail.height = currTail.height
+
+        game.word.setTile([x, y], tail)
+        game.word.setTile([x - 1, y - 1], tail)
+        game.word.setTile([x + 1, y + 1], tail)
+        game.word.setTile([x - 1, y + 1], tail)
+        game.word.setTile([x + 1, y - 1], tail)
+
+        game.word.setTile([x - 1, y], tail)
+        game.word.setTile([x + 1, y], tail)
+        game.word.setTile([x, y - 1], tail)
+        game.word.setTile([x, y + 1], tail)
     },
     Tree: ([x, y]: Position) => {
         game.addActor(new Tree(game, [x, y]))
@@ -45,8 +56,8 @@ type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]
 
 function App() {
-    const rendererRef = useRef(null)
-    const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>(buildingList[0])
+    const rendererRef = useRef<HTMLDivElement>(null)
+    const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
 
     const [, frameCount] = useState(0)
     const render = () => frameCount((n) => n + 1)
@@ -54,6 +65,7 @@ function App() {
     useEffect(() => {
         game.start()
         const unsubscribe = game.subscribe((type) => {
+            console.log('--', type)
             render()
         })
 
@@ -68,13 +80,14 @@ function App() {
     useEffect(() => {
         const addBuilding = (event: MouseEvent): void => {
             const position = renderer.findPositionByMouseEvent(event)
-            buildings[selectedBuilding]?.(position)
+            if (!selectedBuilding || !position) return
+            buildings[selectedBuilding](position)
         }
 
-        window.addEventListener('click', addBuilding)
+        rendererRef.current?.addEventListener('click', addBuilding)
 
         return () => {
-            window.removeEventListener('click', addBuilding)
+            rendererRef.current?.removeEventListener('click', addBuilding)
         }
     }, [selectedBuilding])
 
@@ -100,6 +113,7 @@ function App() {
                         setSelectedBuilding(e.target.value as BuildingKey)
                     }}
                 >
+                    <option value={undefined}>None</option>
                     {buildingList.map((building) => (
                         <option key={building} value={building}>
                             {building}
@@ -158,11 +172,14 @@ function App() {
 const Top = styled.div({
     position: 'absolute',
     zIndex: 10,
-    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: '10px',
+    display: 'flex',
+    justifyContent: 'center',
+    backdropFilter: 'blur(15px)',
 })
 
 const Right = styled.div({
@@ -173,11 +190,11 @@ const Right = styled.div({
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: '10px',
+    backdropFilter: 'blur(15px)',
 })
 
 const RendererDiv = styled.div({
     position: 'absolute',
-    zIndex: 1,
     top: 0,
     left: 0,
     right: 0,

@@ -4,6 +4,7 @@ import { ActorType } from '+game/types'
 import { Tile } from '+game/Word'
 import {
     Clock,
+    DoubleSide,
     Group,
     Mesh,
     MeshBasicMaterial,
@@ -18,7 +19,7 @@ export abstract class ActorRenderer extends ItemRenderer {
     public moveSpeed = 0.02
 
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
-    private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00 })
+    private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
     public actorGroupRef: {
         [actorId: string]: {

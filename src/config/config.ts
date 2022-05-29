@@ -8,7 +8,7 @@ export const config = createConfig({
     },
 
     renderer: {
-        tileSize: 2,
+        tileSize: 1,
     },
 
     tree: {

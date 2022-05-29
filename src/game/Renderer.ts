@@ -1,13 +1,12 @@
 import { config } from '+config'
-import { getPositionByIndex } from '+helpers/array'
-import { random } from '+helpers/basic'
-import { HorizontalPlaneGeometry } from '+helpers/mesh'
+import Stats from 'stats.js'
 import {
+    AmbientLight,
     Clock,
     Color,
-    DoubleSide,
-    Mesh,
-    MeshStandardMaterial,
+    DirectionalLight,
+    MOUSE,
+    PCFSoftShadowMap,
     PerspectiveCamera,
     PointLight,
     Raycaster,
@@ -29,8 +28,11 @@ const fov = 60
 const far = 10000
 const near = 0.1
 
+const stats = new Stats()
+
 export class Renderer {
     private webGLRenderer = new WebGLRenderer({ antialias: true })
+
     private clock = new Clock()
     private scene = new Scene()
     private ground?: GroundRenderer
@@ -48,15 +50,30 @@ export class Renderer {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
 
+        this.webGLRenderer.shadowMap.enabled = true
+        this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
+
         this.camera.position.x = 0
         this.camera.position.y = 25
         this.camera.position.z = 25
         this.scene.background = new Color(0xb5fffb)
 
-        const light = new PointLight(0xffffbb, 1, 200)
+        const light = new DirectionalLight(0xffffbb, 0.7)
+        light.castShadow = true
+        light.shadow.mapSize.width = 128 * 10
+        light.shadow.mapSize.height = 128 * 10
+        light.shadow.camera.near = 0.5
+        light.shadow.camera.far = 200
+        light.shadow.camera.left = -100
+        light.shadow.camera.right = 100
+        light.shadow.camera.top = 100
+        light.shadow.camera.bottom = -100
 
-        light.position.set(1, 10, 2)
+        light.position.set(4, 10, 1)
         this.scene.add(light)
+
+        const ambient = new AmbientLight(0x404040, 2)
+        this.scene.add(ambient)
 
         this.createGround()
     }
@@ -80,7 +97,7 @@ export class Renderer {
         this.addRenderer(new LumberjackRenderer(this.game))
     }
 
-    public findPositionByMouseEvent = (event: MouseEvent): Position => {
+    public findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
@@ -90,6 +107,8 @@ export class Renderer {
 
         const intersects = rayCaster.intersectObjects(this.ground!.group.children)
         const intersectPoint = intersects[0]?.point
+
+        if (!intersectPoint) return
 
         const [width, height] = this.game.word
             .getSize()
@@ -105,16 +124,24 @@ export class Renderer {
         el.append(this.webGLRenderer.domElement)
 
         const controls = new OrbitControls(this.camera, this.webGLRenderer.domElement)
-        controls.enableDamping = true
-        controls.dampingFactor = 0.25
         controls.enableZoom = true
+        controls.mouseButtons = {
+            LEFT: undefined as any,
+            MIDDLE: MOUSE.ROTATE,
+            RIGHT: MOUSE.PAN,
+        }
+
+        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+        el.append(stats.dom)
 
         this.animate()
     }
 
     private animate = () => {
-        requestAnimationFrame(this.animate)
+        stats.begin()
         this.render()
+        stats.end()
+        requestAnimationFrame(this.animate)
     }
 
     private render() {
