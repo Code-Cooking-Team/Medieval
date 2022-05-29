@@ -52,6 +52,9 @@ game.word.tiles.forEach((row, y) => {
     })
 })
 
+const anyWindow = window as any
+anyWindow.game = game
+
 type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]
 
