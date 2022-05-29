@@ -17,6 +17,9 @@ export abstract class ActorRenderer extends ItemRenderer {
     public actorType: ActorType = ActorType.Empty
     public moveSpeed = 0.02
 
+    private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
+    private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00 })
+
     public actorGroupRef: {
         [actorId: string]: {
             group: Group
@@ -70,9 +73,6 @@ export abstract class ActorRenderer extends ItemRenderer {
             group.position.y += (tile.height - group.position.y) * this.moveSpeed
         })
     }
-
-    private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
-    private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00 })
 
     public updateHP() {
         Object.values(this.actorGroupRef).forEach(({ group, actor }) => {

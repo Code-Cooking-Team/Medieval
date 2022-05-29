@@ -54,7 +54,6 @@ function App() {
     useEffect(() => {
         game.start()
         const unsubscribe = game.subscribe((type) => {
-            console.log('---', type)
             render()
         })
 
@@ -65,6 +64,19 @@ function App() {
             unsubscribe()
         }
     }, [])
+
+    useEffect(() => {
+        const addBuilding = (event: MouseEvent): void => {
+            const position = renderer.findPositionByMouseEvent(event)
+            buildings[selectedBuilding]?.(position)
+        }
+
+        window.addEventListener('click', addBuilding)
+
+        return () => {
+            window.removeEventListener('click', addBuilding)
+        }
+    }, [selectedBuilding])
 
     const isRunning = game.isRunning()
 

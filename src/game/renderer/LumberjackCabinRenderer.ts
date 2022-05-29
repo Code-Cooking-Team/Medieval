@@ -1,21 +1,8 @@
-import { config } from '+config'
-import { Tree } from '+game/actors/Tree'
 import { Actor } from '+game/core/Actor'
-import { ActorType, Position } from '+game/types'
+import { ActorType } from '+game/types'
 import { Tile } from '+game/Word'
-import {
-    BoxGeometry,
-    Clock,
-    DoubleSide,
-    Group,
-    Mesh,
-    MeshStandardMaterial,
-    OctahedronGeometry,
-    PlaneGeometry,
-} from 'three'
-import { Game } from '../Game'
+import { BoxGeometry, Clock, Mesh, MeshStandardMaterial, OctahedronGeometry } from 'three'
 import { ActorRenderer } from './lib/ActorRenderer'
-import { ItemRenderer } from './lib/ItemRenderer'
 
 export class LumberjackCabinRenderer extends ActorRenderer {
     public actorType = ActorType.LumberjackCabin
