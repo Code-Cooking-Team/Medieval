@@ -26,6 +26,7 @@ export class LumberjackCabinRenderer extends ActorRenderer {
     private roofGeometry = new OctahedronGeometry(1.5, 0)
 
     public render(clock: Clock) {
+        super.render(clock)
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
             if (actor.isDead()) {
                 group.scale.y = 0.1

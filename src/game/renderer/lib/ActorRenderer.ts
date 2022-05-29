@@ -2,7 +2,14 @@ import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/Word'
-import { Group } from 'three'
+import {
+    Clock,
+    Group,
+    Mesh,
+    MeshBasicMaterial,
+    MeshStandardMaterial,
+    PlaneGeometry,
+} from 'three'
 import { Game } from '../../Game'
 import { ItemRenderer } from './ItemRenderer'
 
@@ -47,6 +54,11 @@ export abstract class ActorRenderer extends ItemRenderer {
         delete this.actorGroupRef[actor.id]
     }
 
+    public render(clock: Clock) {
+        this.updatePosition()
+        this.updateHP()
+    }
+
     public updatePosition() {
         Object.values(this.actorGroupRef).forEach(({ group, actor }) => {
             const [x, y] = actor.position
@@ -59,9 +71,25 @@ export abstract class ActorRenderer extends ItemRenderer {
         })
     }
 
+    private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
+    private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00 })
+
+    public updateHP() {
+        Object.values(this.actorGroupRef).forEach(({ group, actor }) => {
+            const hpMesh = group.getObjectByName('hp') as Mesh
+            hpMesh.scale.x = actor.hp / actor.maxHp
+        })
+    }
+
     public createActorModel(actor: Actor, tile: Tile): Group {
         const [x, y] = actor.position
         const group = new Group()
+
+        const hp = new Mesh(this.hpGeometry, this.hpMaterial)
+        hp.name = 'hp'
+        hp.position.y = 5
+
+        group.add(hp)
 
         group.position.x = x * config.renderer.tileSize
         group.position.y = tile.height

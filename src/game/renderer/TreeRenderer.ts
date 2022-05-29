@@ -26,6 +26,7 @@ export class TreeRenderer extends ActorRenderer {
     private branchesGeometry = new SphereGeometry(1.5, 5, 4)
 
     public render(clock: Clock) {
+        super.render(clock)
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
             if (actor.isDead()) {
                 group.rotation.x = Math.PI / 2.2
@@ -37,13 +38,13 @@ export class TreeRenderer extends ActorRenderer {
         const group = super.createActorModel(actor, tile)
 
         const bough = new Mesh(this.boughGeometry, this.boughMaterial)
-        const branches = new Mesh(this.branchesGeometry, this.branchesMaterial)
-
+        bough.name = 'bough'
         bough.position.y = 3 / 2
+
+        const branches = new Mesh(this.branchesGeometry, this.branchesMaterial)
+        branches.name = 'branches'
         branches.position.y = 3 / 2 + 2
 
-        bough.name = 'bough'
-        branches.name = 'branches'
         group.add(bough)
         group.add(branches)
 
