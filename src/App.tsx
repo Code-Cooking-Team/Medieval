@@ -1,21 +1,26 @@
-import { ActorView } from '+componets/actors/ActorView'
 import { ConfigItem } from '+componets/config/ConfigItem'
-import { TileRow } from '+componets/word/TileRow'
 import { config, configOptions } from '+config'
 import { Lumberjack } from '+game/actors/Lumberjack'
 import { LumberjackCabin } from '+game/actors/LumberjackCabin'
 import { Tree } from '+game/actors/Tree'
 import { Game } from '+game/Game'
+import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
 import { Word } from '+game/Word'
 import styled from '@emotion/styled'
-import { entries, mapValues, toPairs } from 'lodash'
-import { useEffect, useState } from 'react'
+import { entries, toPairs } from 'lodash'
+import { useEffect, useRef, useState } from 'react'
 
 const game = new Game(new Word())
+const renderer = new Renderer(game)
 
-game.addActor(new Tree(game, [3, 7]))
-game.addActor(new Tree(game, [7, 0]))
+const tree = new Tree(game, [1, 1])
+game.addActor(tree)
+tree.hit(9999)
+
+game.addActor(new Tree(game, [3, 3]))
+game.addActor(new Tree(game, [6, 6]))
+game.addActor(new Tree(game, [16 - 1, 14 - 1]))
 game.addActor(new Tree(game, [6, 0]))
 game.addActor(new Tree(game, [5, 0]))
 game.addActor(new Tree(game, [6, 5]))
@@ -38,11 +43,13 @@ const buildings = {
     },
 }
 
-type BuildingKey = keyof typeof buildings
+buildings.LumberjackCabin([7, 9])
 
+type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]
 
 function App() {
+    const rendererRef = useRef(null)
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>(buildingList[0])
 
     const [, frameCount] = useState(0)
@@ -51,9 +58,11 @@ function App() {
     useEffect(() => {
         game.start()
         const unsubscribe = game.subscribe((type) => {
-            console.log('-----------------', type)
+            console.log('---', type)
             render()
         })
+
+        renderer.init(rendererRef.current!)
 
         return () => {
             game.stop()
@@ -89,18 +98,6 @@ function App() {
                         </option>
                     ))}
                 </select>
-                {/* 
-            <input
-                type="range"
-                min="0"
-                max="100"
-                value={lumberjackConfig.choppingDamage}
-                onChange={(e) => {
-                    lumberjackConfig.choppingDamage = Number(e.target.value)
-                    render()
-                }}
-            />
-            {lumberjackConfig.choppingDamage} */}
             </Top>
 
             <Right>
@@ -127,7 +124,9 @@ function App() {
                 })}
             </Right>
 
-            <div className="word">
+            <RendererDiv ref={rendererRef} />
+
+            {/* <div className="word">
                 <div className="word-origin">
                     {game.word.tiles.map((row, y) => (
                         <TileRow
@@ -143,7 +142,7 @@ function App() {
                         <ActorView key={actor.id} actor={actor} />
                     ))}
                 </div>
-            </div>
+            </div> */}
         </>
     )
 }
@@ -166,6 +165,16 @@ const Right = styled.div({
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: '10px',
+})
+
+const RendererDiv = styled.div({
+    position: 'absolute',
+    zIndex: 1,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    'canvas': {},
 })
 
 export default App

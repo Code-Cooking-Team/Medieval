@@ -7,6 +7,10 @@ export const config = createConfig({
         devTilesSize: 60,
     },
 
+    renderer: {
+        tileSize: 2,
+    },
+
     tree: {
         hp: 300,
         newTreeTicks: { min: 100, max: 1000 },

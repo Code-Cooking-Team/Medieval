@@ -2,7 +2,7 @@ import { config } from '+config/config'
 import { ActorStatic } from '+game/core/ActorStatic'
 import { ActorType, Position } from '+game/types'
 import { randomArrayItem } from '+helpers/array'
-import { randomNumber } from '+helpers/basic'
+import { random } from '+helpers/basic'
 
 export class Tree extends ActorStatic {
     public type = ActorType.Tree
@@ -34,6 +34,6 @@ export class Tree extends ActorStatic {
 
     private treeCount() {
         const { min, max } = config.tree.newTreeTicks
-        return randomNumber(min, max)
+        return random(min, max)
     }
 }

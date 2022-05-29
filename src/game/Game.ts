@@ -1,11 +1,12 @@
 import { config } from '+config/config'
+import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
 import PubSub from '+lib/PubSub'
 import { ActorStatic } from './core/ActorStatic'
 import { Position } from './types'
 import { Word } from './Word'
 
-export class Game extends PubSub<'tick'> {
+export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved'> {
     loop: any
     public actors: ActorStatic[] = []
 
@@ -38,6 +39,12 @@ export class Game extends PubSub<'tick'> {
 
     public addActor(actor: ActorStatic) {
         this.actors.push(actor)
+        this.publish('actorAdded', actor)
+    }
+
+    public removeActor(actor: ActorStatic) {
+        removeArrayItem(this.actors, actor)
+        this.publish('actorRemoved', actor)
     }
 
     public findActorByRange(
