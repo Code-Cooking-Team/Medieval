@@ -1,4 +1,4 @@
-import { TICK_TIME } from '+config'
+import { config } from '+config/config'
 import { distanceBetweenPoints } from '+helpers/math'
 import PubSub from '+lib/PubSub'
 import { ActorStatic } from './core/ActorStatic'
@@ -16,7 +16,7 @@ export class Game extends PubSub<'tick'> {
     public start() {
         this.loop = setInterval(() => {
             this.tick()
-        }, TICK_TIME)
+        }, config.core.tickTime)
     }
 
     public stop() {

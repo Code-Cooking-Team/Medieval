@@ -1,4 +1,4 @@
-import { treeConfig } from '+config'
+import { config } from '+config/config'
 import { ActorStatic } from '+game/core/ActorStatic'
 import { ActorType, Position } from '+game/types'
 import { randomArrayItem } from '+helpers/array'
@@ -6,7 +6,8 @@ import { randomNumber } from '+helpers/basic'
 
 export class Tree extends ActorStatic {
     public type = ActorType.Tree
-    public maxHp = treeConfig.hp
+    public maxHp = config.tree.hp
+    public hp = config.tree.hp
 
     private newTreeCount = this.treeCount()
 
@@ -21,7 +22,7 @@ export class Tree extends ActorStatic {
 
     public plantNewTree() {
         const newTreePosition = this.position.map(
-            (pos) => randomArrayItem(treeConfig.newTreeRange) + pos,
+            (pos) => randomArrayItem(config.tree.newTreeRange) + pos,
         ) as Position
 
         const tile = this.game.word.getTile(newTreePosition)
@@ -32,7 +33,7 @@ export class Tree extends ActorStatic {
     }
 
     private treeCount() {
-        const { min, max } = treeConfig.newTreeTicks
+        const { min, max } = config.tree.newTreeTicks
         return randomNumber(min, max)
     }
 }

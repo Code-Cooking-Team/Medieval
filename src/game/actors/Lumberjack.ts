@@ -1,3 +1,4 @@
+import { config } from '+config/config'
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'
@@ -16,13 +17,10 @@ enum LumberjackState {
     GatheringWood = 'GatheringWood',
 }
 
-const choppingSpeed = 20
-const gatheringSpeed = 5
-const capacity = 50
-
 export class Lumberjack extends Actor {
     public type = ActorType.Lumberjack
     public state = LumberjackState.Idle
+    public maxHp = config.lumberjack.hp
 
     private tree?: Tree
     private collectedTreeHP = 0
@@ -36,8 +34,6 @@ export class Lumberjack extends Actor {
     }
 
     tick(): void {
-        console.log(this.state, this.collectedTreeHP)
-
         if (this.state === LumberjackState.Idle) {
             if (Math.random() > 0.1) return
             const tree = this.game.findClosestActorByType(ActorType.Tree, this.position)
@@ -67,10 +63,12 @@ export class Lumberjack extends Actor {
 
         if (this.state === LumberjackState.ChoppingATree) {
             if (this.tree) {
-                const damage = Math.round(choppingSpeed * Math.random())
+                const damage = Math.round(
+                    config.lumberjack.choppingDamage * Math.random(),
+                )
                 this.collectedTreeHP += this.tree.hit(damage)
 
-                if (this.collectedTreeHP >= capacity) {
+                if (this.collectedTreeHP >= config.lumberjack.capacity) {
                     this.state = LumberjackState.FullINeedCabin
                 }
 
@@ -106,7 +104,7 @@ export class Lumberjack extends Actor {
         }
 
         if (this.state === LumberjackState.GatheringWood) {
-            const value = maxValue(this.collectedTreeHP, gatheringSpeed)
+            const value = maxValue(this.collectedTreeHP, config.lumberjack.gatheringSpeed)
             this.collectedTreeHP -= value
             this.cabin.collectRawTree(value)
 

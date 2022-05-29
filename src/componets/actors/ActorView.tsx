@@ -1,8 +1,7 @@
-import { DEV_TILES_SIZE } from '+config'
+import { config } from '+config/config'
 import { ActorStatic } from '+game/core/ActorStatic'
 import { actorTypeColors } from '+game/types'
 import styled from '@emotion/styled'
-import React from 'react'
 import { Hp } from './Hp'
 
 interface ActorViewProps {
@@ -23,8 +22,8 @@ export const ActorView = ({ actor }: ActorViewProps) => {
         <Container
             key={id}
             style={{
-                left: `${x * DEV_TILES_SIZE}px`,
-                top: `${y * DEV_TILES_SIZE}px`,
+                left: `${x * config.core.devTilesSize}px`,
+                top: `${y * config.core.devTilesSize}px`,
                 backgroundColor: actorTypeColors[type],
             }}
             isDead={actor.isDead()}
@@ -46,14 +45,14 @@ const Container = styled.div<{ isDead: boolean }>(({ isDead }) => ({
     position: 'absolute',
     top: 0,
     left: 0,
-    width: DEV_TILES_SIZE * d,
-    height: DEV_TILES_SIZE * d,
+    width: config.core.devTilesSize * d,
+    height: config.core.devTilesSize * d,
     backgroundColor: 'rgb(221, 0, 255)',
     transformStyle: 'preserve-3d',
     transition: 'all 200ms linear',
-    transform: `translate3d(${DEV_TILES_SIZE * ((1 - d) / 2)}px, ${
-        DEV_TILES_SIZE * ((1 - d) / 2)
-    }px, ${isDead ? 2 : (DEV_TILES_SIZE * d) / 2}px) rotateX(${
+    transform: `translate3d(${config.core.devTilesSize * ((1 - d) / 2)}px, ${
+        config.core.devTilesSize * ((1 - d) / 2)
+    }px, ${isDead ? 2 : (config.core.devTilesSize * d) / 2}px) rotateX(${
         isDead ? 0 : -90
     }deg) rotateY(0deg) rotateZ(0deg)`,
 }))

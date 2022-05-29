@@ -1,4 +1,4 @@
-import { DEV_TILES_SIZE } from '+config'
+import { config } from '+config/config'
 import { Position } from '+game/types'
 import { Tile } from '+game/Word'
 import React from 'react'
@@ -17,8 +17,8 @@ export const TileRow = ({ tiles, y, onClick }: TileRowProps) => {
                     key={id}
                     className={`tile ${name}`}
                     style={{
-                        width: DEV_TILES_SIZE,
-                        height: DEV_TILES_SIZE,
+                        width: config.core.devTilesSize,
+                        height: config.core.devTilesSize,
                     }}
                     onClick={() => onClick([x, y])}
                 >{`${x},${y}`}</div>

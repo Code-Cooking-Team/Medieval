@@ -1,6 +1,7 @@
 import { ActorView } from '+componets/actors/ActorView'
+import { ConfigItem } from '+componets/config/ConfigItem'
 import { TileRow } from '+componets/word/TileRow'
-import { DEV_TILES_SIZE } from '+config'
+import { config, configOptions } from '+config'
 import { Lumberjack } from '+game/actors/Lumberjack'
 import { LumberjackCabin } from '+game/actors/LumberjackCabin'
 import { Tree } from '+game/actors/Tree'
@@ -8,6 +9,7 @@ import { Game } from '+game/Game'
 import { Position } from '+game/types'
 import { Word } from '+game/Word'
 import styled from '@emotion/styled'
+import { entries, mapValues, toPairs } from 'lodash'
 import { useEffect, useState } from 'react'
 
 const game = new Game(new Word())
@@ -41,14 +43,16 @@ type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]
 
 function App() {
-    const [, render] = useState(0)
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>(buildingList[0])
+
+    const [, frameCount] = useState(0)
+    const render = () => frameCount((n) => n + 1)
 
     useEffect(() => {
         game.start()
         const unsubscribe = game.subscribe((type) => {
             console.log('-----------------', type)
-            render((n) => n + 1)
+            render()
         })
 
         return () => {
@@ -61,15 +65,17 @@ function App() {
 
     return (
         <>
-            <Interface>
+            <Top>
                 <button
                     onClick={() => {
                         isRunning ? game.stop() : game.start()
-                        render((n) => n + 1)
+                        render()
                     }}
                 >
                     {isRunning ? 'Stop' : 'Start'}
                 </button>
+
+                {!isRunning && <button onClick={() => game.tick()}>Tick</button>}
 
                 <select
                     value={selectedBuilding}
@@ -83,9 +89,44 @@ function App() {
                         </option>
                     ))}
                 </select>
+                {/* 
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value={lumberjackConfig.choppingDamage}
+                onChange={(e) => {
+                    lumberjackConfig.choppingDamage = Number(e.target.value)
+                    render()
+                }}
+            />
+            {lumberjackConfig.choppingDamage} */}
+            </Top>
 
-                {!isRunning && <button onClick={() => game.tick()}>Tick</button>}
-            </Interface>
+            <Right>
+                {toPairs(configOptions).map(([categoryKey, category]) => {
+                    const configCategory = (config as any)[categoryKey]
+                    return (
+                        <details key={categoryKey}>
+                            <summary>{categoryKey}</summary>
+                            {entries(category).map(([key, definition]) => (
+                                <div key={key}>
+                                    {key}
+                                    <ConfigItem
+                                        value={configCategory[key]}
+                                        definition={definition}
+                                        onChange={(value) => {
+                                            configCategory[key] = value
+                                            render()
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </details>
+                    )
+                })}
+            </Right>
+
             <div className="word">
                 <div className="word-origin">
                     {game.word.tiles.map((row, y) => (
@@ -107,11 +148,22 @@ function App() {
     )
 }
 
-const Interface = styled.div({
+const Top = styled.div({
     position: 'absolute',
+    zIndex: 10,
     top: 0,
     left: 0,
     right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: '10px',
+})
+
+const Right = styled.div({
+    position: 'absolute',
+    zIndex: 10,
+    top: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: '10px',
 })
