@@ -16,7 +16,7 @@ import { ItemRenderer } from './ItemRenderer'
 
 export abstract class ActorRenderer extends ItemRenderer {
     public actorType: ActorType = ActorType.Empty
-    public moveSpeed = 0.02
+    public moveSpeed = 0.04
 
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
@@ -79,6 +79,7 @@ export abstract class ActorRenderer extends ItemRenderer {
         Object.values(this.actorGroupRef).forEach(({ group, actor }) => {
             const hpMesh = group.getObjectByName('hp') as Mesh
             hpMesh.scale.x = actor.hp / actor.maxHp
+            hpMesh.visible = actor.hp < actor.maxHp
         })
     }
 

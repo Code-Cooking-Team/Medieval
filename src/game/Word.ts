@@ -116,7 +116,7 @@ class WaterTile extends Tile {
 
 export class BuildingTile extends Tile {
     public name = 'Building'
-    public walkable = false
+    public walkable = true
     public color = 0x474738
     public height = 0
 }

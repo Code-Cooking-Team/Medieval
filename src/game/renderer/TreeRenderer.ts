@@ -29,8 +29,11 @@ export class TreeRenderer extends ActorRenderer {
     public render(clock: Clock) {
         super.render(clock)
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
+            if (actor.hp <= actor.maxHp * 0.75) {
+                group.rotation.x += (Math.PI / 2.2 - group.rotation.x) * this.moveSpeed
+            }
             if (actor.isDead()) {
-                group.rotation.x = Math.PI / 2.2
+                group.position.y -= 0.04
             }
         })
     }
@@ -49,13 +52,19 @@ export class TreeRenderer extends ActorRenderer {
         branches.receiveShadow = true
         branches.name = 'branches'
         branches.position.y = 3 / 2 + 2
-        branches.rotateY(random(0, Math.PI))
 
-        group.add(bough)
-        group.add(branches)
+        const localGroup = new Group()
+
+        localGroup.add(bough)
+        localGroup.add(branches)
 
         const treeSize = random(0.5, 1)
-        group.scale.set(treeSize, random(0.5, 1), treeSize)
+        localGroup.scale.set(treeSize, random(0.5, 1), treeSize)
+        localGroup.rotateY(random(0, Math.PI))
+        localGroup.rotateX(random(Math.PI / -30, Math.PI / 30))
+        localGroup.rotateZ(random(Math.PI / -30, Math.PI / 30))
+
+        group.add(localGroup)
 
         return group
     }

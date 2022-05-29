@@ -14,14 +14,6 @@ import { useEffect, useRef, useState } from 'react'
 const game = new Game(new Word())
 const renderer = new Renderer(game)
 
-game.word.tiles.forEach((row, y) => {
-    row.forEach((tile, x) => {
-        if (tile.walkable && Math.random() < tile.treeChance) {
-            game.addActor(new Tree(game, [x, y]))
-        }
-    })
-})
-
 const buildings = {
     LumberjackCabin: ([x, y]: Position) => {
         const cabin = new LumberjackCabin(game, [x, y])
@@ -52,6 +44,14 @@ const buildings = {
 
 buildings.LumberjackCabin([8, 12])
 
+game.word.tiles.forEach((row, y) => {
+    row.forEach((tile, x) => {
+        if (tile.walkable && Math.random() < tile.treeChance) {
+            game.addActor(new Tree(game, [x, y]))
+        }
+    })
+})
+
 type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]
 
@@ -65,7 +65,6 @@ function App() {
     useEffect(() => {
         game.start()
         const unsubscribe = game.subscribe((type) => {
-            console.log('--', type)
             render()
         })
 

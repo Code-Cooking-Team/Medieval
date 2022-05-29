@@ -46,7 +46,6 @@ export class GroundRenderer extends ItemRenderer {
 
         this.game.subscribe((type) => {
             if (type === 'wordUpdate') {
-                console.log('!!!!!!! wordUpdate')
                 this.update()
             }
         })
@@ -54,7 +53,6 @@ export class GroundRenderer extends ItemRenderer {
 
     public update() {
         if (!this.groundMesh || !this.geometry) return
-        console.log('GroundRenderer:update')
 
         const [wordWidth] = this.game.word.getSize()
 
@@ -64,9 +62,6 @@ export class GroundRenderer extends ItemRenderer {
 
         for (let i = 0; i < position.count; i++) {
             const tile = this.game.word.getTile(getPositionByIndex(i, wordWidth))
-            if (tile.color == 0x000000) {
-                console.log('tilecolor')
-            }
             position.setY(i, tile.height)
             color.setHex(tile.color)
             colors.setXYZ(i, color.r, color.g, color.b)

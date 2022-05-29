@@ -10,6 +10,7 @@ export class Tree extends ActorStatic {
     public hp = config.tree.hp
 
     private newTreeCount = this.treeCount()
+    private removeCount = config.tree.removeTickCount
 
     public tick(): void {
         this.newTreeCount--
@@ -17,6 +18,11 @@ export class Tree extends ActorStatic {
             this.newTreeCount = this.treeCount()
 
             this.plantNewTree()
+        }
+
+        if (this.isDead()) {
+            this.removeCount--
+            if (this.removeCount <= 0) this.game.removeActor(this)
         }
     }
 
