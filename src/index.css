@@ -24,6 +24,7 @@ code {
     perspective: 1200px;
     perspective-origin: 50% 50%;
     position: relative;
+    z-index: 3;
 }
 
 .word-origin {

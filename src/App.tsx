@@ -21,14 +21,10 @@ tree.hit(9999)
 game.addActor(new Tree(game, [3, 3]))
 game.addActor(new Tree(game, [6, 6]))
 game.addActor(new Tree(game, [16 - 1, 14 - 1]))
-game.addActor(new Tree(game, [6, 0]))
-game.addActor(new Tree(game, [5, 0]))
+game.addActor(new Tree(game, [10, 0]))
+game.addActor(new Tree(game, [12, 2]))
 game.addActor(new Tree(game, [6, 5]))
-game.addActor(new Tree(game, [11, 11]))
-game.addActor(new Tree(game, [11, 10]))
 game.addActor(new Tree(game, [11, 13]))
-game.addActor(new Tree(game, [0, 13]))
-game.addActor(new Tree(game, [0, 10]))
 
 const buildings = {
     LumberjackCabin: ([x, y]: Position) => {
@@ -43,7 +39,7 @@ const buildings = {
     },
 }
 
-buildings.LumberjackCabin([7, 9])
+buildings.LumberjackCabin([8, 12])
 
 type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]

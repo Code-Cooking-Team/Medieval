@@ -8,6 +8,7 @@ import { ItemRenderer } from './ItemRenderer'
 
 export abstract class ActorRenderer extends ItemRenderer {
     public actorType: ActorType = ActorType.Empty
+    public moveSpeed = 0.02
 
     public actorGroupRef: {
         [actorId: string]: {
@@ -50,9 +51,11 @@ export abstract class ActorRenderer extends ItemRenderer {
         Object.values(this.actorGroupRef).forEach(({ group, actor }) => {
             const [x, y] = actor.position
             const tile = this.game.word.getTile(actor.position)
-            group.position.x = x * config.renderer.tileSize
-            group.position.y = tile.height
-            group.position.z = y * config.renderer.tileSize
+            const tileX = x * config.renderer.tileSize
+            const tileY = y * config.renderer.tileSize
+            group.position.x += (tileX - group.position.x) * this.moveSpeed
+            group.position.z += (tileY - group.position.z) * this.moveSpeed
+            group.position.y += (tile.height - group.position.y) * this.moveSpeed
         })
     }
 

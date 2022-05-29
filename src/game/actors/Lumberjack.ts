@@ -34,8 +34,9 @@ export class Lumberjack extends Actor {
     }
 
     tick(): void {
+        console.log(this.state)
         if (this.state === LumberjackState.Idle) {
-            if (Math.random() > 0.1) return
+            if (Math.random() > 0.3) return
             const tree = this.game.findClosestActorByType(ActorType.Tree, this.position)
             if (tree) {
                 this.state = LumberjackState.LookingForPathToATree
