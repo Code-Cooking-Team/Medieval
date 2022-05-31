@@ -19,7 +19,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     tree: {
         hp: 300,
         removeTickCount: 10,
-        newTreeTicks: { min: 100, max: 1000 },
+        newTreeTicks: { min: 500, max: 1000 },
         newTreeRange: [-3, -2, 2, 3],
     },
 

@@ -1,5 +1,14 @@
 import { ConfigType } from '+config/lib/definitions'
 import { color0xToHex, colorHexTo0x } from '+helpers/color'
+import {
+    FormControl,
+    Input,
+    MenuItem,
+    Select,
+    Slider,
+    Switch,
+    TextField,
+} from '@mui/material'
 import { FC } from 'react'
 
 interface ConfigItemProps<T> {
@@ -20,8 +29,7 @@ export const ConfigItem = <T,>({ value, definition, onChange }: ConfigItemProps<
 const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     [ConfigType.BooleanCheckbox]: ({ value, onChange }) => {
         return (
-            <input
-                type="checkbox"
+            <Switch
                 checked={value}
                 onChange={(e) => {
                     onChange(e.target.checked)
@@ -31,8 +39,9 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     },
     [ConfigType.StringInput]: ({ value, onChange }) => {
         return (
-            <input
+            <TextField
                 type="text"
+                size="small"
                 value={value}
                 onChange={(e) => {
                     onChange(e.target.value)
@@ -42,8 +51,9 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     },
     [ConfigType.NumberInput]: ({ value, onChange }) => {
         return (
-            <input
+            <TextField
                 type="number"
+                size="small"
                 value={value}
                 onChange={(e) => {
                     onChange(Number(e.target.value))
@@ -53,34 +63,35 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     },
     [ConfigType.Select]: ({ value, definition, onChange }) => {
         return (
-            <select
-                value={value}
-                onChange={(e) => {
-                    onChange(e.target.value)
-                }}
-            >
-                {definition.options.map((option: any) => (
-                    <option key={option} value={option}>
-                        {option}
-                    </option>
-                ))}
-            </select>
+            <FormControl fullWidth>
+                <Select
+                    size="small"
+                    value={value}
+                    onChange={(e) => {
+                        onChange(e.target.value)
+                    }}
+                >
+                    <MenuItem value={10}>Ten</MenuItem>
+                    <MenuItem value={20}>Twenty</MenuItem>
+                    <MenuItem value={30}>Thirty</MenuItem>
+                    {definition.options.map((option: any) => (
+                        <MenuItem key={option} value={option}>
+                            {option}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
         )
     },
     [ConfigType.MinMax]: ({ value, definition, onChange }) => {
         return (
             <>
-                <input
-                    type="range"
-                    min={definition.min}
-                    max={definition.max}
-                    step={definition.step}
+                <Slider
                     value={value}
-                    onChange={(e) => {
-                        onChange(parseInt(e.target.value, 10))
+                    onChange={(event, sliderValue) => {
+                        onChange(sliderValue as number)
                     }}
                 />
-                {' ' + value}
             </>
         )
     },

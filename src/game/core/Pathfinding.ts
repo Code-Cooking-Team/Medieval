@@ -3,7 +3,7 @@ import { Path, Position } from '+game/types'
 import EasyStar from 'easystarjs'
 
 export class Pathfinding {
-    private easystar = new EasyStar.js()
+    private easyStar = new EasyStar.js()
     private instanceId?: number
 
     private unsubscribe: () => void
@@ -16,7 +16,7 @@ export class Pathfinding {
     }
 
     public tick() {
-        this.easystar.calculate()
+        this.easyStar.calculate()
     }
 
     public destruct() {
@@ -32,7 +32,7 @@ export class Pathfinding {
             )
 
         return new Promise<Path>((resolve) => {
-            const instanceId = this.easystar.findPath(sx, sy, ex, ey, (path) => {
+            const instanceId = this.easyStar.findPath(sx, sy, ex, ey, (path) => {
                 this.instanceId = undefined
                 path?.shift()
                 resolve(path)
@@ -42,7 +42,7 @@ export class Pathfinding {
     }
 
     public cancelPath() {
-        if (this.isFinding()) this.easystar.cancelPath(this.instanceId!)
+        if (this.isFinding()) this.easyStar.cancelPath(this.instanceId!)
         this.instanceId = undefined
     }
 
@@ -52,19 +52,26 @@ export class Pathfinding {
 
     public loadTilesGrid() {
         const tiles = this.game.word.tiles.map((row) =>
-            row.map((tile) => (tile.walkable ? 1 : 0)),
+            row.map((tile) => (tile.canWalk ? 1 : 0)),
         )
 
-        this.easystar.removeAllAdditionalPointCosts()
+        this.easyStar.removeAllAdditionalPointCosts()
 
         this.game.actors.forEach((actor) => {
             const [x, y] = actor.position
-            this.easystar.setAdditionalPointCost(x, y, 3)
+            this.easyStar.setAdditionalPointCost(x, y, 3)
         })
 
-        this.easystar.setGrid(tiles)
-        this.easystar.setAcceptableTiles([1])
-        this.easystar.enableDiagonals()
-        this.easystar.enableCornerCutting()
+        this.game.word.tiles.forEach((row, y) =>
+            row.forEach((tile, x) => {
+                if (tile.walkCost) return
+                this.easyStar.setAdditionalPointCost(x, y, tile.walkCost)
+            }),
+        )
+
+        this.easyStar.setGrid(tiles)
+        this.easyStar.setAcceptableTiles([1])
+        this.easyStar.enableDiagonals()
+        this.easyStar.enableCornerCutting()
     }
 }

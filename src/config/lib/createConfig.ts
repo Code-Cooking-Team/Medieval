@@ -40,8 +40,6 @@ const simplifyConfigValues = <T extends {}>(config: T, configTemplate = config) 
                         ? configValue.initialValue
                         : configValue
 
-                console.log({ templateValue, configValue })
-
                 config[categoryKey][key] = value
             }
 

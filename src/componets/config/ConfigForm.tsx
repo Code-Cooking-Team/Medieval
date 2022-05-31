@@ -1,4 +1,14 @@
 import { config, configOptions, resetConfig, saveConfig } from '+config'
+import { useLocalStorage } from '+hooks/useLocalStorage'
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Button,
+    ButtonGroup,
+    Stack,
+    Typography,
+} from '@mui/material'
 import { entries, toPairs } from 'lodash'
 import React from 'react'
 import { ConfigItem } from './ConfigItem'
@@ -7,48 +17,72 @@ interface ConfigFormProps {
     onChange(): void
 }
 
+const openConfig: { [key: string]: boolean } = {}
+
 export const ConfigForm = ({ onChange }: ConfigFormProps) => {
+    const [isOpen, setIsOpen] = useLocalStorage('configForm:open', openConfig)
+
     return (
         <>
             {toPairs(configOptions).map(([categoryKey, category]) => {
                 const configCategory = (config as any)[categoryKey]
+
                 return (
-                    <details key={categoryKey}>
-                        <summary>{categoryKey}</summary>
-                        {entries(category).map(([key, definition]) => (
-                            <div key={key}>
-                                {key}
-                                <ConfigItem
-                                    value={configCategory[key]}
-                                    definition={definition}
-                                    onChange={(value) => {
-                                        configCategory[key] = value
-                                        onChange()
-                                    }}
-                                />
-                            </div>
-                        ))}
-                    </details>
+                    <Accordion
+                        expanded={isOpen[categoryKey]}
+                        onChange={() => {
+                            setIsOpen({
+                                ...isOpen,
+                                [categoryKey]: !isOpen[categoryKey],
+                            })
+                        }}
+                        key={categoryKey}
+                    >
+                        <AccordionSummary>
+                            <Typography>{categoryKey}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Stack spacing={2}>
+                                {entries(category).map(([key, definition]) => (
+                                    <div key={key}>
+                                        {key}
+                                        <ConfigItem
+                                            value={configCategory[key]}
+                                            definition={definition}
+                                            onChange={(value) => {
+                                                configCategory[key] = value
+                                                onChange()
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </Stack>
+                        </AccordionDetails>
+                    </Accordion>
                 )
             })}
 
-            <button
-                onClick={() => {
-                    saveConfig()
-                    onChange()
-                }}
-            >
-                Save
-            </button>
+            <Stack direction="row" marginTop={2} justifyContent="center">
+                <ButtonGroup disableElevation variant="contained">
+                    <Button
+                        onClick={() => {
+                            saveConfig()
+                            onChange()
+                        }}
+                    >
+                        Save
+                    </Button>
 
-            <button
-                onClick={() => {
-                    resetConfig()
-                    onChange()
-                }}
-            >
-                Reset
-            </button>
+                    <Button
+                        onClick={() => {
+                            resetConfig()
+                            onChange()
+                        }}
+                    >
+                        Reset
+                    </Button>
+                </ButtonGroup>
+            </Stack>
         </>
     )
 }

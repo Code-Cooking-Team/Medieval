@@ -33,7 +33,7 @@ export class Tree extends ActorStatic {
 
         const tile = this.game.word.getTile(newTreePosition)
 
-        if (!tile?.walkable) return
+        if (!tile?.canWalk) return
 
         this.game.addActor(new Tree(this.game, newTreePosition))
     }

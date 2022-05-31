@@ -5,8 +5,20 @@ import { Tree } from '+game/actors/Tree'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
-import { BuildingTile, Word } from '+game/Word'
+import { FootpathTile, InsideTile, WallTile, Word } from '+game/Word'
 import styled from '@emotion/styled'
+import {
+    Button,
+    ButtonGroup,
+    colors,
+    createTheme,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    Stack,
+    ThemeProvider,
+} from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 
 const game = new Game(new Word())
@@ -15,25 +27,64 @@ const renderer = new Renderer(game)
 const buildings = {
     LumberjackCabin: ([x, y]: Position) => {
         const cabin = new LumberjackCabin(game, [x, y])
-        const lumberjack = new Lumberjack(game, [x - 1, y], cabin)
+        const lumberjack = new Lumberjack(game, [x, y], cabin)
 
         game.addActor(cabin)
         game.addActor(lumberjack)
 
         const currTail = game.word.getTile([x, y])
-        const tail = new BuildingTile()
-        tail.height = currTail.height
 
-        game.word.setTile([x, y], tail)
-        game.word.setTile([x - 1, y - 1], tail)
-        game.word.setTile([x + 1, y + 1], tail)
-        game.word.setTile([x - 1, y + 1], tail)
-        game.word.setTile([x + 1, y - 1], tail)
+        const createWallTile = () => {
+            const instance = new WallTile()
+            instance.height = currTail.height
+            return instance
+        }
 
-        game.word.setTile([x - 1, y], tail)
-        game.word.setTile([x + 1, y], tail)
-        game.word.setTile([x, y - 1], tail)
-        game.word.setTile([x, y + 1], tail)
+        const createFootpathTile = () => {
+            const instance = new FootpathTile()
+            instance.height = currTail.height
+            return instance
+        }
+
+        const createInsideTile = () => {
+            const instance = new InsideTile()
+            instance.height = currTail.height
+            return instance
+        }
+
+        const buildingStructure: string[][] = [
+            ['.', '.', '.', '.', '.'],
+            ['.', 'W', 'W', 'W', '.'],
+            ['.', 'W', '!', 'W', '.'],
+            ['.', 'W', '!', 'W', '.'],
+            ['.', '.', '.', '.', '.'],
+        ]
+
+        const centerX = Math.floor(buildingStructure.length / 2)
+        const centerY = Math.floor(buildingStructure[0].length / 2)
+
+        buildingStructure.forEach((row, localY) => {
+            row.forEach((tile, localX) => {
+                if (tile === 'W') {
+                    game.word.setTile(
+                        [x + localX - centerX, y + localY - centerY],
+                        createWallTile(),
+                    )
+                }
+                if (tile === '.') {
+                    game.word.setTile(
+                        [x + localX - centerX, y + localY - centerY],
+                        createFootpathTile(),
+                    )
+                }
+                if (tile === '!') {
+                    game.word.setTile(
+                        [x + localX - centerX, y + localY - centerY],
+                        createFootpathTile(),
+                    )
+                }
+            })
+        })
     },
     Tree: ([x, y]: Position) => {
         game.addActor(new Tree(game, [x, y]))
@@ -44,7 +95,7 @@ buildings.LumberjackCabin([8, 12])
 
 game.word.tiles.forEach((row, y) => {
     row.forEach((tile, x) => {
-        if (tile.walkable && Math.random() < tile.treeChance) {
+        if (tile.canWalk && Math.random() < tile.treeChance) {
             game.addActor(new Tree(game, [x, y]))
         }
     })
@@ -94,33 +145,39 @@ function App() {
     const isRunning = game.isRunning()
 
     return (
-        <>
-            <Top>
-                <button
-                    onClick={() => {
-                        isRunning ? game.stop() : game.start()
-                        render()
-                    }}
-                >
-                    {isRunning ? 'Stop' : 'Start'}
-                </button>
+        <ThemeProvider theme={darkTheme}>
+            <Bottom>
+                <Stack direction="row" spacing={2}>
+                    <ButtonGroup>
+                        <Button
+                            onClick={() => {
+                                isRunning ? game.stop() : game.start()
+                                render()
+                            }}
+                        >
+                            {isRunning ? 'Stop' : 'Start'}
+                        </Button>
+                        {!isRunning && <Button onClick={() => game.tick()}>Tick</Button>}
+                    </ButtonGroup>
 
-                {!isRunning && <button onClick={() => game.tick()}>Tick</button>}
-
-                <select
-                    value={selectedBuilding}
-                    onChange={(e) => {
-                        setSelectedBuilding(e.target.value as BuildingKey)
-                    }}
-                >
-                    <option value={undefined}>None</option>
-                    {buildingList.map((building) => (
-                        <option key={building} value={building}>
-                            {building}
-                        </option>
-                    ))}
-                </select>
-            </Top>
+                    <FormControl style={{ minWidth: 200 }}>
+                        <InputLabel>Actor</InputLabel>
+                        <Select
+                            value={selectedBuilding || ''}
+                            onChange={(e) => {
+                                setSelectedBuilding(e.target.value as BuildingKey)
+                            }}
+                        >
+                            <MenuItem value="">-</MenuItem>
+                            {buildingList.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Stack>
+            </Bottom>
 
             <Right>
                 <ConfigForm onChange={() => render()} />
@@ -145,11 +202,15 @@ function App() {
                     ))}
                 </div>
             </div> */}
-        </>
+        </ThemeProvider>
     )
 }
 
-const Top = styled.div({
+const darkTheme = createTheme({
+    palette: { mode: 'dark' },
+})
+
+const Bottom = styled.div({
     position: 'absolute',
     zIndex: 10,
     bottom: 0,

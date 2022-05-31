@@ -27,7 +27,7 @@ import { WaterRenderer } from './renderer/WaterRenderer'
 import { Position } from './types'
 
 const fov = 60
-const far = 10000
+const far = 200
 const near = 0.1
 
 const stats = new Stats()
@@ -37,7 +37,7 @@ export class Renderer {
 
     private clock = new Clock()
     private scene = new Scene()
-    private ground?: GroundRenderer
+    private ground: GroundRenderer
     private sun: DirectionalLight
     private ambient: AmbientLight
 
@@ -66,15 +66,18 @@ export class Renderer {
         this.scene.fog = fog
 
         this.sun = new DirectionalLight(0xffffbb, 0.7)
-        this.sun.castShadow = true
-        this.sun.shadow.mapSize.width = 128 * 10
-        this.sun.shadow.mapSize.height = 128 * 10
-        this.sun.shadow.camera.near = 0.5
-        this.sun.shadow.camera.far = 200
-        this.sun.shadow.camera.left = -100
-        this.sun.shadow.camera.right = 100
-        this.sun.shadow.camera.top = 100
-        this.sun.shadow.camera.bottom = -100
+        if (config.renderer.shadow) {
+            this.sun.castShadow = true
+
+            this.sun.shadow.mapSize.width = 128 * 10
+            this.sun.shadow.mapSize.height = 128 * 10
+            this.sun.shadow.camera.near = 0.5
+            this.sun.shadow.camera.far = 200
+            this.sun.shadow.camera.left = -100
+            this.sun.shadow.camera.right = 100
+            this.sun.shadow.camera.top = 100
+            this.sun.shadow.camera.bottom = -100
+        }
 
         this.sun.position.set(4, 10, 1)
 
@@ -83,7 +86,9 @@ export class Renderer {
         this.ambient = new AmbientLight(0x404040, 2)
         this.scene.add(this.ambient)
 
-        this.createGround()
+        this.ground = new GroundRenderer(this.game)
+
+        this.addRenderers()
     }
 
     public addRenderer(renderer: ItemRenderer) {
@@ -96,8 +101,7 @@ export class Renderer {
         this.scene.add(renderer.group)
     }
 
-    public createGround() {
-        this.ground = new GroundRenderer(this.game)
+    public addRenderers() {
         this.addRenderer(this.ground)
         this.addRenderer(new WaterRenderer(this.game))
         this.addRenderer(new TreeRenderer(this.game))
@@ -152,7 +156,14 @@ export class Renderer {
         requestAnimationFrame(this.animate)
     }
 
-    private upDateSun = () => {
+    private render() {
+        this.rendererList.forEach((renderer) => renderer.render(this.clock))
+        this.webGLRenderer.render(this.scene, this.camera)
+
+        if (config.renderer.dayAndNightMode) this.updateSun()
+    }
+
+    private updateSun = () => {
         const time =
             (this.clock.getElapsedTime() + config.renderer.dayAndNightTimeStart) /
             config.renderer.dayAndNightTimeScale
@@ -172,6 +183,7 @@ export class Renderer {
             Math.sin(time * 1),
             (Math.sin(time * 1 + 1.9) * 0.5 + 0.6) / 4,
         )
+
         const backgroundColor = new Color().setHSL(
             10 + Math.sin(time * 1) * 0.1,
             Math.sin(time * 1),
@@ -184,13 +196,7 @@ export class Renderer {
             Math.sin(time * 1),
             Math.sin(time * 1 + 1.9) * 0.3 + 0.7,
         )
+
         this.scene.fog = new Fog(fogColor, 0, Math.sin(time * 1) + 0.5 * 50 + 200)
-    }
-
-    private render() {
-        this.rendererList.forEach((renderer) => renderer.render(this.clock))
-        this.webGLRenderer.render(this.scene, this.camera)
-
-        if (config.renderer.dayAndNightMode) this.upDateSun()
     }
 }

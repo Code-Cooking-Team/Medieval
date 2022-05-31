@@ -33,6 +33,7 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         const [x, y] = actor.position
 
         const wall = new Mesh(this.wallGeometry, this.wallMaterial)
+        const door = new Mesh(this.wallGeometry, this.wallMaterial)
         wall.castShadow = true
         wall.receiveShadow = true
 
@@ -40,6 +41,8 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         roof.castShadow = true
         roof.receiveShadow = true
 
+        door.position.set(0, 0.5, 1)
+        door.scale.set(0.5, 1, 0.5)
         wall.position.y = 1
         roof.rotation.y = Math.PI / 4
         roof.position.y = 2
@@ -52,6 +55,7 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         // group.add(light)
 
         group.add(wall)
+        group.add(door)
         group.add(roof)
 
         return group
