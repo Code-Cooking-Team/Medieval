@@ -1,19 +1,15 @@
-import {
-    ChangeableConfigDefinition,
-    ConfigType,
-    MinMaxNumberConfigDefinition,
-    SelectConfigDefinition,
-} from '+config/lib/definitions'
+import { ConfigType } from '+config/lib/definitions'
+import { color0xToHex, colorHexTo0x } from '+helpers/color'
 import { FC } from 'react'
 
 interface ConfigItemProps<T> {
     value: T
-    definition: ChangeableConfigDefinition
+    definition: any
     onChange(value: T): void
 }
 
 export const ConfigItem = <T,>({ value, definition, onChange }: ConfigItemProps<T>) => {
-    const Component = renderers[definition.__type]
+    const Component = renderers[definition.__type as ConfigType]
     return (
         <div>
             <Component value={value} definition={definition} onChange={onChange} />
@@ -56,7 +52,6 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
         )
     },
     [ConfigType.Select]: ({ value, definition, onChange }) => {
-        const def = definition as SelectConfigDefinition<any>
         return (
             <select
                 value={value}
@@ -64,7 +59,7 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
                     onChange(e.target.value)
                 }}
             >
-                {def.options.map((option) => (
+                {definition.options.map((option: any) => (
                     <option key={option} value={option}>
                         {option}
                     </option>
@@ -73,21 +68,31 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
         )
     },
     [ConfigType.MinMax]: ({ value, definition, onChange }) => {
-        const def = definition as MinMaxNumberConfigDefinition
         return (
             <>
                 <input
                     type="range"
-                    min={def.min}
-                    max={def.max}
-                    step={def.step}
+                    min={definition.min}
+                    max={definition.max}
+                    step={definition.step}
                     value={value}
                     onChange={(e) => {
-                        onChange(Number(e.target.value))
+                        onChange(parseInt(e.target.value, 10))
                     }}
-                />{' '}
-                {value}
+                />
+                {' ' + value}
             </>
+        )
+    },
+    [ConfigType.Color]: ({ value, onChange }) => {
+        return (
+            <input
+                type="color"
+                value={color0xToHex(value)}
+                onChange={(e) => {
+                    onChange(colorHexTo0x(e.target.value))
+                }}
+            />
         )
     },
 }

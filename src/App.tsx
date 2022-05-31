@@ -1,5 +1,4 @@
-import { ConfigItem } from '+componets/config/ConfigItem'
-import { config, configOptions } from '+config'
+import { ConfigForm } from '+componets/config/ConfigForm'
 import { Lumberjack } from '+game/actors/Lumberjack'
 import { LumberjackCabin } from '+game/actors/LumberjackCabin'
 import { Tree } from '+game/actors/Tree'
@@ -8,7 +7,6 @@ import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
 import { BuildingTile, Word } from '+game/Word'
 import styled from '@emotion/styled'
-import { entries, toPairs } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 
 const game = new Game(new Word())
@@ -125,27 +123,7 @@ function App() {
             </Top>
 
             <Right>
-                {toPairs(configOptions).map(([categoryKey, category]) => {
-                    const configCategory = (config as any)[categoryKey]
-                    return (
-                        <details key={categoryKey}>
-                            <summary>{categoryKey}</summary>
-                            {entries(category).map(([key, definition]) => (
-                                <div key={key}>
-                                    {key}
-                                    <ConfigItem
-                                        value={configCategory[key]}
-                                        definition={definition}
-                                        onChange={(value) => {
-                                            configCategory[key] = value
-                                            render()
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                        </details>
-                    )
-                })}
+                <ConfigForm onChange={() => render()} />
             </Right>
 
             <RendererDiv ref={rendererRef} />
@@ -190,6 +168,7 @@ const Right = styled.div({
     top: 0,
     right: 0,
     bottom: 0,
+    overflow: 'auto',
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: '10px',
     backdropFilter: 'blur(15px)',

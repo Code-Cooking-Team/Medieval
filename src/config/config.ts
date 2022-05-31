@@ -1,7 +1,7 @@
 import { createConfig } from './lib/createConfig'
-import { minMaxNumber, select } from './lib/definitions'
+import { colorInput, minMaxNumber, select } from './lib/definitions'
 
-export const config = createConfig({
+export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 200,
         devTilesSize: 60,
@@ -12,6 +12,8 @@ export const config = createConfig({
         dayAndNightMode: true,
         dayAndNightTimeScale: 256,
         dayAndNightTimeStart: 0,
+        shadow: false,
+        treeWaving: false,
     },
 
     tree: {
@@ -34,5 +36,6 @@ export const config = createConfig({
         string: 'Hello',
         select: select('first', ['first', 'second', 'third']),
         minMax: minMaxNumber(100, 1, 1000),
+        color: colorInput(0xabc123),
     },
 })
