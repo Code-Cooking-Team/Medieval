@@ -47,6 +47,10 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         wall.name = 'wall'
         roof.name = 'roof'
 
+        // const light = new PointLight(0xfa840e, 0.7, 10)
+        // light.position.set(0, 3, 0)
+        // group.add(light)
+
         group.add(wall)
         group.add(roof)
 

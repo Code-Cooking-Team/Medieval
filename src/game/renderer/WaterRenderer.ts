@@ -15,6 +15,9 @@ export class WaterRenderer extends ItemRenderer {
             side: DoubleSide,
             transparent: true,
             opacity: 0.7,
+            roughness: 0.2,
+            metalness: 0.2
+            
         })
 
         this.mesh = new Mesh(geometry, material)
@@ -30,7 +33,7 @@ export class WaterRenderer extends ItemRenderer {
 
         const position = this.mesh.geometry.attributes.position
         for (let i = 0; i < position.count; i++) {
-            const y = 0.1 * Math.sin(i / 1 + (time + i) / 10)
+            const y = 0.12 * Math.sin(i / 1 + (time + i) / 8)
             position.setY(i, y)
         }
         position.needsUpdate = true

@@ -29,11 +29,18 @@ export class TreeRenderer extends ActorRenderer {
     public render(clock: Clock) {
         super.render(clock)
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
+            const time = clock.getElapsedTime() * 10;
+
+            
+
             if (actor.hp <= actor.maxHp * 0.75) {
                 group.rotation.x += (Math.PI / 2.2 - group.rotation.x) * this.moveSpeed
+            } else {
+                const treeSend = group.children[1].scale.z/10;
+                group.rotation.z = Math.sin(treeSend + (time*0.2 * (treeSend * (Math.PI / 1)))) / 10
             }
             if (actor.isDead()) {
-                group.position.y -= 0.04
+                group.position.y -= 0.05
             }
         })
     }

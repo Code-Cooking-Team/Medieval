@@ -9,6 +9,9 @@ export const config = createConfig({
 
     renderer: {
         tileSize: 1,
+        dayAndNightMode: true,
+        dayAndNightTimeScale: 256,
+        dayAndNightTimeStart: 0,
     },
 
     tree: {
