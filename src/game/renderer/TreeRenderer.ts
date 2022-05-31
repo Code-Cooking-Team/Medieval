@@ -1,22 +1,17 @@
 import { config } from '+config'
-import { Tree } from '+game/actors/Tree'
 import { Actor } from '+game/core/Actor'
-import { ActorType, Position } from '+game/types'
-import { Tile } from '+game/Word'
+import { Tile } from '+game/Tile'
+import { ActorType } from '+game/types'
 import { random } from '+helpers/basic'
 import {
     Clock,
     CylinderGeometry,
-    DoubleSide,
     Group,
     Mesh,
     MeshStandardMaterial,
-    PlaneGeometry,
     SphereGeometry,
 } from 'three'
-import { Game } from '../Game'
 import { ActorRenderer } from './lib/ActorRenderer'
-import { ItemRenderer } from './lib/ItemRenderer'
 
 export class TreeRenderer extends ActorRenderer {
     public actorType = ActorType.Tree
@@ -28,6 +23,7 @@ export class TreeRenderer extends ActorRenderer {
 
     public render(clock: Clock) {
         super.render(clock)
+
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
             const time = clock.getElapsedTime() * 10
 

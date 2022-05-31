@@ -1,8 +1,9 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
+import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/Word'
 import {
+    Camera,
     Clock,
     DoubleSide,
     Group,

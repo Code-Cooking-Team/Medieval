@@ -1,4 +1,5 @@
 import { config } from '+config/config'
+import { Pathfinding } from '+game/core/Pathfinding'
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'

@@ -13,6 +13,7 @@ export default class PubSub<TType> {
     }
 
     publish(type: TType, ...payload: any[]) {
+        console.log(type)
         this.subscribers.forEach((subscriber) => subscriber(type, payload))
     }
 }

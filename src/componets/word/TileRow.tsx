@@ -1,6 +1,6 @@
 import { config } from '+config/config'
+import { Tile } from '+game/Tile'
 import { Position } from '+game/types'
-import { Tile } from '+game/Word'
 import React from 'react'
 
 interface TileRowProps {

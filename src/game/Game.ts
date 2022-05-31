@@ -3,18 +3,23 @@ import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
 import PubSub from '+lib/PubSub'
 import { ActorStatic } from './core/ActorStatic'
+import { Pathfinding } from './core/Pathfinding'
 import { Position } from './types'
 import { Word } from './Word'
 
 export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordUpdate'> {
-    loop: any
+    public pf: Pathfinding
     public actors: ActorStatic[] = []
+    loop: any
 
     constructor(public word: Word) {
         super()
 
+        this.pf = new Pathfinding(word, this.actors)
+
         this.word.subscribe(() => {
             this.publish('wordUpdate')
+            this.pf.update()
         })
     }
 
@@ -35,6 +40,7 @@ export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordU
 
     public tick() {
         this.word.tick()
+        this.pf.tick()
         this.actors.forEach((actor) => {
             actor.tick()
         })

@@ -12,8 +12,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
         dayAndNightMode: true,
         dayAndNightTimeScale: 256,
         dayAndNightTimeStart: 0,
-        shadow: false,
-        treeWaving: false,
+        shadow: true,
+        treeWaving: true,
     },
 
     tree: {
@@ -28,6 +28,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         choppingDamage: 20,
         gatheringSpeed: 5,
         capacity: 50,
+        cabinLight: false,
     },
 
     configTest: {

@@ -4,13 +4,13 @@ import { LumberjackCabin } from '+game/actors/LumberjackCabin'
 import { Tree } from '+game/actors/Tree'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
+import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
 import { Position } from '+game/types'
-import { FootpathTile, InsideTile, WallTile, Word } from '+game/Word'
+import { Word } from '+game/Word'
 import styled from '@emotion/styled'
 import {
     Button,
     ButtonGroup,
-    colors,
     createTheme,
     FormControl,
     InputLabel,
@@ -63,29 +63,20 @@ const buildings = {
         const centerX = Math.floor(buildingStructure.length / 2)
         const centerY = Math.floor(buildingStructure[0].length / 2)
 
-        buildingStructure.forEach((row, localY) => {
-            row.forEach((tile, localX) => {
-                if (tile === 'W') {
-                    game.word.setTile(
-                        [x + localX - centerX, y + localY - centerY],
-                        createWallTile(),
-                    )
-                }
-                if (tile === '.') {
-                    game.word.setTile(
-                        [x + localX - centerX, y + localY - centerY],
-                        createFootpathTile(),
-                    )
-                }
-                if (tile === '!') {
-                    game.word.setTile(
-                        [x + localX - centerX, y + localY - centerY],
-                        createFootpathTile(),
-                    )
-                }
+        game.word.setTiles((tiles) => {
+            buildingStructure.forEach((row, localY) => {
+                row.forEach((tileCode, localX) => {
+                    tiles[y + localY - centerY][x + localX - centerX] =
+                        tileCode === 'W'
+                            ? createWallTile()
+                            : tileCode === '!'
+                            ? createInsideTile()
+                            : createFootpathTile()
+                })
             })
         })
     },
+
     Tree: ([x, y]: Position) => {
         game.addActor(new Tree(game, [x, y]))
     },

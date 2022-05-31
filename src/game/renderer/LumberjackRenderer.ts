@@ -1,6 +1,6 @@
 import { Actor } from '+game/core/Actor'
+import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/Word'
 import { Clock, Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 import { ActorRenderer } from './lib/ActorRenderer'
 

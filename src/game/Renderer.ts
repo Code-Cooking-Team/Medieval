@@ -41,7 +41,7 @@ export class Renderer {
     private sun: DirectionalLight
     private ambient: AmbientLight
 
-    private camera = new PerspectiveCamera(
+    public camera = new PerspectiveCamera(
         fov,
         window.innerWidth / window.innerHeight,
         near,

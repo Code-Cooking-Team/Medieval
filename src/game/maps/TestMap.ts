@@ -1,4 +1,4 @@
-import { Tile } from '+game/Word'
+import { Tile } from '+game/Tile'
 
 // prettier-ignore
 export default [
