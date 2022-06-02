@@ -25,7 +25,7 @@ const game = new Game(new Word())
 const renderer = new Renderer(game)
 
 const buildings = {
-    LumberjackCabin: ([x, y]: Position) => {
+    _LumberjackCabin: ([x, y]: Position) => {
         const cabin = new LumberjackCabin(game, [x, y])
         const lumberjack = new Lumberjack(game, [x, y], cabin)
 
@@ -76,6 +76,12 @@ const buildings = {
             })
         })
     },
+    get LumberjackCabin() {
+        return this._LumberjackCabin
+    },
+    set LumberjackCabin(value) {
+        this._LumberjackCabin = value
+    },
 
     Tree: ([x, y]: Position) => {
         game.addActor(new Tree(game, [x, y]))
@@ -94,6 +100,13 @@ game.word.tiles.forEach((row, y) => {
 
 const anyWindow = window as any
 anyWindow.game = game
+
+anyWindow.logStats = () => {
+    console.log('Scene polycount:', renderer.webGLRenderer.info.render.triangles)
+    console.log('Active Drawcalls:', renderer.webGLRenderer.info.render.calls)
+    console.log('Textures in Memory', renderer.webGLRenderer.info.memory.textures)
+    console.log('Geometries in Memory', renderer.webGLRenderer.info.memory.geometries)
+}
 
 type BuildingKey = keyof typeof buildings
 const buildingList = Object.keys(buildings) as BuildingKey[]
@@ -123,7 +136,11 @@ function App() {
         const addBuilding = (event: MouseEvent): void => {
             const position = renderer.findPositionByMouseEvent(event)
             if (!selectedBuilding || !position) return
-            buildings[selectedBuilding](position)
+            const currTail = game.word.getTile(position)
+            if (currTail.canBuild) {
+                console.log(currTail)
+                buildings[selectedBuilding](position)
+            }
         }
 
         rendererRef.current?.addEventListener('click', addBuilding)

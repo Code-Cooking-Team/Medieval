@@ -1,5 +1,5 @@
 import PubSub from '+lib/PubSub'
-import Map from './maps/TestMapBig'
+import Map from './maps/TestMap'
 import { ForestTile, MeadowTile, StepTile, Tile, WaterTile } from './Tile'
 import { Position } from './types'
 

@@ -1,5 +1,6 @@
 import { randomArrayItem } from '+helpers/array'
-import { uuid } from '+helpers/basic'
+import { random, uuid } from '+helpers/basic'
+import { generateSimilarColor } from '+helpers/color'
 
 export abstract class Tile {
     public id = uuid()
@@ -14,21 +15,22 @@ export abstract class Tile {
 
 export class ForestTile extends Tile {
     public name = 'Forest'
-    public color = 0x033d09
+    // public color = generateSimilarColor(0x274517, 4) cos tu nie działa :/
+    public color = generateSimilarColor(0x194517, 4)
     public treeChance = 0.1
 }
 
 export class MeadowTile extends Tile {
     public name = 'Meadow'
-    public color = randomArrayItem([0x00660a, 0x006009, 0x006101, 0x00760a])
+    public color = generateSimilarColor(0x274517, 4)
     public treeChance = 0.008
 }
 
 export class StepTile extends Tile {
     public name = 'Step'
-    public color = 0xbfaa34
+    public color = generateSimilarColor(0xbfaa34, 7)
     public canBuild = false
-    public height = 2
+    public height = random(1, 2) + 0.2
     public treeChance = 0.005
 }
 
@@ -36,7 +38,7 @@ export class WaterTile extends Tile {
     public name = 'Water'
     public canWalk = false
     public canBuild = false
-    public color = 0xbdb675
+    public color = generateSimilarColor(0xbdb675, 7)
     public height = -1
 }
 

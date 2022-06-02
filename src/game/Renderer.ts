@@ -1,18 +1,23 @@
 import { config } from '+config'
+import { random } from '+helpers/basic'
 import Stats from 'stats.js'
 import {
     AmbientLight,
+    BoxBufferGeometry,
     Clock,
     Color,
     DirectionalLight,
     Fog,
-    LineStrip,
+    InstancedMesh,
+    MeshNormalMaterial,
+    MeshStandardMaterial,
     MOUSE,
+    Object3D,
     PCFSoftShadowMap,
     PerspectiveCamera,
-    PointLight,
     Raycaster,
     Scene,
+    SphereGeometry,
     Vector2,
     WebGLRenderer,
 } from 'three'
@@ -33,7 +38,7 @@ const near = 0.1
 const stats = new Stats()
 
 export class Renderer {
-    private webGLRenderer = new WebGLRenderer({ antialias: true })
+    public webGLRenderer = new WebGLRenderer({ antialias: true })
 
     private clock = new Clock()
     private scene = new Scene()
@@ -88,6 +93,22 @@ export class Renderer {
 
         this.ground = new GroundRenderer(this.game)
 
+        const dummy = new Object3D()
+        const grassMaterial = new MeshStandardMaterial({ color: 0x274517 })
+        const Bush = new InstancedMesh(new SphereGeometry(0.5, 5, 4), grassMaterial, 100)
+        this.scene.add(Bush)
+        for (var i = 0; i < Bush.count; i++) {
+            dummy.position.set(random(-25, 25), 0.1, random(-25, 25))
+            dummy.scale.set(random(1, 1.5), random(1, 1.5), random(1, 1.5))
+            dummy.rotation.set(
+                random(1, 2) / Math.PI,
+                random(1, 2) / Math.PI,
+                random(1, 2) / Math.PI,
+            )
+
+            dummy.updateMatrix()
+            Bush.setMatrixAt(i, dummy.matrix)
+        }
         this.addRenderers()
     }
 
