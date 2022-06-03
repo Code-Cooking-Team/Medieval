@@ -3,12 +3,14 @@ import { Game } from '../Game'
 import { createWordPlane } from './lib/createWordPlane'
 import { ItemRenderer } from './lib/ItemRenderer'
 
+
+
 export class WaterRenderer extends ItemRenderer {
     private mesh?: Mesh
 
     constructor(public game: Game) {
         super()
-        const geometry = createWordPlane(this.game.word)
+        const geometry = createWordPlane(this.game.word, 'random')
 
         const material = new MeshStandardMaterial({
             color: 0x5dd1e8,

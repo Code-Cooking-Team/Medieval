@@ -5,6 +5,7 @@ import { Game } from '../Game'
 import { createWordPlane } from './lib/createWordPlane'
 import { ItemRenderer } from './lib/ItemRenderer'
 
+
 export class GroundRenderer extends ItemRenderer {
     private groundMesh?: Mesh
     private geometry?: HorizontalPlaneGeometry
@@ -12,7 +13,7 @@ export class GroundRenderer extends ItemRenderer {
     constructor(public game: Game) {
         super()
 
-        this.geometry = createWordPlane(this.game.word)
+        this.geometry = createWordPlane(this.game.word, 'both')
 
         const count = this.geometry.attributes.position.count
         this.geometry.setAttribute(
@@ -51,6 +52,7 @@ export class GroundRenderer extends ItemRenderer {
         })
     }
 
+
     public update() {
         if (!this.groundMesh || !this.geometry) return
 
@@ -59,7 +61,7 @@ export class GroundRenderer extends ItemRenderer {
         const position = this.groundMesh.geometry.attributes.position
         const colors = this.geometry.attributes.color
         const color = new Color()
-
+        
         for (let i = 0; i < position.count; i++) {
             const tile = this.game.word.getTile(getPositionByIndex(i, wordWidth))
             position.setY(i, tile.height)
@@ -68,5 +70,7 @@ export class GroundRenderer extends ItemRenderer {
             colors.needsUpdate = true
         }
         position.needsUpdate = true
+    
+    
     }
 }
