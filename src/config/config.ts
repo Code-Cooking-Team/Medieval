@@ -14,6 +14,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         dayAndNightTimeStart: 0,
         shadow: true,
         treeWaving: true,
+        wireframe: true,
     },
 
     tree: {

@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { getPositionByIndex } from '+helpers/array'
 import { HorizontalPlaneGeometry } from '+helpers/mesh'
 import { BufferAttribute, Color, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
@@ -31,6 +32,7 @@ export class GroundRenderer extends ItemRenderer {
             wireframe: true,
             transparent: true,
             opacity: 0.05,
+            visible: config.renderer.wireframe,
         })
 
         this.groundMesh = new Mesh(this.geometry, groundMaterial)
