@@ -17,7 +17,7 @@ export class TreeRenderer extends ActorRenderer {
     public actorType = ActorType.Tree
 
     private boughMaterial = new MeshStandardMaterial({ color: 0x2e2625 })
-    private branchesMaterial = new MeshStandardMaterial({ color: 0x00660a })
+    private branchesMaterial = new MeshStandardMaterial({ color: 0x2c420b })
     private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3)
     private branchesGeometry = new SphereGeometry(1.5, 5, 4)
 

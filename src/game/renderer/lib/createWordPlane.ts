@@ -2,7 +2,7 @@ import { config } from '+config'
 import { Word } from '+game/Word'
 import { HorizontalPlaneGeometry } from '+helpers/mesh'
 
-export const createWordPlane = (word: Word, diagonals: string) => {
+export const createWordPlane = (word: Word, diagonals: string, multiply: number = 1) => {
     const [wordWidth, wordHeight] = word.getSize()
 
     const width = (wordWidth - 1) * config.renderer.tileSize
@@ -11,8 +11,8 @@ export const createWordPlane = (word: Word, diagonals: string) => {
     const geometry = new HorizontalPlaneGeometry(
         width,
         height,
-        wordWidth - 1,
-        wordHeight - 1,
+        multiply*wordWidth - 1,
+        multiply*wordHeight - 1,
         diagonals
     )
 
