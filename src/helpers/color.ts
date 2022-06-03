@@ -1,4 +1,4 @@
-import { Color } from "three"
+import { Color } from 'three'
 
 export const color0xToHex = (color: number) => {
     return `#${color.toString(16)}`
@@ -8,19 +8,22 @@ export const colorHexTo0x = (color: string) => {
     return parseInt(color.replace('#', ''), 16)
 }
 
-export const generateSimilarColor = (color: number, deviation: number, monochromatic?: boolean) => {
+export const generateSimilarColor = (
+    color: number,
+    deviation: number,
+    monochromatic?: boolean,
+) => {
+    const threeColor = new Color(color)
 
-    const threeColor = new Color(color);
-
-    const r  = threeColor.r*255
-    const g = threeColor.g*255
-    const b = threeColor.b*255
+    const r = threeColor.r * 255
+    const g = threeColor.g * 255
+    const b = threeColor.b * 255
 
     let nr = Math.round(r + (Math.random() - 0.5) * 2 * deviation)
     let ng = Math.round(g + (Math.random() - 0.5) * 2 * deviation)
     let nb = Math.round(b + (Math.random() - 0.5) * 2 * deviation)
-    
-    if(monochromatic){
+
+    if (monochromatic) {
         let random = Math.random()
         nr = Math.round(r + (random - 0.5) * 2 * deviation)
         ng = Math.round(g + (random - 0.5) * 2 * deviation)
@@ -35,18 +38,9 @@ export const generateSimilarColor = (color: number, deviation: number, monochrom
     ng = ng < 0 ? 0 : ng
     nb = nb < 0 ? 0 : nb
 
-
-    threeColor.r = nr/255
-    threeColor.g = ng/255
-    threeColor.b = nb/255
-
-
+    threeColor.r = nr / 255
+    threeColor.g = ng / 255
+    threeColor.b = nb / 255
 
     return threeColor.getHex()
 }
-
-
-const anyWindow = window as any
-anyWindow.generateSimilarColor = generateSimilarColor;
-
-

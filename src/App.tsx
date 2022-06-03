@@ -25,7 +25,7 @@ const game = new Game(new Word())
 const renderer = new Renderer(game)
 
 const buildings = {
-    _LumberjackCabin: ([x, y]: Position) => {
+    LumberjackCabin: ([x, y]: Position) => {
         const cabin = new LumberjackCabin(game, [x, y])
         const lumberjack = new Lumberjack(game, [x, y], cabin)
 
@@ -75,12 +75,6 @@ const buildings = {
                 })
             })
         })
-    },
-    get LumberjackCabin() {
-        return this._LumberjackCabin
-    },
-    set LumberjackCabin(value) {
-        this._LumberjackCabin = value
     },
 
     Tree: ([x, y]: Position) => {
