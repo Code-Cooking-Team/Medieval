@@ -39,7 +39,6 @@ export class Tree extends ActorStatic {
     }
 
     private treeCount() {
-        const { min, max } = config.tree.newTreeTicks
-        return random(min, max)
+        return random(config.tree.newTreeTicksMin, config.tree.newTreeTicksMax)
     }
 }

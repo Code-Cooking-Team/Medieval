@@ -15,9 +15,14 @@ export abstract class Tile {
 
 export class ForestTile extends Tile {
     public name = 'Forest'
+<<<<<<< HEAD
     // public color = generateSimilarColor(0x274517, 4) cos tu nie działa :/
     public color = generateSimilarColor(0x194517, 4)
     public treeChance = 0.1
+=======
+    public color = 0x033d09
+    public treeChance = 0.3
+>>>>>>> 54ff8b4 (Change tree config)
 }
 
 export class MeadowTile extends Tile {
