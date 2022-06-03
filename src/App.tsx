@@ -229,6 +229,7 @@ const Bottom = styled.div({
     display: 'flex',
     justifyContent: 'center',
     backdropFilter: 'blur(15px)',
+    boxShadow: '0 0 40px -10px rgba(0, 0, 0, 0.3)',
 })
 
 const Right = styled.div({
@@ -239,8 +240,29 @@ const Right = styled.div({
     bottom: 0,
     overflow: 'auto',
     backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: '10px',
+    padding: '20px',
     backdropFilter: 'blur(15px)',
+    maxWidth: '250px',
+    width: '90%',
+    transform: 'translateX(100%) translateX(-20px)',
+    transition: 'transform 1s ease 0.8s',
+    boxShadow: '0 0 40px -10px rgba(0, 0, 0, 0.3)',
+    ':hover': {
+        transform: 'translateX(0%)',
+        transition: 'transform 0.35s ease',
+    },
+    ':after': {
+        content: '""',
+        position: 'absolute',
+        left: '8px',
+        top: 0,
+        bottom: 0,
+        height: '15px',
+        width: '4px',
+        border: '1px solid rgba(255, 255, 255, 0.596)',
+        borderWidth: '0 1px 0 1px',
+        margin: 'auto',
+    },
 })
 
 const RendererDiv = styled.div({
