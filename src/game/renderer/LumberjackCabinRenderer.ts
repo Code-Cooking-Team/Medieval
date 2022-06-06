@@ -52,7 +52,7 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         roof.name = 'roof'
 
         if (config.lumberjack.cabinLight) {
-            const light = new PointLight(0xfa840e, 0.7, 10)
+            const light = new PointLight(0xfa840e, 1, 15)
             light.position.set(0, 3, 0)
             group.add(light)
         }

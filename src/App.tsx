@@ -82,7 +82,7 @@ const buildings = {
     },
 }
 
-buildings.LumberjackCabin([8, 12])
+buildings.LumberjackCabin([12, 8])
 
 game.word.tiles.forEach((row, y) => {
     row.forEach((tile, x) => {
