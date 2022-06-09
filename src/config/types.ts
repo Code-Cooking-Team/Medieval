@@ -1,5 +1,3 @@
-import { ChangeableConfigDefinition } from './lib/definitions'
-
 export interface Config {
     [key: string]: {
         [key: string]: {}
@@ -8,6 +6,6 @@ export interface Config {
 
 export interface ConfigOptions {
     [key: string]: {
-        [key: string]: ChangeableConfigDefinition
+        [key: string]: any
     }
 }

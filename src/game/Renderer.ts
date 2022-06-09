@@ -22,12 +22,12 @@ import {
     WebGLRenderer,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { LumberjackCabinRenderer } from './actors/lumberjack/LumberjackCabinRenderer'
+import { LumberjackRenderer } from './actors/lumberjack/LumberjackRenderer'
+import { TreeRenderer } from './actors/tree/TreeRenderer'
 import { Game } from './Game'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ItemRenderer } from './renderer/lib/ItemRenderer'
-import { LumberjackCabinRenderer } from './renderer/LumberjackCabinRenderer'
-import { LumberjackRenderer } from './renderer/LumberjackRenderer'
-import { TreeRenderer } from './renderer/TreeRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
 import { Position } from './types'
 

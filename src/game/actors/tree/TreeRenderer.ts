@@ -11,7 +11,7 @@ import {
     MeshStandardMaterial,
     SphereGeometry,
 } from 'three'
-import { ActorRenderer } from './lib/ActorRenderer'
+import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
 export class TreeRenderer extends ActorRenderer {
     public actorType = ActorType.Tree

@@ -4,9 +4,9 @@ import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'
 import { assert } from '+helpers/quality'
-import { Actor } from '../core/Actor'
+import { Actor } from '../../core/Actor'
+import { Tree } from '../tree/Tree'
 import { LumberjackCabin } from './LumberjackCabin'
-import { Tree } from './Tree'
 
 enum LumberjackState {
     Idle = 'Idle',
@@ -15,6 +15,7 @@ enum LumberjackState {
     ChoppingATree = 'ChoppingATree',
     FullINeedCabin = 'FullINeedCabin',
     GoingToCabin = 'GoingToCabin',
+
     GatheringWood = 'GatheringWood',
 }
 

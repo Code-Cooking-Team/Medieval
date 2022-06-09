@@ -1,5 +1,4 @@
-import { BufferGeometry } from 'three';
-import { Float32BufferAttribute } from 'three';
+import { BufferGeometry, Float32BufferAttribute } from 'three';
 
 
 type Diagonals = 'left' | 'right' | 'both' | 'random'

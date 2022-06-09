@@ -10,7 +10,6 @@ import {
     Typography,
 } from '@mui/material'
 import { entries, toPairs } from 'lodash'
-import React from 'react'
 import { ConfigItem } from './ConfigItem'
 
 interface ConfigFormProps {

@@ -2,7 +2,7 @@ import { Actor } from '+game/core/Actor'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
 import { Clock, Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
-import { ActorRenderer } from './lib/ActorRenderer'
+import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
 export class LumberjackRenderer extends ActorRenderer {
     public actorType = ActorType.Lumberjack

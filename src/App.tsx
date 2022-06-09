@@ -1,7 +1,7 @@
-import { ConfigForm } from '+componets/config/ConfigForm'
-import { Lumberjack } from '+game/actors/Lumberjack'
-import { LumberjackCabin } from '+game/actors/LumberjackCabin'
-import { Tree } from '+game/actors/Tree'
+import { ConfigForm } from '+components/config/ConfigForm'
+import { Lumberjack } from '+game/actors/lumberjack/Lumberjack'
+import { LumberjackCabin } from '+game/actors/lumberjack/LumberjackCabin'
+import { Tree } from '+game/actors/tree/Tree'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
@@ -20,13 +20,15 @@ import {
     ThemeProvider,
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
+import { createTileGrid } from './lib/createTileGrid'
 
-const game = new Game(new Word())
+const word = new Word()
+const game = new Game(word)
 const renderer = new Renderer(game)
 
 const buildings = {
     LumberjackCabin: ([x, y]: Position) => {
-        const cabin = new LumberjackCabin(game, [x, y])
+        const cabin = new LumberjackCabin(game, [x + 2, y + 2])
         const lumberjack = new Lumberjack(game, [x, y], cabin)
 
         game.addActor(cabin)
@@ -52,28 +54,24 @@ const buildings = {
             return instance
         }
 
-        const buildingStructure: string[][] = [
-            ['.', '.', '.', '.', '.'],
-            ['.', 'W', 'W', 'W', '.'],
-            ['.', 'W', '!', 'W', '.'],
-            ['.', 'W', '!', 'W', '.'],
-            ['.', '.', '.', '.', '.'],
-        ]
-
-        const centerX = Math.floor(buildingStructure.length / 2)
-        const centerY = Math.floor(buildingStructure[0].length / 2)
-
         game.word.setTiles((tiles) => {
-            buildingStructure.forEach((row, localY) => {
-                row.forEach((tileCode, localX) => {
-                    tiles[y + localY - centerY][x + localX - centerX] =
-                        tileCode === 'W'
-                            ? createWallTile()
-                            : tileCode === '!'
-                            ? createInsideTile()
-                            : createFootpathTile()
-                })
-            })
+            createTileGrid(
+                {
+                    '.': createFootpathTile,
+                    'W': createWallTile,
+                    '!': createInsideTile,
+                },
+                [
+                    ['.', '.', '.', '.', '.'],
+                    ['.', 'W', 'W', 'W', '.'],
+                    ['.', 'W', '!', 'W', '.'],
+                    ['.', 'W', '!', 'W', '.'],
+                    ['.', '.', '.', '.', '.'],
+                ],
+                ([localX, localY], tileFn) => {
+                    tiles[y + localY][x + localX] = tileFn()
+                },
+            )
         })
     },
 
@@ -81,8 +79,6 @@ const buildings = {
         game.addActor(new Tree(game, [x, y]))
     },
 }
-
-buildings.LumberjackCabin([12, 8])
 
 game.word.tiles.forEach((row, y) => {
     row.forEach((tile, x) => {
@@ -186,24 +182,6 @@ function App() {
             </Right>
 
             <RendererDiv ref={rendererRef} />
-
-            {/* <div className="word">
-                <div className="word-origin">
-                    {game.word.tiles.map((row, y) => (
-                        <TileRow
-                            key={y}
-                            tiles={row}
-                            y={y}
-                            onClick={(position) => {
-                                buildings[selectedBuilding]?.(position)
-                            }}
-                        />
-                    ))}
-                    {game.actors.map((actor) => (
-                        <ActorView key={actor.id} actor={actor} />
-                    ))}
-                </div>
-            </div> */}
         </ThemeProvider>
     )
 }

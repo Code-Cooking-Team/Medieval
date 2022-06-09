@@ -10,7 +10,7 @@ import {
     OctahedronGeometry,
     PointLight,
 } from 'three'
-import { ActorRenderer } from './lib/ActorRenderer'
+import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
 export class LumberjackCabinRenderer extends ActorRenderer {
     public actorType = ActorType.LumberjackCabin
