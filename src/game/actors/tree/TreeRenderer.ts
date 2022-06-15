@@ -36,13 +36,13 @@ export class TreeRenderer {
     public boughInstanceMesh = new InstancedMesh(
         this.boughGeometry,
         this.boughMaterial,
-        100000,
+        3000,
     )
 
     public coronaInstanceMesh = new InstancedMesh(
         this.coronaGeometry,
         this.coronaMaterial,
-        100000,
+        3000,
     )
 
     private actorCount = 0

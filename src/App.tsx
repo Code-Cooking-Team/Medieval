@@ -7,6 +7,7 @@ import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
 import { Position } from '+game/types'
 import { Word } from '+game/Word'
+import { seededRandom } from '+helpers/random'
 import styled from '@emotion/styled'
 import {
     Button,
@@ -80,9 +81,11 @@ const buildings = {
     },
 }
 
+const rng = seededRandom(1234567)
+
 game.word.tiles.forEach((row, y) => {
     row.forEach((tile, x) => {
-        if (tile.canWalk && Math.random() < tile.treeChance) {
+        if (tile.canWalk && rng() < tile.treeChance) {
             game.addActor(new TreeActor(game, [x, y]))
         }
     })

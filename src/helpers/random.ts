@@ -12,7 +12,7 @@ export const randomSeed = () => Number.MAX_SAFE_INTEGER * Math.random()
 
 export const seededRandom = (seedString = randomSeed()) => {
     const rand = mulberry32(seedString)
-    return (min: number, max: number) => {
+    return (min = 0, max = 1) => {
         return rand() * (max - min) + min
     }
 }
