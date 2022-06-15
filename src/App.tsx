@@ -1,7 +1,7 @@
 import { ConfigForm } from '+components/config/ConfigForm'
 import { Lumberjack } from '+game/actors/lumberjack/Lumberjack'
 import { LumberjackCabin } from '+game/actors/lumberjack/LumberjackCabin'
-import { Tree } from '+game/actors/tree/Tree'
+import { TreeActor } from '+game/actors/tree/TreeActor'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
@@ -76,14 +76,14 @@ const buildings = {
     },
 
     Tree: ([x, y]: Position) => {
-        game.addActor(new Tree(game, [x, y]))
+        game.addActor(new TreeActor(game, [x, y]))
     },
 }
 
 game.word.tiles.forEach((row, y) => {
     row.forEach((tile, x) => {
         if (tile.canWalk && Math.random() < tile.treeChance) {
-            game.addActor(new Tree(game, [x, y]))
+            game.addActor(new TreeActor(game, [x, y]))
         }
     })
 })

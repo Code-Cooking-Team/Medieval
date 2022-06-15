@@ -4,7 +4,7 @@ import { distanceBetweenPoints } from '+helpers/math'
 import PubSub from '+lib/PubSub'
 import { ActorStatic } from './core/ActorStatic'
 import { Pathfinding } from './core/Pathfinding'
-import { Position } from './types'
+import { ActorType, Position } from './types'
 import { Word } from './Word'
 
 export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordUpdate'> {
@@ -68,7 +68,7 @@ export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordU
         })
     }
 
-    public findActorsByType(type: string, isAlive = true) {
+    public findActorsByType(type: ActorType, isAlive = true) {
         return this.actors.filter((actor) => {
             if (isAlive && actor.hp <= 0) return false
             return actor.type === type
@@ -82,7 +82,7 @@ export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordU
         })
     }
 
-    public findClosestActorByType(type: string, position: Position, isAlive = true) {
+    public findClosestActorByType(type: ActorType, position: Position, isAlive = true) {
         const actors = this.findActorsByType(type, isAlive)
         return actors.reduce((prev, curr) => {
             const prevDist = distanceBetweenPoints(prev.position, position)

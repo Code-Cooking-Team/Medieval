@@ -5,7 +5,7 @@ import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'
 import { assert } from '+helpers/quality'
 import { Actor } from '../../core/Actor'
-import { Tree } from '../tree/Tree'
+import { TreeActor } from '../tree/Tree'
 import { LumberjackCabin } from './LumberjackCabin'
 
 enum LumberjackState {
@@ -24,7 +24,7 @@ export class Lumberjack extends Actor {
     public state = LumberjackState.Idle
     public maxHp = config.lumberjack.hp
 
-    private tree?: Tree
+    private tree?: TreeActor
     private collectedTreeHP = 0
 
     constructor(
@@ -57,7 +57,7 @@ export class Lumberjack extends Actor {
             if (tree) {
                 this.cancelPath()
                 this.state = LumberjackState.ChoppingATree
-                this.tree = tree as Tree
+                this.tree = tree as TreeActor
             } else if (!this.path) {
                 this.state = LumberjackState.Idle
             }
