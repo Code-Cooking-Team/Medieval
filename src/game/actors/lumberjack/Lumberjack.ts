@@ -5,7 +5,7 @@ import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'
 import { assert } from '+helpers/quality'
 import { Actor } from '../../core/Actor'
-import { TreeActor } from '../tree/Tree'
+import { TreeActor } from '../tree/TreeActor'
 import { LumberjackCabin } from './LumberjackCabin'
 
 enum LumberjackState {
@@ -19,6 +19,7 @@ enum LumberjackState {
     GatheringWood = 'GatheringWood',
 }
 
+// TODO rename to LumberjackActo
 export class Lumberjack extends Actor {
     public type = ActorType.Lumberjack
     public state = LumberjackState.Idle

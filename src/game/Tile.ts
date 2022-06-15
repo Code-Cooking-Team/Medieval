@@ -63,4 +63,3 @@ export class FootpathTile extends Tile {
     public color = 0x474738
     public height = 0
 }
-
