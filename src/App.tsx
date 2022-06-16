@@ -22,6 +22,7 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { createTileGrid } from './lib/createTileGrid'
+import { VRButton } from 'three/examples/jsm/webxr/VRButton'
 
 const word = new Word()
 const game = new Game(word)
@@ -118,6 +119,14 @@ function App() {
         })
 
         renderer.init(rendererRef.current!)
+
+        const vrButton = VRButton.createButton(renderer.webGLRenderer)
+        vrButton.style.position = 'absolute'
+        vrButton.style.top = '10px'
+        vrButton.style.zIndex = '1000'
+        vrButton.style.height = '50px'
+
+        document.body.appendChild(vrButton)
 
         return () => {
             game.stop()

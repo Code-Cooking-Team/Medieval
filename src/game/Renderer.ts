@@ -18,6 +18,7 @@ import {
     Raycaster,
     Scene,
     SphereGeometry,
+    sRGBEncoding,
     Vector2,
     WebGLRenderer,
 } from 'three'
@@ -62,6 +63,8 @@ export class Renderer {
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
 
+        this.webGLRenderer.xr.enabled = true
+
         this.camera.position.x = 0
         this.camera.position.y = 25
         this.camera.position.z = 25
@@ -92,23 +95,6 @@ export class Renderer {
         this.scene.add(this.ambient)
 
         this.ground = new GroundRenderer(this.game)
-
-        // const dummy = new Object3D()
-        // const grassMaterial = new MeshStandardMaterial({ color: 0x274517 })
-        // const Bush = new InstancedMesh(new SphereGeometry(0.5, 5, 4), grassMaterial, 100)
-        // this.scene.add(Bush)
-        // for (var i = 0; i < Bush.count; i++) {
-        //     dummy.position.set(random(-25, 25), 0.1, random(-25, 25))
-        //     dummy.scale.set(random(1, 1.5), random(1, 1.5), random(1, 1.5))
-        //     dummy.rotation.set(
-        //         random(1, 2) / Math.PI,
-        //         random(1, 2) / Math.PI,
-        //         random(1, 2) / Math.PI,
-        //     )
-
-        //     dummy.updateMatrix()
-        //     Bush.setMatrixAt(i, dummy.matrix)
-        // }
 
         this.addRenderers()
     }
@@ -169,6 +155,14 @@ export class Renderer {
         el.append(stats.dom)
 
         this.animate()
+
+        window.addEventListener('resize', this.resize)
+    }
+
+    private resize = () => {
+        this.camera.aspect = window.innerWidth / window.innerHeight
+        this.camera.updateProjectionMatrix()
+        this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
     }
 
     private animate = () => {
