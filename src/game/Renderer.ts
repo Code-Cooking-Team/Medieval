@@ -47,8 +47,10 @@ export class Renderer {
 
         this.scene.background = new Color(0xb5fffb)
 
-        const fog = new Fog(new Color(0xb5fffb), 0, 150)
-        this.scene.fog = fog
+        if (config.renderer.fog) {
+            const fog = new Fog(new Color(0xb5fffb), 0, 150)
+            this.scene.fog = fog
+        }
 
         this.sun = new DirectionalLight(0xffffbb, 0.7)
 
@@ -182,12 +184,14 @@ export class Renderer {
         )
         this.scene.background = backgroundColor
 
-        const fogColor = new Color().setHSL(
-            10 + Math.sin(time * 1) * 0.1,
-            Math.sin(time * 1),
-            Math.sin(time * 1 + 1.9) * 0.3 + 0.7,
-        )
+        if (config.renderer.fog) {
+            const fogColor = new Color().setHSL(
+                10 + Math.sin(time * 1) * 0.1,
+                Math.sin(time * 1),
+                Math.sin(time * 1 + 1.9) * 0.3 + 0.7,
+            )
 
-        this.scene.fog = new Fog(fogColor, 0, Math.sin(time * 1) + 0.5 * 50 + 200)
+            this.scene.fog = new Fog(fogColor, 0, Math.sin(time * 1) + 0.5 * 50 + 200)
+        }
     }
 }

@@ -1,5 +1,5 @@
 import { Game } from '+game/Game'
-import { ActorType, ClockInfo } from '+game/types'
+import { ActorType, ClockInfo, Renderable } from '+game/types'
 import { seededRandom } from '+helpers/random'
 import {
     CylinderGeometry,
@@ -12,7 +12,7 @@ import {
 } from 'three'
 import { TreeActor } from './TreeActor'
 
-export class TreeRenderer {
+export class TreeRenderer implements Renderable {
     public actorType: ActorType = ActorType.Tree
     public moveSpeed = 0.04
 
