@@ -17,7 +17,7 @@ export class ForestTile extends Tile {
     public name = 'Forest'
     public color = generateSimilarColor(0x2b360a, 10)
     public height = random(0, 0.5)
-    public treeChance = 0.2
+    public treeChance = 0.1
 }
 
 export class MeadowTile extends Tile {
@@ -63,4 +63,3 @@ export class FootpathTile extends Tile {
     public color = 0x474738
     public height = 0
 }
-

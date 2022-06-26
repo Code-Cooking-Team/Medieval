@@ -3,11 +3,13 @@ import { ActorStatic } from '+game/core/ActorStatic'
 import { ActorType, Position } from '+game/types'
 import { randomArrayItem } from '+helpers/array'
 import { random } from '+helpers/basic'
+import { randomSeed } from '+helpers/random'
 
-export class Tree extends ActorStatic {
+export class TreeActor extends ActorStatic {
     public type = ActorType.Tree
     public maxHp = config.tree.hp
     public hp = config.tree.hp
+    public seed = randomSeed()
 
     private newTreeCount = this.treeCount()
     private removeCount = config.tree.removeTickCount
@@ -35,7 +37,7 @@ export class Tree extends ActorStatic {
 
         if (!tile?.canWalk) return
 
-        this.game.addActor(new Tree(this.game, newTreePosition))
+        this.game.addActor(new TreeActor(this.game, newTreePosition))
     }
 
     private treeCount() {

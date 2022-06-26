@@ -43,6 +43,7 @@ export class Renderer {
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
+        this.webGLRenderer.xr.enabled = true
 
         this.scene.background = new Color(0xb5fffb)
 
@@ -124,6 +125,14 @@ export class Renderer {
         this.rtsCamera.init()
 
         this.animate()
+
+        window.addEventListener('resize', this.resize)
+    }
+
+    private resize = () => {
+        this.rtsCamera.camera.aspect = window.innerWidth / window.innerHeight
+        this.rtsCamera.camera.updateProjectionMatrix()
+        this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
     }
 
     private animate = () => {

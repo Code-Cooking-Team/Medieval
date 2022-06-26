@@ -38,6 +38,7 @@ export abstract class ActorRenderer extends ItemRenderer {
     public onAddActor(actor: Actor) {
         const tile = this.game.word.getTile(actor.position)
         const group = this.createActorModel(actor, tile)
+
         this.actorGroupRef[actor.id] = { group, actor }
         this.group.add(group)
     }

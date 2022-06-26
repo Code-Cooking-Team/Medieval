@@ -1,12 +1,13 @@
 import { ConfigForm } from '+components/config/ConfigForm'
 import { Lumberjack } from '+game/actors/lumberjack/Lumberjack'
 import { LumberjackCabin } from '+game/actors/lumberjack/LumberjackCabin'
-import { Tree } from '+game/actors/tree/Tree'
+import { TreeActor } from '+game/actors/tree/TreeActor'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
 import { Position } from '+game/types'
 import { Word } from '+game/Word'
+import { seededRandom } from '+helpers/random'
 import styled from '@emotion/styled'
 import {
     Button,
@@ -17,9 +18,10 @@ import {
     MenuItem,
     Select,
     Stack,
-    ThemeProvider,
+    ThemeProvider
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
+import { VRButton } from 'three/examples/jsm/webxr/VRButton'
 import { createTileGrid } from './lib/createTileGrid'
 
 const word = new Word()
@@ -76,14 +78,16 @@ const buildings = {
     },
 
     Tree: ([x, y]: Position) => {
-        game.addActor(new Tree(game, [x, y]))
+        game.addActor(new TreeActor(game, [x, y]))
     },
 }
 
+const rng = seededRandom(1234567)
+
 game.word.tiles.forEach((row, y) => {
     row.forEach((tile, x) => {
-        if (tile.canWalk && Math.random() < tile.treeChance) {
-            game.addActor(new Tree(game, [x, y]))
+        if (tile.canWalk && rng() < tile.treeChance) {
+            game.addActor(new TreeActor(game, [x, y]))
         }
     })
 })
@@ -113,7 +117,17 @@ function App() {
         renderer.init(rendererRef.current!)
         render()
 
-        return () => game.stop()
+        const vrButton = VRButton.createButton(renderer.webGLRenderer)
+        vrButton.style.position = 'absolute'
+        vrButton.style.top = '10px'
+        vrButton.style.zIndex = '1000'
+        vrButton.style.height = '50px'
+
+        document.body.appendChild(vrButton)
+
+        return () => {
+            game.stop()
+        }
     }, [])
 
     useEffect(() => {

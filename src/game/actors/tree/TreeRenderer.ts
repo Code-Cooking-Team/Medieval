@@ -1,75 +1,95 @@
-import { config } from '+config'
-import { Actor } from '+game/core/Actor'
-import { Tile } from '+game/Tile'
+import { Game } from '+game/Game'
 import { ActorType, ClockInfo } from '+game/types'
-import { random } from '+helpers/basic'
+import { seededRandom } from '+helpers/random'
 import {
-    Clock,
     CylinderGeometry,
+    DynamicDrawUsage,
     Group,
-    Mesh,
+    InstancedMesh,
     MeshStandardMaterial,
+    Object3D,
     SphereGeometry,
 } from 'three'
-import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
+import { TreeActor } from './TreeActor'
 
-export class TreeRenderer extends ActorRenderer {
-    public actorType = ActorType.Tree
+export class TreeRenderer {
+    public actorType: ActorType = ActorType.Tree
+    public moveSpeed = 0.04
 
-    private boughMaterial = new MeshStandardMaterial({ color: 0x2e2625 })
-    private branchesMaterial = new MeshStandardMaterial({ color: 0x2c420b })
     private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3)
-    private branchesGeometry = new SphereGeometry(1.5, 5, 4)
+    private boughMaterial = new MeshStandardMaterial({ color: 0x2e2625 })
 
-    public render(clockInfo: ClockInfo) {
-        super.render(clockInfo)
+    private coronaGeometry = new SphereGeometry(1.5, 5, 4)
+    private coronaMaterial = new MeshStandardMaterial({ color: 0x2c420b })
 
-        Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
-            const time = clockInfo.elapsedTime * 10
+    public group = new Group()
+    public boughInstanceMesh = new InstancedMesh(
+        this.boughGeometry,
+        this.boughMaterial,
+        3000,
+    )
 
-            if (actor.hp <= actor.maxHp * 0.75) {
-                group.rotation.x += (Math.PI / 2.2 - group.rotation.x) * this.moveSpeed
-            } else {
-                if (config.renderer.treeWaving) {
-                    const treeSend = group.children[1].scale.z / 10
-                    group.rotation.z =
-                        Math.sin(treeSend + time * 0.2 * (treeSend * (Math.PI / 1))) / 10
-                }
-            }
-            if (actor.isDead()) {
-                group.position.y -= 0.05
-            }
-        })
+    public coronaInstanceMesh = new InstancedMesh(
+        this.coronaGeometry,
+        this.coronaMaterial,
+        3000,
+    )
+
+    private actorCount = 0
+
+    constructor(public game: Game) {
+        this.boughInstanceMesh.instanceMatrix.setUsage(DynamicDrawUsage)
+        this.boughInstanceMesh.castShadow = true
+        this.boughInstanceMesh.receiveShadow = true
+
+        this.coronaInstanceMesh.instanceMatrix.setUsage(DynamicDrawUsage)
+        this.coronaInstanceMesh.castShadow = true
+        this.coronaInstanceMesh.receiveShadow = true
+
+        this.group.add(this.boughInstanceMesh)
+        this.boughInstanceMesh.translateY(1.8)
+
+        this.group.add(this.coronaInstanceMesh)
+        this.coronaInstanceMesh.translateY(4.8)
     }
 
-    public createActorModel(actor: Actor, tile: Tile) {
-        const group = super.createActorModel(actor, tile)
+    public render(clockInfo: ClockInfo) {
+        const treeActors = this.game.findActorsByType(this.actorType) as TreeActor[]
+        const dummy = new Object3D()
 
-        const bough = new Mesh(this.boughGeometry, this.boughMaterial)
-        bough.castShadow = true
-        bough.receiveShadow = true
-        bough.name = 'bough'
-        bough.position.y = 3 / 2
+        for (
+            let index = 0;
+            index < Math.max(this.actorCount, treeActors.length);
+            index++
+        ) {
+            const tree = treeActors[index]
 
-        const branches = new Mesh(this.branchesGeometry, this.branchesMaterial)
-        branches.castShadow = true
-        branches.receiveShadow = true
-        branches.name = 'branches'
-        branches.position.y = 3 / 2 + 2
+            if (tree) {
+                const rnd = seededRandom(tree.seed)
+                const [x, y] = tree.position
+                const tile = this.game.word.getTile(tree.position)
 
-        const localGroup = new Group()
+                dummy.position.set(x, tile.height, y)
+                dummy.scale.set(rnd(1, 1.5), rnd(1, 1.5), rnd(1, 1.5))
+                dummy.rotation.set(
+                    rnd(-0.1, 0.1) / Math.PI,
+                    rnd(-0.1, 0.1) / Math.PI,
+                    rnd(-0.1, 0.1) / Math.PI,
+                )
+            } else {
+                // TODO better remove
+                dummy.position.set(0, 0, 0)
+                dummy.scale.set(2, 2, 2)
+            }
 
-        localGroup.add(bough)
-        localGroup.add(branches)
+            dummy.updateMatrix()
+            this.boughInstanceMesh.setMatrixAt(index, dummy.matrix)
+            this.coronaInstanceMesh.setMatrixAt(index, dummy.matrix)
+        }
 
-        const treeSize = random(0.5, 1)
-        localGroup.scale.set(treeSize, random(0.5, 1), treeSize)
-        localGroup.rotateY(random(0, Math.PI))
-        localGroup.rotateX(random(Math.PI / -30, Math.PI / 30))
-        localGroup.rotateZ(random(Math.PI / -30, Math.PI / 30))
+        this.boughInstanceMesh.instanceMatrix.needsUpdate = true
+        this.coronaInstanceMesh.instanceMatrix.needsUpdate = true
 
-        group.add(localGroup)
-
-        return group
+        this.actorCount = treeActors.length
     }
 }
