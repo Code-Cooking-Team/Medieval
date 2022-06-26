@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { Tile } from '+game/Tile'
-import { ActorType, ClockInfo } from '+game/types'
+import { ActorType } from '+game/types'
 import { DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three'
 import { Game } from '../../Game'
 import { ItemRenderer } from './ItemRenderer'
@@ -13,12 +13,7 @@ export abstract class ActorRenderer extends ItemRenderer {
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
-    public actorGroupRef: {
-        [actorId: string]: {
-            group: Group
-            actor: Actor
-        }
-    } = {}
+    private actorGroupMap = new Map<Actor, Group>()
 
     constructor(public game: Game) {
         super()
@@ -39,25 +34,27 @@ export abstract class ActorRenderer extends ItemRenderer {
         const tile = this.game.word.getTile(actor.position)
         const group = this.createActorModel(actor, tile)
 
-        this.actorGroupRef[actor.id] = { group, actor }
+        this.actorGroupMap.set(actor, group)
         this.group.add(group)
     }
 
     public onRemoveActor(actor: Actor) {
-        const ref = this.actorGroupRef[actor.id]
-        if (!ref) return
+        const group = this.actorGroupMap.get(actor)
+        if (!group) {
+            throw new Error(`[ActorRenderer] Unable to remove actor ${actor.id}`)
+        }
 
-        this.group.remove(ref.group)
-        delete this.actorGroupRef[actor.id]
+        this.group.remove(group)
+        this.actorGroupMap.delete(actor)
     }
 
-    public render(clockInfo: ClockInfo) {
+    public render() {
         this.updatePosition()
         this.updateHP()
     }
 
     public updatePosition() {
-        Object.values(this.actorGroupRef).forEach(({ group, actor }) => {
+        this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
             const tile = this.game.word.getTile(actor.position)
             const tileX = x * config.renderer.tileSize
@@ -69,7 +66,7 @@ export abstract class ActorRenderer extends ItemRenderer {
     }
 
     public updateHP() {
-        Object.values(this.actorGroupRef).forEach(({ group, actor }) => {
+        this.actorGroupMap.forEach((group, actor) => {
             const hpMesh = group.getObjectByName('hp') as Mesh
             hpMesh.scale.x = actor.hp / actor.maxHp
             hpMesh.visible = actor.hp < actor.maxHp

@@ -14,7 +14,6 @@ import { TreeActor } from './TreeActor'
 
 export class TreeRenderer implements Renderable {
     public actorType: ActorType = ActorType.Tree
-    public moveSpeed = 0.04
 
     private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3)
     private boughMaterial = new MeshStandardMaterial({ color: 0x2e2625 })
