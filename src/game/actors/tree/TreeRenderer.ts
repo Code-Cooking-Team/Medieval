@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { Tile } from '+game/Tile'
-import { ActorType } from '+game/types'
+import { ActorType, ClockInfo } from '+game/types'
 import { random } from '+helpers/basic'
 import {
     Clock,
@@ -21,11 +21,11 @@ export class TreeRenderer extends ActorRenderer {
     private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3)
     private branchesGeometry = new SphereGeometry(1.5, 5, 4)
 
-    public render(clock: Clock) {
-        super.render(clock)
+    public render(clockInfo: ClockInfo) {
+        super.render(clockInfo)
 
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
-            const time = clock.getElapsedTime() * 10
+            const time = clockInfo.elapsedTime * 10
 
             if (actor.hp <= actor.maxHp * 0.75) {
                 group.rotation.x += (Math.PI / 2.2 - group.rotation.x) * this.moveSpeed

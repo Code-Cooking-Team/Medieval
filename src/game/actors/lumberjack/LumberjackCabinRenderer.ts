@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { Tile } from '+game/Tile'
-import { ActorType } from '+game/types'
+import { ActorType, ClockInfo } from '+game/types'
 import {
     BoxGeometry,
     Clock,
@@ -20,8 +20,8 @@ export class LumberjackCabinRenderer extends ActorRenderer {
     private wallGeometry = new BoxGeometry(2, 2, 2)
     private roofGeometry = new OctahedronGeometry(1.5, 0)
 
-    public render(clock: Clock) {
-        super.render(clock)
+    public render(clockInfo: ClockInfo) {
+        super.render(clockInfo)
         Object.values(this.actorGroupRef).forEach(({ actor, group }) => {
             if (actor.isDead()) {
                 group.scale.y = 0.1

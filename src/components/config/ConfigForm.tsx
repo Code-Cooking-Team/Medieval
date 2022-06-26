@@ -76,6 +76,7 @@ export const ConfigForm = ({ onChange }: ConfigFormProps) => {
                         onClick={() => {
                             resetConfig()
                             onChange()
+                            window.location.reload()
                         }}
                     >
                         Reset

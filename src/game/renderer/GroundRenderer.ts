@@ -6,7 +6,6 @@ import { Game } from '../Game'
 import { createWordPlane } from './lib/createWordPlane'
 import { ItemRenderer } from './lib/ItemRenderer'
 
-
 export class GroundRenderer extends ItemRenderer {
     private groundMesh?: Mesh
     private geometry?: HorizontalPlaneGeometry
@@ -42,20 +41,19 @@ export class GroundRenderer extends ItemRenderer {
         wireframeMesh.receiveShadow = true
         wireframeMesh.position.y = 0.01
 
-        this.update()
+        this.render()
 
         this.group.add(this.groundMesh)
         this.group.add(wireframeMesh)
 
         this.game.subscribe((type) => {
             if (type === 'wordUpdate') {
-                this.update()
+                this.render()
             }
         })
     }
 
-
-    public update() {
+    public render() {
         if (!this.groundMesh || !this.geometry) return
 
         const [wordWidth] = this.game.word.getSize()
@@ -63,7 +61,7 @@ export class GroundRenderer extends ItemRenderer {
         const position = this.groundMesh.geometry.attributes.position
         const colors = this.geometry.attributes.color
         const color = new Color()
-        
+
         for (let i = 0; i < position.count; i++) {
             const tile = this.game.word.getTile(getPositionByIndex(i, wordWidth))
             position.setY(i, tile.height)
@@ -72,7 +70,5 @@ export class GroundRenderer extends ItemRenderer {
             colors.needsUpdate = true
         }
         position.needsUpdate = true
-    
-    
     }
 }

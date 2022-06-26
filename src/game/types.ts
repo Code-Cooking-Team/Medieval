@@ -1,3 +1,5 @@
+import { Clock } from 'three'
+
 export type Position = [number, number]
 
 export type Path = { x: number; y: number }[] | null
@@ -7,6 +9,15 @@ export enum ActorType {
     Tree = 'Tree',
     Lumberjack = 'Lumberjack',
     LumberjackCabin = 'LumberjackCabin',
+}
+
+export interface ClockInfo {
+    elapsedTime: number
+    deltaTime: number
+}
+
+export interface Renderable {
+    render(clock: ClockInfo): void
 }
 
 export const actorTypeColors: Record<ActorType, string> = {

@@ -1,17 +1,8 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { Tile } from '+game/Tile'
-import { ActorType } from '+game/types'
-import {
-    Camera,
-    Clock,
-    DoubleSide,
-    Group,
-    Mesh,
-    MeshBasicMaterial,
-    MeshStandardMaterial,
-    PlaneGeometry,
-} from 'three'
+import { ActorType, ClockInfo } from '+game/types'
+import { DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three'
 import { Game } from '../../Game'
 import { ItemRenderer } from './ItemRenderer'
 
@@ -59,7 +50,7 @@ export abstract class ActorRenderer extends ItemRenderer {
         delete this.actorGroupRef[actor.id]
     }
 
-    public render(clock: Clock) {
+    public render(clockInfo: ClockInfo) {
         this.updatePosition()
         this.updateHP()
     }

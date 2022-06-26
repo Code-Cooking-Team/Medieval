@@ -1,39 +1,26 @@
 import { config } from '+config'
-import { random } from '+helpers/basic'
 import Stats from 'stats.js'
 import {
     AmbientLight,
-    BoxBufferGeometry,
     Clock,
     Color,
     DirectionalLight,
     Fog,
-    InstancedMesh,
-    MeshNormalMaterial,
-    MeshStandardMaterial,
-    MOUSE,
-    Object3D,
     PCFSoftShadowMap,
-    PerspectiveCamera,
     Raycaster,
     Scene,
-    SphereGeometry,
     Vector2,
     WebGLRenderer,
 } from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { LumberjackCabinRenderer } from './actors/lumberjack/LumberjackCabinRenderer'
 import { LumberjackRenderer } from './actors/lumberjack/LumberjackRenderer'
 import { TreeRenderer } from './actors/tree/TreeRenderer'
+import { RTSCamera } from './camera/RTSCamera'
 import { Game } from './Game'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ItemRenderer } from './renderer/lib/ItemRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { Position } from './types'
-
-const fov = 60
-const far = 200
-const near = 0.1
+import { ClockInfo, Position } from './types'
 
 const stats = new Stats()
 
@@ -46,12 +33,7 @@ export class Renderer {
     private sun: DirectionalLight
     private ambient: AmbientLight
 
-    public camera = new PerspectiveCamera(
-        fov,
-        window.innerWidth / window.innerHeight,
-        near,
-        far,
-    )
+    public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
 
     private rendererList: ItemRenderer[] = []
 
@@ -62,18 +44,15 @@ export class Renderer {
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
 
-        this.camera.position.x = 0
-        this.camera.position.y = 25
-        this.camera.position.z = 25
         this.scene.background = new Color(0xb5fffb)
 
         const fog = new Fog(new Color(0xb5fffb), 0, 150)
         this.scene.fog = fog
 
         this.sun = new DirectionalLight(0xffffbb, 0.7)
+
         if (config.renderer.shadow) {
             this.sun.castShadow = true
-
             this.sun.shadow.mapSize.width = 128 * 10
             this.sun.shadow.mapSize.height = 128 * 10
             this.sun.shadow.camera.near = 0.5
@@ -85,7 +64,6 @@ export class Renderer {
         }
 
         this.sun.position.set(4, 10, 1)
-
         this.scene.add(this.sun)
 
         this.ambient = new AmbientLight(0x404040, 2)
@@ -93,22 +71,6 @@ export class Renderer {
 
         this.ground = new GroundRenderer(this.game)
 
-        const dummy = new Object3D()
-        const grassMaterial = new MeshStandardMaterial({ color: 0x274517 })
-        const Bush = new InstancedMesh(new SphereGeometry(0.5, 5, 4), grassMaterial, 100)
-        this.scene.add(Bush)
-        for (var i = 0; i < Bush.count; i++) {
-            dummy.position.set(random(-25, 25), 0.1, random(-25, 25))
-            dummy.scale.set(random(1, 1.5), random(1, 1.5), random(1, 1.5))
-            dummy.rotation.set(
-                random(1, 2) / Math.PI,
-                random(1, 2) / Math.PI,
-                random(1, 2) / Math.PI,
-            )
-
-            dummy.updateMatrix()
-            Bush.setMatrixAt(i, dummy.matrix)
-        }
         this.addRenderers()
     }
 
@@ -136,7 +98,7 @@ export class Renderer {
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1,
         )
-        rayCaster.setFromCamera(pointer, this.camera)
+        rayCaster.setFromCamera(pointer, this.rtsCamera.camera)
 
         const intersects = rayCaster.intersectObjects(this.ground!.group.children)
         const intersectPoint = intersects[0]?.point
@@ -156,16 +118,10 @@ export class Renderer {
     public init(el: HTMLElement) {
         el.append(this.webGLRenderer.domElement)
 
-        const controls = new OrbitControls(this.camera, this.webGLRenderer.domElement)
-        controls.enableZoom = true
-        controls.mouseButtons = {
-            LEFT: undefined as any,
-            MIDDLE: MOUSE.ROTATE,
-            RIGHT: MOUSE.PAN,
-        }
-
         stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
         el.append(stats.dom)
+
+        this.rtsCamera.init()
 
         this.animate()
     }
@@ -178,15 +134,20 @@ export class Renderer {
     }
 
     private render() {
-        this.rendererList.forEach((renderer) => renderer.render(this.clock))
-        this.webGLRenderer.render(this.scene, this.camera)
+        const deltaTime = this.clock.getDelta()
+        const elapsedTime = this.clock.elapsedTime
+        const clockInfo: ClockInfo = { deltaTime, elapsedTime }
 
-        if (config.renderer.dayAndNightMode) this.updateSun()
+        this.rendererList.forEach((renderer) => renderer.render(clockInfo))
+        this.rtsCamera.render(clockInfo)
+        this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
+
+        if (config.renderer.dayAndNightMode) this.updateSun(clockInfo)
     }
 
-    private updateSun = () => {
+    private updateSun = ({ elapsedTime }: ClockInfo) => {
         const time =
-            (this.clock.getElapsedTime() + config.renderer.dayAndNightTimeStart) /
+            (elapsedTime + config.renderer.dayAndNightTimeStart) /
             config.renderer.dayAndNightTimeScale
 
         this.sun.position.x = Math.sin(time * 1) * 10

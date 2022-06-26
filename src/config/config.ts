@@ -5,6 +5,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 200,
         devTilesSize: 60,
+        orbitalControls: false,
     },
 
     renderer: {

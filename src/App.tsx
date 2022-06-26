@@ -110,16 +110,10 @@ function App() {
 
     useEffect(() => {
         game.start()
-        const unsubscribe = game.subscribe((type) => {
-            render()
-        })
-
         renderer.init(rendererRef.current!)
+        render()
 
-        return () => {
-            game.stop()
-            unsubscribe()
-        }
+        return () => game.stop()
     }, [])
 
     useEffect(() => {
@@ -128,7 +122,6 @@ function App() {
             if (!selectedBuilding || !position) return
             const currTail = game.word.getTile(position)
             if (currTail.canBuild) {
-                console.log(currTail)
                 buildings[selectedBuilding](position)
             }
         }
