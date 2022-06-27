@@ -1,3 +1,4 @@
+import { config } from '+config'
 import PubSub from '+lib/PubSub'
 import Map from './maps/de_grass'
 import { ForestTile, MeadowTile, StepTile, Tile, WaterTile } from './Tile'
@@ -27,6 +28,10 @@ export class Word extends PubSub<'tailUpdate'> {
 
     public getSize() {
         return [this.tiles[0].length, this.tiles.length]
+    }
+
+    public getRealSize() {
+        return this.getSize().map((v) => v * config.renderer.tileSize)
     }
 }
 

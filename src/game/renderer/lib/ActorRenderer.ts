@@ -1,12 +1,21 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { Tile } from '+game/Tile'
-import { ActorType } from '+game/types'
-import { DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three'
+import { ActorType, ClockInfo } from '+game/types'
+import {
+    BoxGeometry,
+    DoubleSide,
+    Group,
+    Mesh,
+    MeshBasicMaterial,
+    Object3D,
+    PlaneGeometry,
+    SphereGeometry,
+} from 'three'
 import { Game } from '../../Game'
-import { ItemRenderer } from './ItemRenderer'
+import { BasicRenderer } from './BasicRenderer'
 
-export abstract class ActorRenderer extends ItemRenderer {
+export abstract class ActorRenderer extends BasicRenderer {
     public actorType: ActorType = ActorType.Empty
     public moveSpeed = 0.04
 
@@ -14,6 +23,7 @@ export abstract class ActorRenderer extends ItemRenderer {
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
     private actorGroupMap = new Map<Actor, Group>()
+    private actorInteractionShapeMap = new Map<Object3D, Actor>()
 
     constructor(public game: Game) {
         super()
@@ -30,16 +40,55 @@ export abstract class ActorRenderer extends ItemRenderer {
         })
     }
 
-    public onAddActor(actor: Actor) {
+    public createActorModel(
+        actor: Actor,
+        tile: Tile,
+    ): { group: Group; interactionShape: Object3D } {
+        const [x, y] = actor.position
+        const group = new Group()
+
+        const hp = new Mesh(this.hpGeometry, this.hpMaterial)
+        hp.name = 'hp'
+        hp.position.y = 5
+
+        group.add(hp)
+
+        const interactionShape = new Mesh(
+            new BoxGeometry(2, 2, 2),
+            new MeshBasicMaterial({ color: 0xffffff, wireframe: true }),
+        )
+
+        interactionShape.userData = { actor } // TODO remove
+        group.add(interactionShape)
+
+        group.position.x = x * config.renderer.tileSize
+        group.position.y = tile.height
+        group.position.z = y * config.renderer.tileSize
+
+        return { group, interactionShape }
+    }
+
+    public render(clockInfo: ClockInfo) {
+        this.updatePosition()
+        this.updateHP()
+    }
+
+    public getInteractionShapes(): Object3D[] {
+        return Array.from(this.actorInteractionShapeMap.keys())
+    }
+
+    private onAddActor(actor: Actor) {
         const tile = this.game.word.getTile(actor.position)
-        const group = this.createActorModel(actor, tile)
+        const { group, interactionShape } = this.createActorModel(actor, tile)
 
         this.actorGroupMap.set(actor, group)
+        this.actorInteractionShapeMap.set(interactionShape, actor)
         this.group.add(group)
     }
 
-    public onRemoveActor(actor: Actor) {
+    private onRemoveActor(actor: Actor) {
         const group = this.actorGroupMap.get(actor)
+
         if (!group) {
             throw new Error(`[ActorRenderer] Unable to remove actor ${actor.id}`)
         }
@@ -48,12 +97,7 @@ export abstract class ActorRenderer extends ItemRenderer {
         this.actorGroupMap.delete(actor)
     }
 
-    public render() {
-        this.updatePosition()
-        this.updateHP()
-    }
-
-    public updatePosition() {
+    private updatePosition() {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
             const tile = this.game.word.getTile(actor.position)
@@ -65,28 +109,11 @@ export abstract class ActorRenderer extends ItemRenderer {
         })
     }
 
-    public updateHP() {
+    private updateHP() {
         this.actorGroupMap.forEach((group, actor) => {
             const hpMesh = group.getObjectByName('hp') as Mesh
             hpMesh.scale.x = actor.hp / actor.maxHp
             hpMesh.visible = actor.hp < actor.maxHp
         })
-    }
-
-    public createActorModel(actor: Actor, tile: Tile): Group {
-        const [x, y] = actor.position
-        const group = new Group()
-
-        const hp = new Mesh(this.hpGeometry, this.hpMaterial)
-        hp.name = 'hp'
-        hp.position.y = 5
-
-        group.add(hp)
-
-        group.position.x = x * config.renderer.tileSize
-        group.position.y = tile.height
-        group.position.z = y * config.renderer.tileSize
-
-        return group
     }
 }

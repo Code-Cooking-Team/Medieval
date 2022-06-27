@@ -4,9 +4,9 @@ import { HorizontalPlaneGeometry } from '+helpers/mesh'
 import { BufferAttribute, Color, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 import { Game } from '../Game'
 import { createWordPlane } from './lib/createWordPlane'
-import { ItemRenderer } from './lib/ItemRenderer'
+import { BasicRenderer } from './lib/BasicRenderer'
 
-export class GroundRenderer extends ItemRenderer {
+export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
     private geometry?: HorizontalPlaneGeometry
 

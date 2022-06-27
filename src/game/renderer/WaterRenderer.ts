@@ -3,9 +3,9 @@ import { ClockInfo } from '+game/types'
 import { Clock, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 import { Game } from '../Game'
 import { createWordPlane } from './lib/createWordPlane'
-import { ItemRenderer } from './lib/ItemRenderer'
+import { BasicRenderer } from './lib/BasicRenderer'
 
-export class WaterRenderer extends ItemRenderer {
+export class WaterRenderer extends BasicRenderer {
     private mesh?: Mesh
 
     constructor(public game: Game) {

@@ -9,7 +9,7 @@ import { Word } from './Word'
 
 export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordUpdate'> {
     public pf: Pathfinding
-    public actors: ActorStatic[] = []
+    public actors: ActorStatic[] = [] // TODO new Set
     loop: any
 
     constructor(public word: Word) {

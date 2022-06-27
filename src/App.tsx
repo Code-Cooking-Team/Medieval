@@ -18,7 +18,7 @@ import {
     MenuItem,
     Select,
     Stack,
-    ThemeProvider
+    ThemeProvider,
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { VRButton } from 'three/examples/jsm/webxr/VRButton'
@@ -125,6 +125,9 @@ function App() {
 
         document.body.appendChild(vrButton)
 
+        buildings.LumberjackCabin([107, 120])
+        buildings.LumberjackCabin([117, 100])
+
         return () => {
             game.stop()
         }
@@ -132,11 +135,16 @@ function App() {
 
     useEffect(() => {
         const addBuilding = (event: MouseEvent): void => {
-            const position = renderer.findPositionByMouseEvent(event)
-            if (!selectedBuilding || !position) return
-            const currTail = game.word.getTile(position)
-            if (currTail.canBuild) {
-                buildings[selectedBuilding](position)
+            if (selectedBuilding) {
+                const position = renderer.findPositionByMouseEvent(event)
+
+                if (!position) return
+                const currTail = game.word.getTile(position)
+                if (currTail.canBuild) {
+                    buildings[selectedBuilding](position)
+                }
+            } else {
+                renderer.selectByMouseEvent(event)
             }
         }
 

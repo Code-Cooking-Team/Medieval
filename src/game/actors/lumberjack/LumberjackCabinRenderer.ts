@@ -21,7 +21,7 @@ export class LumberjackCabinRenderer extends ActorRenderer {
     private roofGeometry = new OctahedronGeometry(1.5, 0)
 
     public createActorModel(actor: Actor, tile: Tile) {
-        const group = super.createActorModel(actor, tile)
+        const { group, interactionShape } = super.createActorModel(actor, tile)
         const [x, y] = actor.position
 
         const wall = new Mesh(this.wallGeometry, this.wallMaterial)
@@ -52,6 +52,6 @@ export class LumberjackCabinRenderer extends ActorRenderer {
         group.add(door)
         group.add(roof)
 
-        return group
+        return { group, interactionShape }
     }
 }
