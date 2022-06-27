@@ -103,9 +103,9 @@ export class RTSCamera implements Renderable {
         delta = -delta
 
         if (delta <= 0) {
-            delta -= this.camera.position.z * 0.01
+            delta -= this.camera.position.y * 0.01
         } else {
-            delta += this.camera.position.z * 0.01
+            delta += this.camera.position.y * 0.01
         }
 
         this.camera.translateZ(delta)
