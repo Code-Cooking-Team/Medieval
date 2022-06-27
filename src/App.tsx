@@ -154,22 +154,25 @@ function App() {
                 }
             } else {
                 const actor = renderer.selectByMouseEvent(event)
-                if (actor) {
-                    setSelectedActor(actor)
-                } else {
-                    const position = renderer.findPositionByMouseEvent(event)
-                    if (!position || !selectedActor) return
-                    if (selectedActor instanceof Actor) {
-                        selectedActor.goTo(position)
-                    }
-                }
+                setSelectedActor(actor)
+            }
+        }
+
+        const handleRightClick = (event: MouseEvent): void => {
+            event.preventDefault()
+            setSelectedBuilding(undefined)
+            const position = renderer.findPositionByMouseEvent(event)
+            if (position && selectedActor && selectedActor instanceof Actor) {
+                selectedActor.goTo(position)
             }
         }
 
         rendererRef.current?.addEventListener('click', hendleClick)
+        rendererRef.current?.addEventListener('contextmenu', handleRightClick)
 
         return () => {
             rendererRef.current?.removeEventListener('click', hendleClick)
+            rendererRef.current?.removeEventListener('contextmenu', handleRightClick)
         }
     }, [selectedBuilding, selectedActor])
 
