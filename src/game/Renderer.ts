@@ -13,8 +13,8 @@ import {
     WebGLRenderer,
     Object3D,
 } from 'three'
-import { LumberjackCabinRenderer } from './actors/lumberjack/LumberjackCabinRenderer'
-import { LumberjackRenderer } from './actors/lumberjack/LumberjackRenderer'
+import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'
+import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
 import { TreeRenderer } from './actors/tree/TreeRenderer'
 import { RTSCamera } from './camera/RTSCamera'
 import { Game } from './Game'
@@ -24,6 +24,11 @@ import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
 import { ClockInfo, Position } from './types'
+import { GuardianActor } from './actors/guardian/GuardianActor'
+import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
+import { first } from 'lodash'
+import { Actor } from './core/Actor'
+import { ActorStatic } from './core/ActorStatic'
 
 const stats = new Stats()
 
@@ -77,7 +82,7 @@ export class Renderer {
         return [x, y]
     }
 
-    public selectByMouseEvent = (event: MouseEvent) => {
+    public selectByMouseEvent = (event: MouseEvent): Actor | ActorStatic => {
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
@@ -90,13 +95,10 @@ export class Renderer {
         )
 
         const intersects = rayCaster.intersectObjects(interactionObjectList, false)
-
-        console.log(
-            'intersects',
-            intersects.map((inter) => inter.object.userData.actor),
-        )
-
-        return intersects
+        const intersectObject = first(intersects)
+        const actor = intersectObject?.object.userData.actor
+        console.log('Selected actor', actor)
+        return actor
     }
 
     public init(el: HTMLElement) {
@@ -119,8 +121,10 @@ export class Renderer {
         this.addBasicRenderer(new WaterRenderer(this.game))
         this.addBasicRenderer(new TreeRenderer(this.game))
 
-        this.addActorRenderer(new LumberjackCabinRenderer(this.game))
-        this.addActorRenderer(new LumberjackRenderer(this.game))
+        this.addActorRenderer(new LumberjackCabinActorRenderer(this.game))
+        this.addActorRenderer(new LumberjackActorRenderer(this.game))
+
+        this.addActorRenderer(new GuardianActorRenderer(this.game))
     }
 
     private addBasicRenderer(renderer: BasicRenderer) {

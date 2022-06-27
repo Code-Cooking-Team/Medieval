@@ -1,7 +1,10 @@
 import { ConfigForm } from '+components/config/ConfigForm'
-import { Lumberjack } from '+game/actors/lumberjack/Lumberjack'
-import { LumberjackCabin } from '+game/actors/lumberjack/LumberjackCabin'
+import { GuardianActor } from '+game/actors/guardian/GuardianActor'
+import { LumberjackActor } from '+game/actors/lumberjack/LumberjackActor'
+import { LumberjackCabinActor } from '+game/actors/lumberjack/LumberjackCabinActor'
 import { TreeActor } from '+game/actors/tree/TreeActor'
+import { Actor } from '+game/core/Actor'
+import { ActorStatic } from '+game/core/ActorStatic'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
@@ -30,8 +33,8 @@ const renderer = new Renderer(game)
 
 const buildings = {
     LumberjackCabin: ([x, y]: Position) => {
-        const cabin = new LumberjackCabin(game, [x + 2, y + 2])
-        const lumberjack = new Lumberjack(game, [x, y], cabin)
+        const cabin = new LumberjackCabinActor(game, [x + 2, y + 2])
+        const lumberjack = new LumberjackActor(game, [x, y], cabin)
 
         game.addActor(cabin)
         game.addActor(lumberjack)
@@ -80,6 +83,10 @@ const buildings = {
     Tree: ([x, y]: Position) => {
         game.addActor(new TreeActor(game, [x, y]))
     },
+
+    Guardian: ([x, y]: Position) => {
+        game.addActor(new GuardianActor(game, [x, y]))
+    },
 }
 
 const rng = seededRandom(1234567)
@@ -108,6 +115,7 @@ const buildingList = Object.keys(buildings) as BuildingKey[]
 function App() {
     const rendererRef = useRef<HTMLDivElement>(null)
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
+    const [selectedActor, setSelectedActor] = useState<Actor | ActorStatic>()
 
     const [, frameCount] = useState(0)
     const render = () => frameCount((n) => n + 1)
@@ -125,6 +133,7 @@ function App() {
 
         document.body.appendChild(vrButton)
 
+        buildings.Guardian([100, 120])
         buildings.LumberjackCabin([107, 120])
         buildings.LumberjackCabin([117, 100])
 
@@ -134,33 +143,42 @@ function App() {
     }, [])
 
     useEffect(() => {
-        const addBuilding = (event: MouseEvent): void => {
+        const hendleClick = (event: MouseEvent): void => {
             if (selectedBuilding) {
                 const position = renderer.findPositionByMouseEvent(event)
-
                 if (!position) return
+
                 const currTail = game.word.getTile(position)
                 if (currTail.canBuild) {
                     buildings[selectedBuilding](position)
                 }
             } else {
-                renderer.selectByMouseEvent(event)
+                const actor = renderer.selectByMouseEvent(event)
+                if (actor) {
+                    setSelectedActor(actor)
+                } else {
+                    const position = renderer.findPositionByMouseEvent(event)
+                    if (!position || !selectedActor) return
+                    if (selectedActor instanceof Actor) {
+                        selectedActor.goTo(position)
+                    }
+                }
             }
         }
 
-        rendererRef.current?.addEventListener('click', addBuilding)
+        rendererRef.current?.addEventListener('click', hendleClick)
 
         return () => {
-            rendererRef.current?.removeEventListener('click', addBuilding)
+            rendererRef.current?.removeEventListener('click', hendleClick)
         }
-    }, [selectedBuilding])
+    }, [selectedBuilding, selectedActor])
 
     const isRunning = game.isRunning()
 
     return (
         <ThemeProvider theme={darkTheme}>
             <Bottom>
-                <Stack direction="row" spacing={2}>
+                <Stack direction="row" alignItems="center" spacing={2}>
                     <ButtonGroup>
                         <Button
                             onClick={() => {
@@ -189,6 +207,8 @@ function App() {
                             ))}
                         </Select>
                     </FormControl>
+
+                    {selectedActor && <b>{selectedActor.type}</b>}
                 </Stack>
             </Bottom>
 

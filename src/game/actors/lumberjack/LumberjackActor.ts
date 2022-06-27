@@ -6,7 +6,7 @@ import { maxValue } from '+helpers/math'
 import { assert } from '+helpers/quality'
 import { Actor } from '../../core/Actor'
 import { TreeActor } from '../tree/TreeActor'
-import { LumberjackCabin } from './LumberjackCabin'
+import { LumberjackCabinActor } from './LumberjackCabinActor'
 
 enum LumberjackState {
     Idle = 'Idle',
@@ -19,8 +19,7 @@ enum LumberjackState {
     GatheringWood = 'GatheringWood',
 }
 
-// TODO rename to LumberjackActo
-export class Lumberjack extends Actor {
+export class LumberjackActor extends Actor {
     public type = ActorType.Lumberjack
     public state = LumberjackState.Idle
     public maxHp = config.lumberjack.hp
@@ -31,7 +30,7 @@ export class Lumberjack extends Actor {
     constructor(
         public game: Game,
         public position: Position,
-        public cabin: LumberjackCabin,
+        public cabin: LumberjackCabinActor,
     ) {
         super(game, position)
     }

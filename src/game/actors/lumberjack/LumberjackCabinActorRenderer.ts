@@ -12,7 +12,7 @@ import {
 } from 'three'
 import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
-export class LumberjackCabinRenderer extends ActorRenderer {
+export class LumberjackCabinActorRenderer extends ActorRenderer {
     public actorType = ActorType.LumberjackCabin
 
     private wallMaterial = new MeshStandardMaterial({ color: 0x4d4d4d })

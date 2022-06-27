@@ -4,7 +4,7 @@ import { ActorType } from '+game/types'
 import { Clock, Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
-export class LumberjackRenderer extends ActorRenderer {
+export class LumberjackActorRenderer extends ActorRenderer {
     public actorType = ActorType.Lumberjack
 
     private material = new MeshStandardMaterial({ color: 0xff4070 })

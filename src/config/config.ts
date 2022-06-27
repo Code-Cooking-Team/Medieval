@@ -1,3 +1,4 @@
+// ha ha
 import { createConfig } from './lib/createConfig'
 import { colorInput, minMaxNumber, select } from './lib/definitions'
 
@@ -33,6 +34,10 @@ export const { config, resetConfig, saveConfig } = createConfig({
         gatheringSpeed: 5,
         capacity: 50,
         cabinLight: false,
+    },
+
+    guardian: {
+        hp: 100,
     },
 
     configTest: {

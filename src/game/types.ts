@@ -9,6 +9,7 @@ export enum ActorType {
     Tree = 'Tree',
     Lumberjack = 'Lumberjack',
     LumberjackCabin = 'LumberjackCabin',
+    Guardian = 'Guardian',
 }
 
 export interface ClockInfo {
