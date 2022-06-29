@@ -23,6 +23,7 @@ export interface Renderable {
 
 export const actorTypeColors: Record<ActorType, string> = {
     [ActorType.Empty]: '#ccc',
+    [ActorType.Guardian]: '#3fc',
     [ActorType.Tree]: '#10990e',
     [ActorType.Lumberjack]: '#663c0b',
     [ActorType.LumberjackCabin]: '#291906',
