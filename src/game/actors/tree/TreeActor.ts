@@ -1,11 +1,11 @@
 import { config } from '+config/config'
-import { ActorStatic } from '+game/core/ActorStatic'
+import { StaticActor } from '+game/core/StaticActor'
 import { ActorType, Position } from '+game/types'
 import { randomArrayItem } from '+helpers/array'
 import { random } from '+helpers/basic'
 import { randomSeed } from '+helpers/random'
 
-export class TreeActor extends ActorStatic {
+export class TreeActor extends StaticActor {
     public type = ActorType.Tree
     public maxHp = config.tree.hp
     public hp = config.tree.hp

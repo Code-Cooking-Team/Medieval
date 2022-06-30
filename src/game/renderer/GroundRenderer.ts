@@ -3,8 +3,8 @@ import { getPositionByIndex } from '+helpers/array'
 import { HorizontalPlaneGeometry } from '+helpers/mesh'
 import { BufferAttribute, Color, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 import { Game } from '../Game'
-import { createWordPlane } from './lib/createWordPlane'
 import { BasicRenderer } from './lib/BasicRenderer'
+import { createWordPlane } from './lib/createWordPlane'
 
 export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
@@ -46,10 +46,8 @@ export class GroundRenderer extends BasicRenderer {
         this.group.add(this.groundMesh)
         this.group.add(wireframeMesh)
 
-        this.game.subscribe((type) => {
-            if (type === 'wordUpdate') {
-                this.render()
-            }
+        this.game.word.emitter.on('tailUpdate', () => {
+            this.render()
         })
     }
 

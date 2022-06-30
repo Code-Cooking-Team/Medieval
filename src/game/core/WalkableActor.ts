@@ -1,7 +1,7 @@
 import { Path, Position } from '../types'
-import { ActorStatic } from './ActorStatic'
+import { StaticActor } from './StaticActor'
 
-export abstract class Actor extends ActorStatic {
+export abstract class WalkableActor extends StaticActor {
     public path: Path = null
 
     public tick() {

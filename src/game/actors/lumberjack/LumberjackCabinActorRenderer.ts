@@ -1,5 +1,6 @@
 import { config } from '+config'
-import { Actor } from '+game/core/Actor'
+import { StaticActor } from '+game/core/StaticActor'
+import { WalkableActor } from '+game/core/WalkableActor'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
 import {
@@ -12,7 +13,7 @@ import {
 } from 'three'
 import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
-export class LumberjackCabinActorRenderer extends ActorRenderer {
+export class LumberjackCabinActorRenderer extends ActorRenderer<StaticActor> {
     public actorType = ActorType.LumberjackCabin
 
     private wallMaterial = new MeshStandardMaterial({ color: 0x4d4d4d })
@@ -20,7 +21,7 @@ export class LumberjackCabinActorRenderer extends ActorRenderer {
     private wallGeometry = new BoxGeometry(2, 2, 2)
     private roofGeometry = new OctahedronGeometry(1.5, 0)
 
-    public createActorModel(actor: Actor, tile: Tile) {
+    public createActorModel(actor: WalkableActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const [x, y] = actor.position
 

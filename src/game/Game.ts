@@ -1,24 +1,29 @@
 import { config } from '+config/config'
 import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
-import PubSub from '+lib/PubSub'
-import { ActorStatic } from './core/ActorStatic'
+import { Emitter } from '+lib/Emitter'
 import { Pathfinding } from './core/Pathfinding'
-import { ActorType, Position } from './types'
+import { StaticActor } from './core/StaticActor'
+import { ActorType, AnyActor, Position } from './types'
 import { Word } from './Word'
 
-export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordUpdate'> {
+interface GameEmitterEvents {
+    tick: undefined
+    actorAdded: AnyActor
+    actorRemoved: AnyActor
+}
+
+export class Game {
     public pf: Pathfinding
-    public actors: ActorStatic[] = [] // TODO new Set
+    public actors: AnyActor[] = [] // TODO new Set
     loop: any
 
-    constructor(public word: Word) {
-        super()
+    public emitter = new Emitter<GameEmitterEvents>('Game')
 
+    constructor(public word: Word) {
         this.pf = new Pathfinding(word, this.actors)
 
-        this.word.subscribe(() => {
-            this.publish('wordUpdate')
+        this.word.emitter.on('tailUpdate', () => {
             this.pf.update()
         })
     }
@@ -44,23 +49,23 @@ export class Game extends PubSub<'tick' | 'actorAdded' | 'actorRemoved' | 'wordU
         this.actors.forEach((actor) => {
             actor.tick()
         })
-        this.publish('tick')
+        this.emitter.emit('tick')
     }
 
-    public addActor(actor: ActorStatic) {
+    public addActor(actor: StaticActor) {
         this.actors.push(actor)
-        this.publish('actorAdded', actor)
+        this.emitter.emit('actorAdded', actor)
     }
 
-    public removeActor(actor: ActorStatic) {
+    public removeActor(actor: StaticActor) {
         removeArrayItem(this.actors, actor)
-        this.publish('actorRemoved', actor)
+        this.emitter.emit('actorRemoved', actor)
     }
 
     public findActorByRange(
         position: Position,
         range: number,
-        additionalCondition?: (actor: ActorStatic) => boolean,
+        additionalCondition?: (actor: StaticActor) => boolean,
     ) {
         return this.actors.find((actor) => {
             if (distanceBetweenPoints(actor.position, position) > range) return false

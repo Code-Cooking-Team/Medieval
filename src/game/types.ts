@@ -1,4 +1,5 @@
-import { Clock } from 'three'
+import { StaticActor } from './core/StaticActor'
+import { WalkableActor } from './core/WalkableActor'
 
 export type Position = [number, number]
 
@@ -21,9 +22,4 @@ export interface Renderable {
     render(clock: ClockInfo): void
 }
 
-export const actorTypeColors: Record<ActorType, string> = {
-    [ActorType.Empty]: '#ccc',
-    [ActorType.Tree]: '#10990e',
-    [ActorType.Lumberjack]: '#663c0b',
-    [ActorType.LumberjackCabin]: '#291906',
-}
+export type AnyActor = StaticActor | WalkableActor

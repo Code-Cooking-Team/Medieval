@@ -1,13 +1,13 @@
 import { Path, Position } from '+game/types'
 import { Word } from '+game/Word'
 import EasyStar from 'easystarjs'
-import { ActorStatic } from './ActorStatic'
+import { StaticActor } from './StaticActor'
 
 export class Pathfinding {
     private easyStar = new EasyStar.js()
     private instanceId?: number
 
-    constructor(private word: Word, private actors: ActorStatic[]) {
+    constructor(private word: Word, private actors: StaticActor[]) {
         this.loadTilesGrid()
     }
 

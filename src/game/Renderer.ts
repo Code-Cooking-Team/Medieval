@@ -1,34 +1,21 @@
 import { config } from '+config'
+import { first } from 'lodash'
 import Stats from 'stats.js'
-import {
-    AmbientLight,
-    Clock,
-    Color,
-    DirectionalLight,
-    Fog,
-    PCFSoftShadowMap,
-    Raycaster,
-    Scene,
-    Vector2,
-    WebGLRenderer,
-    Object3D,
-} from 'three'
-import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'
+import { Clock, PCFSoftShadowMap, Raycaster, Scene, Vector2, WebGLRenderer } from 'three'
+import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
+import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'
 import { TreeRenderer } from './actors/tree/TreeRenderer'
 import { RTSCamera } from './camera/RTSCamera'
+import { StaticActor } from './core/StaticActor'
+import { WalkableActor } from './core/WalkableActor'
 import { Game } from './Game'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { ClockInfo, Position } from './types'
-import { GuardianActor } from './actors/guardian/GuardianActor'
-import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
-import { first } from 'lodash'
-import { Actor } from './core/Actor'
-import { ActorStatic } from './core/ActorStatic'
+import { AnyActor, ClockInfo, Position } from './types'
 
 const stats = new Stats()
 
@@ -43,7 +30,7 @@ export class Renderer {
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
 
     private basicRendererList: BasicRenderer[] = []
-    private actorRendererList: ActorRenderer[] = []
+    private actorRendererList: ActorRenderer<AnyActor>[] = []
 
     constructor(public game: Game) {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
@@ -82,7 +69,7 @@ export class Renderer {
         return [x, y]
     }
 
-    public selectByMouseEvent = (event: MouseEvent): Actor | ActorStatic => {
+    public selectByMouseEvent = (event: MouseEvent): WalkableActor | StaticActor => {
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
@@ -133,7 +120,7 @@ export class Renderer {
         this.scene.add(renderer.group)
     }
 
-    private addActorRenderer(renderer: ActorRenderer) {
+    private addActorRenderer(renderer: ActorRenderer<AnyActor>) {
         this.centerRenderer(renderer)
         this.actorRendererList.push(renderer)
         this.scene.add(renderer.group)

@@ -3,8 +3,8 @@ import { GuardianActor } from '+game/actors/guardian/GuardianActor'
 import { LumberjackActor } from '+game/actors/lumberjack/LumberjackActor'
 import { LumberjackCabinActor } from '+game/actors/lumberjack/LumberjackCabinActor'
 import { TreeActor } from '+game/actors/tree/TreeActor'
-import { Actor } from '+game/core/Actor'
-import { ActorStatic } from '+game/core/ActorStatic'
+import { StaticActor } from '+game/core/StaticActor'
+import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
@@ -63,7 +63,7 @@ const buildings = {
             createTileGrid(
                 {
                     '.': createFootpathTile,
-                    'W': createWallTile,
+                    W: createWallTile,
                     '!': createInsideTile,
                 },
                 [
@@ -115,7 +115,7 @@ const buildingList = Object.keys(buildings) as BuildingKey[]
 function App() {
     const rendererRef = useRef<HTMLDivElement>(null)
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
-    const [selectedActor, setSelectedActor] = useState<Actor | ActorStatic>()
+    const [selectedActor, setSelectedActor] = useState<WalkableActor | StaticActor>()
 
     const [, frameCount] = useState(0)
     const render = () => frameCount((n) => n + 1)
@@ -143,7 +143,7 @@ function App() {
     }, [])
 
     useEffect(() => {
-        const hendleClick = (event: MouseEvent): void => {
+        const handleClick = (event: MouseEvent): void => {
             if (selectedBuilding) {
                 const position = renderer.findPositionByMouseEvent(event)
                 if (!position) return
@@ -162,16 +162,16 @@ function App() {
             event.preventDefault()
             setSelectedBuilding(undefined)
             const position = renderer.findPositionByMouseEvent(event)
-            if (position && selectedActor && selectedActor instanceof Actor) {
+            if (position && selectedActor && selectedActor instanceof WalkableActor) {
                 selectedActor.goTo(position)
             }
         }
 
-        rendererRef.current?.addEventListener('click', hendleClick)
+        rendererRef.current?.addEventListener('click', handleClick)
         rendererRef.current?.addEventListener('contextmenu', handleRightClick)
 
         return () => {
-            rendererRef.current?.removeEventListener('click', hendleClick)
+            rendererRef.current?.removeEventListener('click', handleClick)
             rendererRef.current?.removeEventListener('contextmenu', handleRightClick)
         }
     }, [selectedBuilding, selectedActor])
@@ -281,7 +281,7 @@ const RendererDiv = styled.div({
     left: 0,
     right: 0,
     bottom: 0,
-    'canvas': {},
+    canvas: {},
 })
 
 export default App

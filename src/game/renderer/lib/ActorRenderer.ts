@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { Actor } from '+game/core/Actor'
+import { StaticActor } from '+game/core/StaticActor'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
 import {
@@ -10,30 +10,32 @@ import {
     MeshBasicMaterial,
     Object3D,
     PlaneGeometry,
-    SphereGeometry,
 } from 'three'
 import { Game } from '../../Game'
 import { BasicRenderer } from './BasicRenderer'
 
-export abstract class ActorRenderer extends BasicRenderer {
+export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRenderer {
     public actorType: ActorType = ActorType.Empty
     public moveSpeed = 0.04
 
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
-    private actorGroupMap = new Map<Actor, Group>()
-    private actorInteractionShapeMap = new Map<Object3D, Actor>()
+    private actorGroupMap = new Map<TActor, Group>()
+    private actorInteractionShapeMap = new Map<Object3D, TActor>()
 
     constructor(public game: Game) {
         super()
-        this.game.subscribe((action, [actor]) => {
-            if (!actor || actor.type !== this.actorType) return
-            if (action === 'actorAdded') this.onAddActor(actor)
-            if (action === 'actorRemoved') this.onRemoveActor(actor)
+
+        this.game.emitter.on('actorAdded', (actor) => {
+            if (actor.type === this.actorType) this.onAddActor(actor as TActor)
         })
 
-        const treeActors = this.game.findActorsByType(this.actorType) as Actor[]
+        this.game.emitter.on('actorRemoved', (actor) => {
+            if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
+        })
+
+        const treeActors = this.game.findActorsByType(this.actorType) as TActor[]
 
         treeActors.forEach((actor) => {
             this.onAddActor(actor)
@@ -41,7 +43,7 @@ export abstract class ActorRenderer extends BasicRenderer {
     }
 
     public createActorModel(
-        actor: Actor,
+        actor: TActor,
         tile: Tile,
     ): { group: Group; interactionShape: Object3D } {
         const [x, y] = actor.position
@@ -77,7 +79,7 @@ export abstract class ActorRenderer extends BasicRenderer {
         return Array.from(this.actorInteractionShapeMap.keys())
     }
 
-    private onAddActor(actor: Actor) {
+    private onAddActor(actor: TActor) {
         const tile = this.game.word.getTile(actor.position)
         const { group, interactionShape } = this.createActorModel(actor, tile)
 
@@ -86,7 +88,7 @@ export abstract class ActorRenderer extends BasicRenderer {
         this.group.add(group)
     }
 
-    private onRemoveActor(actor: Actor) {
+    private onRemoveActor(actor: TActor) {
         const group = this.actorGroupMap.get(actor)
 
         if (!group) {

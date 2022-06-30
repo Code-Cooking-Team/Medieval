@@ -1,8 +1,8 @@
-import { ActorStatic } from '+game/core/ActorStatic'
+import { StaticActor } from '+game/core/StaticActor'
 import { ActorType } from '+game/types'
 
 // TODO rename to LumberjackCabinActor
-export class LumberjackCabinActor extends ActorStatic {
+export class LumberjackCabinActor extends StaticActor {
     public type = ActorType.LumberjackCabin
 
     private collectedRawTreeHP = 0

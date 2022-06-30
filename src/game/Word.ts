@@ -1,13 +1,19 @@
 import { config } from '+config'
-import PubSub from '+lib/PubSub'
+import { Emitter } from '+lib/Emitter'
 import Map from './maps/de_grass'
 import { ForestTile, MeadowTile, StepTile, Tile, WaterTile } from './Tile'
 import { Position } from './types'
 
-export class Word extends PubSub<'tailUpdate'> {
+interface WordEmitterEvents {
+    tailUpdate: undefined
+}
+
+export class Word {
     public tiles: Tile[][] = Map.map((row: string[]) =>
         row.map((v: string) => shortcuts[v]()),
     )
+
+    public emitter = new Emitter<WordEmitterEvents>('Word')
 
     // public tiles: Tile[][] = [
     //     ['.', '.', '.'],
@@ -23,7 +29,7 @@ export class Word extends PubSub<'tailUpdate'> {
 
     public setTiles(setCallback: (tiles: Tile[][]) => void) {
         setCallback(this.tiles)
-        this.publish('tailUpdate')
+        this.emitter.emit('tailUpdate')
     }
 
     public getSize() {

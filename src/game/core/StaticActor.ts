@@ -4,7 +4,7 @@ import { randomSeed } from '+helpers/random'
 import { Game } from '../Game'
 import { ActorType, Position } from '../types'
 
-export abstract class ActorStatic {
+export abstract class StaticActor {
     public id = uuid()
     public type: ActorType = ActorType.Empty
     public maxHp = 100

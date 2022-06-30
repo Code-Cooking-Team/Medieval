@@ -1,16 +1,16 @@
-import { Actor } from '+game/core/Actor'
+import { WalkableActor } from '+game/core/WalkableActor'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
-import { Clock, Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
+import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
-export class LumberjackActorRenderer extends ActorRenderer {
+export class LumberjackActorRenderer extends ActorRenderer<WalkableActor> {
     public actorType = ActorType.Lumberjack
 
     private material = new MeshStandardMaterial({ color: 0xff4070 })
     private geometry = new SphereGeometry(0.5, 5, 4)
 
-    public createActorModel(actor: Actor, tile: Tile) {
+    public createActorModel(actor: WalkableActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const body = new Mesh(this.geometry, this.material)
 
