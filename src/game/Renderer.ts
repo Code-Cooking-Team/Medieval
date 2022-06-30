@@ -40,7 +40,11 @@ export class Renderer {
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
         this.webGLRenderer.xr.enabled = true
 
-        this.environment = new EnvironmentRenderer(this.game, this.scene)
+        this.environment = new EnvironmentRenderer(
+            this.game,
+            this.scene,
+            this.rtsCamera.camera,
+        )
         this.ground = new GroundRenderer(this.game)
 
         this.addRenderers()
