@@ -1,7 +1,9 @@
 import { config } from '+config'
+
 import { first } from 'lodash'
 import Stats from 'stats.js'
 import { Clock, PCFSoftShadowMap, Raycaster, Scene, Vector2, WebGLRenderer } from 'three'
+
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
 import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'

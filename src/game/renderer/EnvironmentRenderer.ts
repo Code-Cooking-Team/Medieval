@@ -1,5 +1,6 @@
 import { config } from '+config'
 import { ClockInfo } from '+game/types'
+
 import {
     AmbientLight,
     Camera,
@@ -10,6 +11,7 @@ import {
     Object3D,
     Scene,
 } from 'three'
+
 import { Game } from '../Game'
 import { BasicRenderer } from './lib/BasicRenderer'
 

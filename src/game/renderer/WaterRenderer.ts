@@ -1,9 +1,11 @@
 import { config } from '+config'
 import { ClockInfo } from '+game/types'
+
 import { Clock, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
+
 import { Game } from '../Game'
-import { createWordPlane } from './lib/createWordPlane'
 import { BasicRenderer } from './lib/BasicRenderer'
+import { createWordPlane } from './lib/createWordPlane'
 
 export class WaterRenderer extends BasicRenderer {
     private mesh?: Mesh

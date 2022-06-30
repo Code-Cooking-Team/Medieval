@@ -1,4 +1,5 @@
 import { ClockInfo, Renderable } from '+game/types'
+
 import { Group, Object3D } from 'three'
 
 export abstract class BasicRenderer implements Renderable {

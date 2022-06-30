@@ -1,7 +1,9 @@
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
+
 import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
+
 import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
 export class LumberjackActorRenderer extends ActorRenderer<WalkableActor> {

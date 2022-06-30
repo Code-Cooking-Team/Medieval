@@ -2,6 +2,7 @@ import { config } from '+config/config'
 import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
 import { Emitter } from '+lib/Emitter'
+
 import { Pathfinding } from './core/Pathfinding'
 import { StaticActor } from './core/StaticActor'
 import { ActorType, AnyActor, Position } from './types'
@@ -15,7 +16,7 @@ interface GameEmitterEvents {
 
 export class Game {
     public pf: Pathfinding
-    public actors: AnyActor[] = [] // TODO new Set
+    public actors: AnyActor[] = []
     loop: any
 
     public emitter = new Emitter<GameEmitterEvents>('Game')

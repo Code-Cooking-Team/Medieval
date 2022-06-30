@@ -1,5 +1,6 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
+
 import Map from './maps/de_grass'
 import { ForestTile, MeadowTile, StepTile, Tile, WaterTile } from './Tile'
 import { Position } from './types'

@@ -1,5 +1,6 @@
 import { config, configOptions, resetConfig, saveConfig } from '+config'
 import { useLocalStorage } from '+hooks/useLocalStorage'
+
 import {
     Accordion,
     AccordionDetails,
@@ -10,6 +11,7 @@ import {
     Typography,
 } from '@mui/material'
 import { entries, toPairs } from 'lodash'
+
 import { ConfigItem } from './ConfigItem'
 
 interface ConfigFormProps {

@@ -11,9 +11,9 @@ export const createWordPlane = (word: Word, diagonals: string, multiply: number 
     const geometry = new HorizontalPlaneGeometry(
         width,
         height,
-        multiply*wordWidth - 1,
-        multiply*wordHeight - 1,
-        diagonals
+        multiply * wordWidth - 1,
+        multiply * wordHeight - 1,
+        diagonals,
     )
 
     geometry.translate(width / 2, 0, height / 2)

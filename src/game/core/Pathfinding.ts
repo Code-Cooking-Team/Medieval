@@ -1,6 +1,8 @@
 import { Path, Position } from '+game/types'
 import { Word } from '+game/Word'
+
 import EasyStar from 'easystarjs'
+
 import { StaticActor } from './StaticActor'
 
 export class Pathfinding {

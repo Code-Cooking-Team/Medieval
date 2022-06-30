@@ -1,6 +1,7 @@
 import { Game } from '+game/Game'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
 import { seededRandom } from '+helpers/random'
+
 import {
     CylinderGeometry,
     DynamicDrawUsage,
@@ -10,6 +11,7 @@ import {
     Object3D,
     SphereGeometry,
 } from 'three'
+
 import { TreeActor } from './TreeActor'
 
 export class TreeRenderer implements Renderable {

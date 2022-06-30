@@ -1,6 +1,7 @@
 import { uuid } from '+helpers/basic'
 import { maxValue } from '+helpers/math'
 import { randomSeed } from '+helpers/random'
+
 import { Game } from '../Game'
 import { ActorType, Position } from '../types'
 

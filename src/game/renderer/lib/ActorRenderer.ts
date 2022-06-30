@@ -1,7 +1,9 @@
 import { config } from '+config'
 import { StaticActor } from '+game/core/StaticActor'
+import { Game } from '+game/Game'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
+
 import {
     BoxGeometry,
     DoubleSide,
@@ -11,7 +13,7 @@ import {
     Object3D,
     PlaneGeometry,
 } from 'three'
-import { Game } from '../../Game'
+
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRenderer {

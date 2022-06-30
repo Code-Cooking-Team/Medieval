@@ -11,6 +11,7 @@ import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
 import { Position } from '+game/types'
 import { Word } from '+game/Word'
 import { seededRandom } from '+helpers/random'
+
 import styled from '@emotion/styled'
 import {
     Button,
@@ -25,6 +26,7 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { VRButton } from 'three/examples/jsm/webxr/VRButton'
+
 import { createTileGrid } from './lib/createTileGrid'
 
 const word = new Word()

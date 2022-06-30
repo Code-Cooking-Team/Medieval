@@ -1,5 +1,7 @@
 import { localStorageKey } from '+helpers/storage'
+
 import { cloneDeep } from 'lodash'
+
 import { Config, ConfigOptions } from '../types'
 import { booleanCheckbox, minMaxNumber, numberInput, stringInput } from './definitions'
 

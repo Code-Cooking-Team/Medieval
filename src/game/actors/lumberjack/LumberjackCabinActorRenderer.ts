@@ -3,6 +3,7 @@ import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
+
 import {
     BoxGeometry,
     Clock,
@@ -11,6 +12,7 @@ import {
     OctahedronGeometry,
     PointLight,
 } from 'three'
+
 import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
 export class LumberjackCabinActorRenderer extends ActorRenderer<StaticActor> {

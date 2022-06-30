@@ -1,10 +1,14 @@
 {
-    "editorconfig": true,
     "printWidth": 90,
+    "tabWidth": 4,
     "semi": false,
     "singleQuote": true,
     "trailingComma": "all",
     "quoteProps": "preserve",
+    "importOrder": ["^\\+(.*)$", "<THIRD_PARTY_MODULES>", "^[./]"],
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true,
+    "importOrderCaseInsensitive": true,
     "overrides": [
         {
             "files": ["*.yml", "*.json", "*.md"],

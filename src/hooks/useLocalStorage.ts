@@ -1,4 +1,5 @@
 import { localStorageKey } from '+helpers/storage'
+
 import { useState } from 'react'
 
 export const useLocalStorage = <T>(key: string, initial: T) => {

@@ -4,6 +4,7 @@ import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'
 import { assert } from '+helpers/quality'
+
 import { WalkableActor } from '../../core/WalkableActor'
 import { TreeActor } from '../tree/TreeActor'
 
