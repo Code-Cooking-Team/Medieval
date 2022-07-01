@@ -1,10 +1,8 @@
 import { config } from '+config'
-import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { AnyActor, Position } from '+game/types'
-import { Emitter } from '+lib/Emitter'
 
 import { first } from 'lodash'
 import { Raycaster, Vector2 } from 'three'
@@ -38,7 +36,7 @@ export class Interactions {
         window.removeEventListener('keyup', this.handleKeyup)
     }
 
-    public selectBulding(buildingKey: BuildingKey) {
+    public selectBuilding(buildingKey: BuildingKey) {
         this.game.player.selectBuilding(buildingKey)
     }
 

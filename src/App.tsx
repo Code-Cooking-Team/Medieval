@@ -1,7 +1,4 @@
 import { ConfigForm } from '+components/config/ConfigForm'
-import { GuardianActor } from '+game/actors/guardian/GuardianActor'
-import { LumberjackActor } from '+game/actors/lumberjack/LumberjackActor'
-import { LumberjackCabinActor } from '+game/actors/lumberjack/LumberjackCabinActor'
 import { TreeActor } from '+game/actors/tree/TreeActor'
 import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
@@ -10,7 +7,6 @@ import { Builder, BuildingKey, buildingList } from '+game/player/Builder'
 import { Interactions } from '+game/player/Interactions'
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
-import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
 import { Word } from '+game/Word'
 import { seededRandom } from '+helpers/random'
 
@@ -26,10 +22,7 @@ import {
     Stack,
     ThemeProvider,
 } from '@mui/material'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { VRButton } from 'three/examples/jsm/webxr/VRButton'
-
-import { createTileGrid } from './lib/createTileGrid'
+import { useEffect, useMemo, useState } from 'react'
 
 const gameRoot = document.getElementById('game-root') as HTMLElement
 
@@ -49,9 +42,11 @@ function App() {
 
         renderer.init()
 
-        // buildings.Guardian([100, 120])
-        // buildings.LumberjackCabin([107, 120])
-        // buildings.LumberjackCabin([117, 100])
+        const builder = new Builder(game)
+
+        builder.build(BuildingKey.guardian, [100, 120])
+        builder.build(BuildingKey.lumberjackCabin, [107, 120])
+        builder.build(BuildingKey.lumberjackCabin, [117, 100])
 
         return { game, interactions }
     }, [])
@@ -80,8 +75,8 @@ function App() {
     }, [])
 
     useEffect(() => {
-        game.player.emitter.on('selectActor', setSelectedActor)
-        game.player.emitter.on('unselectActor', setSelectedActor)
+        game.player.emitter.on('selectActor', (actor) => setSelectedActor(actor))
+        game.player.emitter.on('unselectActor', () => setSelectedActor(undefined))
     }, [])
 
     const isRunning = game.isRunning()
@@ -109,7 +104,7 @@ function App() {
                             onChange={(e) => {
                                 const building = e.target.value as BuildingKey
                                 setSelectedBuilding(building)
-                                interactions.selectBulding(building)
+                                interactions.selectBuilding(building)
                                 game.player.emitter.once('unselectBuilding').then(() => {
                                     setSelectedBuilding(undefined)
                                 })

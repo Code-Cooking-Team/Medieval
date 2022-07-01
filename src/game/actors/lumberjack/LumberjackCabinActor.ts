@@ -1,7 +1,6 @@
 import { StaticActor } from '+game/core/StaticActor'
 import { ActorType } from '+game/types'
 
-// TODO rename to LumberjackCabinActor
 export class LumberjackCabinActor extends StaticActor {
     public type = ActorType.LumberjackCabin
 
