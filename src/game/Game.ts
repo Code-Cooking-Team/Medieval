@@ -1,4 +1,5 @@
 import { config } from '+config/config'
+import { Player } from '+game/player/Player'
 import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
 import { Emitter } from '+lib/Emitter'
@@ -21,7 +22,7 @@ export class Game {
 
     public emitter = new Emitter<GameEmitterEvents>('Game')
 
-    constructor(public word: Word) {
+    constructor(public word: Word, public player: Player) {
         this.pf = new Pathfinding(word, this.actors)
 
         this.word.emitter.on('tailUpdate', () => {

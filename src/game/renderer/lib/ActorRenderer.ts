@@ -6,6 +6,7 @@ import { ActorType, ClockInfo } from '+game/types'
 
 import {
     BoxGeometry,
+    Color,
     DoubleSide,
     Group,
     Mesh,
@@ -24,7 +25,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
     private actorGroupMap = new Map<TActor, Group>()
-    private actorInteractionShapeMap = new Map<Object3D, TActor>()
+    private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
     constructor(public game: Game) {
         super()
@@ -47,7 +48,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
     public createActorModel(
         actor: TActor,
         tile: Tile,
-    ): { group: Group; interactionShape: Object3D } {
+    ): { group: Group; interactionShape: Mesh } {
         const [x, y] = actor.position
         const group = new Group()
 
@@ -62,7 +63,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
             new MeshBasicMaterial({ color: 0xffffff, wireframe: true }),
         )
 
-        interactionShape.userData = { actor } // TODO remove
+        interactionShape.userData = { actor }
         group.add(interactionShape)
 
         group.position.x = x * config.renderer.tileSize
@@ -75,6 +76,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
     public render(clockInfo: ClockInfo) {
         this.updatePosition()
         this.updateHP()
+        this.updateSelect()
     }
 
     public getInteractionShapes(): Object3D[] {
@@ -118,6 +120,12 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
             const hpMesh = group.getObjectByName('hp') as Mesh
             hpMesh.scale.x = actor.hp / actor.maxHp
             hpMesh.visible = actor.hp < actor.maxHp
+        })
+    }
+
+    private updateSelect() {
+        this.actorInteractionShapeMap.forEach((actor, shape) => {
+            shape.visible = this.game.player.selectedActor === actor
         })
     }
 }

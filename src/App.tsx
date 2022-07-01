@@ -6,9 +6,11 @@ import { TreeActor } from '+game/actors/tree/TreeActor'
 import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
+import { Builder, BuildingKey, buildingList } from '+game/player/Builder'
+import { Interactions } from '+game/player/Interactions'
+import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
 import { FootpathTile, InsideTile, WallTile } from '+game/Tile'
-import { Position } from '+game/types'
 import { Word } from '+game/Word'
 import { seededRandom } from '+helpers/random'
 
@@ -24,120 +26,53 @@ import {
     Stack,
     ThemeProvider,
 } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VRButton } from 'three/examples/jsm/webxr/VRButton'
 
 import { createTileGrid } from './lib/createTileGrid'
 
-const word = new Word()
-const game = new Game(word)
-const renderer = new Renderer(game)
-
-const buildings = {
-    LumberjackCabin: ([x, y]: Position) => {
-        const cabin = new LumberjackCabinActor(game, [x + 2, y + 2])
-        const lumberjack = new LumberjackActor(game, [x, y], cabin)
-
-        game.addActor(cabin)
-        game.addActor(lumberjack)
-
-        const currTail = game.word.getTile([x, y])
-
-        const createWallTile = () => {
-            const instance = new WallTile()
-            instance.height = currTail.height
-            return instance
-        }
-
-        const createFootpathTile = () => {
-            const instance = new FootpathTile()
-            instance.height = currTail.height
-            return instance
-        }
-
-        const createInsideTile = () => {
-            const instance = new InsideTile()
-            instance.height = currTail.height
-            return instance
-        }
-
-        game.word.setTiles((tiles) => {
-            createTileGrid(
-                {
-                    '.': createFootpathTile,
-                    'W': createWallTile,
-                    '!': createInsideTile,
-                },
-                [
-                    ['.', '.', '.', '.', '.'],
-                    ['.', 'W', 'W', 'W', '.'],
-                    ['.', 'W', '!', 'W', '.'],
-                    ['.', 'W', '!', 'W', '.'],
-                    ['.', '.', '.', '.', '.'],
-                ],
-                ([localX, localY], tileFn) => {
-                    tiles[y + localY]![x + localX]! = tileFn()
-                },
-            )
-        })
-    },
-
-    Tree: ([x, y]: Position) => {
-        game.addActor(new TreeActor(game, [x, y]))
-    },
-
-    Guardian: ([x, y]: Position) => {
-        game.addActor(new GuardianActor(game, [x, y]))
-    },
-}
-
-const rng = seededRandom(1234567)
-
-game.word.tiles.forEach((row, y) => {
-    row.forEach((tile, x) => {
-        if (tile.canWalk && rng() < tile.treeChance) {
-            game.addActor(new TreeActor(game, [x, y]))
-        }
-    })
-})
-
-const anyWindow = window as any
-anyWindow.game = game
-
-anyWindow.logStats = () => {
-    console.log('Scene polycount:', renderer.webGLRenderer.info.render.triangles)
-    console.log('Active Drawcalls:', renderer.webGLRenderer.info.render.calls)
-    console.log('Textures in Memory', renderer.webGLRenderer.info.memory.textures)
-    console.log('Geometries in Memory', renderer.webGLRenderer.info.memory.geometries)
-}
-
-type BuildingKey = keyof typeof buildings
-const buildingList = Object.keys(buildings) as BuildingKey[]
+const gameRoot = document.getElementById('game-root') as HTMLElement
 
 function App() {
-    const rendererRef = useRef<HTMLDivElement>(null)
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
     const [selectedActor, setSelectedActor] = useState<WalkableActor | StaticActor>()
 
     const [, frameCount] = useState(0)
     const render = () => frameCount((n) => n + 1)
 
+    const { game, interactions } = useMemo(() => {
+        const word = new Word()
+        const player = new Player()
+        const game = new Game(word, player)
+        const renderer = new Renderer(game, gameRoot)
+        const interactions = new Interactions(game, renderer)
+
+        renderer.init()
+
+        // buildings.Guardian([100, 120])
+        // buildings.LumberjackCabin([107, 120])
+        // buildings.LumberjackCabin([117, 100])
+
+        return { game, interactions }
+    }, [])
+
     useEffect(() => {
         game.start()
-        renderer.init(rendererRef.current!)
         render()
 
-        const vrButton = VRButton.createButton(renderer.webGLRenderer)
-        vrButton.style.position = 'absolute'
-        vrButton.style.top = '10px'
-        vrButton.style.zIndex = '1000'
-        vrButton.style.height = '50px'
+        const anyWindow = window as any
+        anyWindow.game = game
 
-        document.body.appendChild(vrButton)
+        // TODO move planting to a separate class
+        const rng = seededRandom(1234567)
 
-        buildings.Guardian([100, 120])
-        buildings.LumberjackCabin([107, 120])
-        buildings.LumberjackCabin([117, 100])
+        game.word.tiles.forEach((row, y) => {
+            row.forEach((tile, x) => {
+                if (tile.canWalk && rng() < tile.treeChance) {
+                    game.addActor(new TreeActor(game, [x, y]))
+                }
+            })
+        })
 
         return () => {
             game.stop()
@@ -145,38 +80,9 @@ function App() {
     }, [])
 
     useEffect(() => {
-        const handleClick = (event: MouseEvent): void => {
-            if (selectedBuilding) {
-                const position = renderer.findPositionByMouseEvent(event)
-                if (!position) return
-
-                const currTail = game.word.getTile(position)
-                if (currTail.canBuild) {
-                    buildings[selectedBuilding](position)
-                }
-            } else {
-                const actor = renderer.selectByMouseEvent(event)
-                setSelectedActor(actor)
-            }
-        }
-
-        const handleRightClick = (event: MouseEvent): void => {
-            event.preventDefault()
-            setSelectedBuilding(undefined)
-            const position = renderer.findPositionByMouseEvent(event)
-            if (position && selectedActor && selectedActor instanceof WalkableActor) {
-                selectedActor.goTo(position)
-            }
-        }
-
-        rendererRef.current?.addEventListener('click', handleClick)
-        rendererRef.current?.addEventListener('contextmenu', handleRightClick)
-
-        return () => {
-            rendererRef.current?.removeEventListener('click', handleClick)
-            rendererRef.current?.removeEventListener('contextmenu', handleRightClick)
-        }
-    }, [selectedBuilding, selectedActor])
+        game.player.emitter.on('selectActor', setSelectedActor)
+        game.player.emitter.on('unselectActor', setSelectedActor)
+    }, [])
 
     const isRunning = game.isRunning()
 
@@ -201,7 +107,12 @@ function App() {
                         <Select
                             value={selectedBuilding || ''}
                             onChange={(e) => {
-                                setSelectedBuilding(e.target.value as BuildingKey)
+                                const building = e.target.value as BuildingKey
+                                setSelectedBuilding(building)
+                                interactions.selectBulding(building)
+                                game.player.emitter.once('unselectBuilding').then(() => {
+                                    setSelectedBuilding(undefined)
+                                })
                             }}
                         >
                             <MenuItem value="">-</MenuItem>
@@ -220,8 +131,6 @@ function App() {
             <Right>
                 <ConfigForm onChange={() => render()} />
             </Right>
-
-            <RendererDiv ref={rendererRef} />
         </ThemeProvider>
     )
 }
@@ -275,15 +184,6 @@ const Right = styled.div({
         borderWidth: '0 1px 0 1px',
         margin: 'auto',
     },
-})
-
-const RendererDiv = styled.div({
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    canvas: {},
 })
 
 export default App

@@ -23,24 +23,28 @@ const stats = new Stats()
 
 export class Renderer {
     public webGLRenderer = new WebGLRenderer({ antialias: true })
+    public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
 
     private clock = new Clock()
     private scene = new Scene()
-    private ground: GroundRenderer
     private environment: EnvironmentRenderer
-
-    public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
+    private ground: GroundRenderer
 
     private basicRendererList: BasicRenderer[] = []
     private actorRendererList: ActorRenderer<AnyActor>[] = []
 
-    constructor(public game: Game) {
+    constructor(public game: Game, public el: HTMLElement) {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
         this.webGLRenderer.xr.enabled = true
+
+        el.append(this.webGLRenderer.domElement)
+
+        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+        el.append(stats.dom)
 
         this.environment = new EnvironmentRenderer(
             this.game,
@@ -52,57 +56,29 @@ export class Renderer {
         this.addRenderers()
     }
 
-    public findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
-        const rayCaster = new Raycaster()
-        const pointer = new Vector2(
-            (event.clientX / window.innerWidth) * 2 - 1,
-            -(event.clientY / window.innerHeight) * 2 + 1,
-        )
-        rayCaster.setFromCamera(pointer, this.rtsCamera.camera)
+    public init() {
+        this.rtsCamera.init()
+        this.animate()
+        window.addEventListener('resize', this.resize)
 
-        const intersects = rayCaster.intersectObjects(this.ground!.group.children)
-        const intersectPoint = intersects[0]?.point
+        const anyWindow = window as any
 
-        if (!intersectPoint) return
-
-        const [width, height] = this.game.word.getRealSize()
-
-        const x = Math.round((intersectPoint.x + width / 2) / config.renderer.tileSize)
-        const y = Math.round((intersectPoint.z + height / 2) / config.renderer.tileSize)
-
-        return [x, y]
+        anyWindow.logStats = () => {
+            console.log('Scene polycount:', this.webGLRenderer.info.render.triangles)
+            console.log('Active Drawcalls:', this.webGLRenderer.info.render.calls)
+            console.log('Textures in Memory', this.webGLRenderer.info.memory.textures)
+            console.log('Geometries in Memory', this.webGLRenderer.info.memory.geometries)
+        }
     }
 
-    public selectByMouseEvent = (event: MouseEvent): WalkableActor | StaticActor => {
-        const rayCaster = new Raycaster()
-        const pointer = new Vector2(
-            (event.clientX / window.innerWidth) * 2 - 1,
-            -(event.clientY / window.innerHeight) * 2 + 1,
-        )
-        rayCaster.setFromCamera(pointer, this.rtsCamera.camera)
+    public getGroundChildren() {
+        return this.ground!.group.children
+    }
 
-        const interactionObjectList = this.actorRendererList.flatMap((renderer) =>
+    public getInteractionObjectList() {
+        return this.actorRendererList.flatMap((renderer) =>
             renderer.getInteractionShapes(),
         )
-
-        const intersects = rayCaster.intersectObjects(interactionObjectList, false)
-        const intersectObject = first(intersects)
-        const actor = intersectObject?.object.userData.actor
-        console.log('Selected actor', actor)
-        return actor
-    }
-
-    public init(el: HTMLElement) {
-        el.append(this.webGLRenderer.domElement)
-
-        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-        el.append(stats.dom)
-
-        this.rtsCamera.init()
-
-        this.animate()
-
-        window.addEventListener('resize', this.resize)
     }
 
     private addRenderers() {
