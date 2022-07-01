@@ -49,6 +49,27 @@ function App() {
         builder.build(BuildingKey.LumberjackCabin, [107, 120])
         builder.build(BuildingKey.LumberjackCabin, [117, 100])
 
+        builder.build(BuildingKey.Guardian, [101, 120])
+        builder.build(BuildingKey.Guardian, [102, 120])
+        builder.build(BuildingKey.Guardian, [103, 120])
+        builder.build(BuildingKey.Guardian, [104, 120])
+        builder.build(BuildingKey.Guardian, [105, 120])
+        builder.build(BuildingKey.Guardian, [106, 120])
+
+        builder.build(BuildingKey.Guardian, [101, 121])
+        builder.build(BuildingKey.Guardian, [102, 121])
+        builder.build(BuildingKey.Guardian, [103, 121])
+        builder.build(BuildingKey.Guardian, [104, 121])
+        builder.build(BuildingKey.Guardian, [105, 121])
+        builder.build(BuildingKey.Guardian, [106, 121])
+
+        builder.build(BuildingKey.Guardian, [101, 122])
+        builder.build(BuildingKey.Guardian, [102, 122])
+        builder.build(BuildingKey.Guardian, [103, 122])
+        builder.build(BuildingKey.Guardian, [104, 122])
+        builder.build(BuildingKey.Guardian, [105, 122])
+        builder.build(BuildingKey.Guardian, [106, 122])
+
         return { game, interactions }
     }, [])
 

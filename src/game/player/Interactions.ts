@@ -74,9 +74,18 @@ export class Interactions {
         if (building) {
             this.game.player.unselectBuilding()
         } else if (position && this.game.player.selectedActor.length) {
-            this.game.player.selectedActor.forEach((actor) => {
+            let actorCount = this.game.player.selectedActor.length
+            let actorsInOrder = Math.floor(Math.sqrt(actorCount))
+            let actorsInOrderOffset = Math.floor(actorsInOrder / 2)
+            if (actorsInOrder < 1) actorsInOrder = 1
+
+            this.game.player.selectedActor.forEach((actor, index) => {
                 if (actor instanceof WalkableActor) {
-                    actor.goTo(position)
+                    let x = position[0] + (index % actorsInOrder)
+                    let y =
+                        position[1] + (index - (index % actorsInOrder)) / actorsInOrder
+
+                    actor.goTo([x - actorsInOrderOffset, y - actorsInOrderOffset])
                 }
             })
         }
