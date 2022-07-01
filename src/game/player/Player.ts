@@ -1,5 +1,4 @@
-import { Game } from '+game/Game'
-import { ActorType, AnyActor, Position } from '+game/types'
+import { AnyActor } from '+game/types'
 import { Emitter } from '+lib/Emitter'
 
 import { BuildingKey } from './Builder'

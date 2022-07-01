@@ -109,7 +109,7 @@ function App() {
                             onChange={(e) => {
                                 const building = e.target.value as BuildingKey
                                 setSelectedBuilding(building)
-                                interactions.selectBulding(building)
+                                interactions.selectBuilding(building)
                                 game.player.emitter.once('unselectBuilding').then(() => {
                                     setSelectedBuilding(undefined)
                                 })

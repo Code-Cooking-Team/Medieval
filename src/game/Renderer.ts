@@ -1,23 +1,18 @@
-import { config } from '+config'
-
-import { first } from 'lodash'
 import Stats from 'stats.js'
-import { Clock, PCFSoftShadowMap, Raycaster, Scene, Vector2, WebGLRenderer } from 'three'
+import { Clock, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
 
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
 import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'
 import { TreeRenderer } from './actors/tree/TreeRenderer'
 import { RTSCamera } from './camera/RTSCamera'
-import { StaticActor } from './core/StaticActor'
-import { WalkableActor } from './core/WalkableActor'
 import { Game } from './Game'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { AnyActor, ClockInfo, Position } from './types'
+import { AnyActor, ClockInfo } from './types'
 
 const stats = new Stats()
 
