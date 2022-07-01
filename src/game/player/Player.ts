@@ -4,17 +4,17 @@ import { Emitter } from '+lib/Emitter'
 import { BuildingKey } from './Builder'
 
 export class Player {
-    public selectedActor?: AnyActor
+    public selectedActor: AnyActor[] = []
     public selectedBuilding?: BuildingKey
 
     public emitter = new Emitter<{
         selectBuilding: BuildingKey
         unselectBuilding: BuildingKey
-        selectActor: AnyActor
-        unselectActor: AnyActor
-    }>('Player', true)
+        selectActor: AnyActor[]
+        unselectActor: AnyActor[]
+    }>('Player')
 
-    public selectActor(actor: AnyActor) {
+    public selectActor(actor: AnyActor[]) {
         this.emitter.emit('selectActor', actor)
         this.selectedActor = actor
     }
@@ -22,7 +22,7 @@ export class Player {
     public unselectActor() {
         if (!this.selectedActor) return
         this.emitter.emit('unselectActor', this.selectedActor)
-        this.selectedActor = undefined
+        this.selectedActor = []
     }
 
     public selectBuilding(building: BuildingKey) {

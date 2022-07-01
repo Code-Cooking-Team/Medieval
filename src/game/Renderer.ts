@@ -1,5 +1,5 @@
 import Stats from 'stats.js'
-import { Clock, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
+import { Clock, Group, Mesh, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
 
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
@@ -19,9 +19,9 @@ const stats = new Stats()
 export class Renderer {
     public webGLRenderer = new WebGLRenderer({ antialias: true })
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
+    public scene = new Scene()
 
     private clock = new Clock()
-    private scene = new Scene()
     private environment: EnvironmentRenderer
     private ground: GroundRenderer
 

@@ -7,6 +7,7 @@ import { Builder, BuildingKey, buildingList } from '+game/player/Builder'
 import { Interactions } from '+game/player/Interactions'
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
+import { AnyActor } from '+game/types'
 import { Word } from '+game/Word'
 import { seededRandom } from '+helpers/random'
 
@@ -28,7 +29,7 @@ const gameRoot = document.getElementById('game-root') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
-    const [selectedActor, setSelectedActor] = useState<WalkableActor | StaticActor>()
+    const [selectedActor, setSelectedActor] = useState<AnyActor[]>([])
     const [started, setStarted] = useState(false)
 
     const { game, interactions } = useMemo(() => {
@@ -42,16 +43,18 @@ function App() {
 
         const builder = new Builder(game)
 
-        builder.build(BuildingKey.guardian, [100, 120])
-        builder.build(BuildingKey.lumberjackCabin, [107, 120])
-        builder.build(BuildingKey.lumberjackCabin, [117, 100])
+        builder.build(BuildingKey.Guardian, [100, 120])
+        builder.build(BuildingKey.Guardian, [105, 120])
+        builder.build(BuildingKey.Guardian, [110, 120])
+        builder.build(BuildingKey.LumberjackCabin, [107, 120])
+        builder.build(BuildingKey.LumberjackCabin, [117, 100])
 
         return { game, interactions }
     }, [])
 
     useEffect(() => {
         game.player.emitter.on('selectActor', (actor) => setSelectedActor(actor))
-        game.player.emitter.on('unselectActor', () => setSelectedActor(undefined))
+        game.player.emitter.on('unselectActor', () => setSelectedActor([]))
 
         game.emitter.on('started', () => setStarted(true))
         game.emitter.on('stopped', () => setStarted(false))
@@ -116,7 +119,9 @@ function App() {
                         </Select>
                     </FormControl>
 
-                    {selectedActor && <b>{selectedActor.type}</b>}
+                    {selectedActor.map((actor) => (
+                        <b key={actor.id}>{actor.type}</b>
+                    ))}
                 </Stack>
             </Bottom>
 

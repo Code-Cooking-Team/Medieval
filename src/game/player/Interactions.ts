@@ -6,48 +6,47 @@ import { AnyActor, Position } from '+game/types'
 
 import { first } from 'lodash'
 import { Raycaster, Vector2 } from 'three'
+import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
 import { Builder, BuildingKey } from './Builder'
+import { SelectionDiv } from './SelectionDiv'
 
 export class Interactions {
     private builder: Builder
+    private selectionBox: SelectionBox
+    private selectionDiv: SelectionDiv
 
     constructor(public game: Game, public renderer: Renderer) {
-        this.renderer.webGLRenderer.domElement.addEventListener('click', this.handleClick)
-        this.renderer.webGLRenderer.domElement.addEventListener(
-            'contextmenu',
-            this.handleRightClick,
-        )
+        this.selectionDiv = new SelectionDiv(renderer.webGLRenderer)
+
+        const el = this.renderer.webGLRenderer.domElement
+        el.addEventListener('contextmenu', this.handleRightClick)
+        document.addEventListener('pointerdown', this.handlePointerDown)
+        document.addEventListener('pointermove', this.handlePointerMove)
+        document.addEventListener('pointerup', this.handlePointerUp)
 
         window.addEventListener('keyup', this.handleKeyup)
 
         this.builder = new Builder(game)
-    }
 
-    public destruct() {
-        this.renderer.webGLRenderer.domElement.removeEventListener(
-            'click',
-            this.handleClick,
+        this.selectionBox = new SelectionBox(
+            this.renderer.rtsCamera.camera,
+            this.renderer.scene,
         )
-        this.renderer.webGLRenderer.domElement.removeEventListener(
-            'contextmenu',
-            this.handleRightClick,
-        )
-        window.removeEventListener('keyup', this.handleKeyup)
     }
 
     public selectBuilding(buildingKey: BuildingKey) {
         this.game.player.selectBuilding(buildingKey)
     }
 
-    private handleKeyup = (event: KeyboardEvent): void => {
+    private handleKeyup = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
             this.game.player.unselectActor()
             this.game.player.unselectBuilding()
         }
     }
 
-    private handleClick = (event: MouseEvent): void => {
+    private handleClick = (event: MouseEvent) => {
         if (this.game.player.selectedBuilding) {
             const position = this.findPositionByMouseEvent(event)
             if (!position) return
@@ -58,29 +57,82 @@ export class Interactions {
                 this.builder.build(this.game.player.selectedBuilding, position)
             }
         } else {
-            const actor = this.selectByMouseEvent(event)
+            const actor = first(this.selectByMouseEvent(event))
             if (actor) {
-                this.game.player.selectActor(actor)
+                this.game.player.selectActor([actor])
             } else {
                 this.game.player.unselectActor()
             }
         }
     }
 
-    private handleRightClick = (event: MouseEvent): void => {
+    private handleRightClick = (event: MouseEvent) => {
         event.preventDefault()
         const building = this.game.player.selectedBuilding
         const position = this.findPositionByMouseEvent(event)
 
         if (building) {
             this.game.player.unselectBuilding()
-        } else if (
-            position &&
-            this.game.player.selectedActor &&
-            this.game.player.selectedActor instanceof WalkableActor
-        ) {
-            this.game.player.selectedActor.goTo(position)
+        } else if (position && this.game.player.selectedActor.length) {
+            this.game.player.selectedActor.forEach((actor) => {
+                if (actor instanceof WalkableActor) {
+                    actor.goTo(position)
+                }
+            })
         }
+    }
+
+    private down = false
+    private distance = 0
+
+    private handlePointerDown = (event: PointerEvent) => {
+        if (event.button !== 0) return
+        this.down = true
+        this.selectionDiv.onDown(event)
+
+        this.selectionBox.startPoint.set(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight) * 2 + 1,
+            0.5,
+        )
+    }
+
+    private handlePointerMove = (event: PointerEvent) => {
+        if (!this.down) return
+        this.selectionDiv.onMove(event)
+        this.distance += 1
+
+        this.selectionBox.endPoint.set(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight) * 2 + 1,
+            0.5,
+        )
+    }
+
+    private handlePointerUp = (event: PointerEvent) => {
+        if (!this.down) return
+        this.down = false
+        this.selectionDiv.onUp()
+
+        if (this.distance < 10) {
+            return this.handleClick(event)
+        }
+
+        this.distance = 0
+
+        this.selectionBox.endPoint.set(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight) * 2 + 1,
+            0.5,
+        )
+
+        const allSelected = this.selectionBox.select()
+
+        const actors = allSelected
+            .map((item) => item.userData.actor)
+            .filter((actor) => !!actor) as AnyActor[]
+
+        this.game.player.selectActor(actors)
     }
 
     private findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
@@ -104,7 +156,7 @@ export class Interactions {
         return [x, y]
     }
 
-    private selectByMouseEvent = (event: MouseEvent): AnyActor | undefined => {
+    private selectByMouseEvent = (event: MouseEvent): AnyActor[] => {
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
@@ -115,9 +167,10 @@ export class Interactions {
         const interactionObjectList = this.renderer.getInteractionObjectList()
 
         const intersects = rayCaster.intersectObjects(interactionObjectList, false)
-        const intersectObject = first(intersects)
-        const actor = intersectObject?.object.userData.actor
+        const intersectActors = intersects
+            .map((intersect) => intersect.object.userData.actor as AnyActor)
+            .filter((actor) => !!actor)
 
-        return actor
+        return intersectActors
     }
 }

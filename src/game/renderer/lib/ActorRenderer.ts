@@ -125,7 +125,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
     private updateSelect() {
         this.actorInteractionShapeMap.forEach((actor, shape) => {
-            shape.visible = this.game.player.selectedActor === actor
+            shape.visible = this.game.player.selectedActor.includes(actor)
         })
     }
 }

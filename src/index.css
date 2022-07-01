@@ -11,13 +11,13 @@ body {
     background-color: rgb(18, 20, 30);
     overflow: hidden;
     color: white;
+    touch-action: none;
 }
 
 #root {
     height: 100vh;
     display: flex;
     align-items: center;
-
     justify-content: center;
 }
 
@@ -27,10 +27,17 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
+    user-select: none;
 }
 
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.selectBox {
+    border: 1px solid #55aaff;
+    background-color: rgba(75, 160, 255, 0.3);
+    position: fixed;
 }
 
 .word {

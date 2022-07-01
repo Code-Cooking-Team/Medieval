@@ -8,15 +8,15 @@ import { Position } from '+game/types'
 import { createTileGrid } from '+lib/createTileGrid'
 
 export enum BuildingKey {
-    lumberjackCabin = 'lumberjackCabin',
-    tree = 'tree',
-    guardian = 'guardian',
+    LumberjackCabin = 'lumberjackCabin',
+    Tree = 'tree',
+    Guardian = 'guardian',
 }
 
 export const buildingList = [
-    BuildingKey.lumberjackCabin,
-    BuildingKey.tree,
-    BuildingKey.guardian,
+    BuildingKey.LumberjackCabin,
+    BuildingKey.Tree,
+    BuildingKey.Guardian,
 ]
 
 export class Builder {
@@ -79,9 +79,9 @@ export class Builder {
     }
 
     public actors = {
-        [BuildingKey.lumberjackCabin]: this.lumberjackCabin,
-        [BuildingKey.tree]: this.tree,
-        [BuildingKey.guardian]: this.guardian,
+        [BuildingKey.LumberjackCabin]: this.lumberjackCabin,
+        [BuildingKey.Tree]: this.tree,
+        [BuildingKey.Guardian]: this.guardian,
     }
 
     public build(name: BuildingKey, [x, y]: Position) {
