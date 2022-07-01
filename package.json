@@ -2,6 +2,7 @@
   "name": "medieval",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://code-cooking-team.github.io/Medieval/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
