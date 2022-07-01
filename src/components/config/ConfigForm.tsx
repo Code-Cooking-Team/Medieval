@@ -11,17 +11,20 @@ import {
     Typography,
 } from '@mui/material'
 import { entries, toPairs } from 'lodash'
+import { useState } from 'react'
 
 import { ConfigItem } from './ConfigItem'
 
-interface ConfigFormProps {
-    onChange(): void
-}
-
 const openConfig: { [key: string]: boolean } = {}
 
-export const ConfigForm = ({ onChange }: ConfigFormProps) => {
-    const [isOpen, setIsOpen] = useLocalStorage('configForm:open', openConfig)
+export const ConfigForm = () => {
+    const [isOpen, setIsOpen, resetIsOpen] = useLocalStorage(
+        'configForm:open',
+        openConfig,
+    )
+
+    const [, count] = useState(0)
+    const render = () => count((n) => n + 1)
 
     return (
         <>
@@ -52,7 +55,7 @@ export const ConfigForm = ({ onChange }: ConfigFormProps) => {
                                             definition={definition}
                                             onChange={(value) => {
                                                 configCategory[key] = value
-                                                onChange()
+                                                render()
                                             }}
                                         />
                                     </div>
@@ -68,7 +71,7 @@ export const ConfigForm = ({ onChange }: ConfigFormProps) => {
                     <Button
                         onClick={() => {
                             saveConfig()
-                            onChange()
+                            render()
                         }}
                     >
                         Save
@@ -77,7 +80,8 @@ export const ConfigForm = ({ onChange }: ConfigFormProps) => {
                     <Button
                         onClick={() => {
                             resetConfig()
-                            onChange()
+                            resetIsOpen()
+                            render()
                             window.location.reload()
                         }}
                     >

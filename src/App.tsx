@@ -29,9 +29,7 @@ const gameRoot = document.getElementById('game-root') as HTMLElement
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
     const [selectedActor, setSelectedActor] = useState<WalkableActor | StaticActor>()
-
-    const [, frameCount] = useState(0)
-    const render = () => frameCount((n) => n + 1)
+    const [started, setStarted] = useState(false)
 
     const { game, interactions } = useMemo(() => {
         const word = new Word()
@@ -52,8 +50,15 @@ function App() {
     }, [])
 
     useEffect(() => {
+        game.player.emitter.on('selectActor', (actor) => setSelectedActor(actor))
+        game.player.emitter.on('unselectActor', () => setSelectedActor(undefined))
+
+        game.emitter.on('started', () => setStarted(true))
+        game.emitter.on('stopped', () => setStarted(false))
+    }, [])
+
+    useEffect(() => {
         game.start()
-        render()
 
         const anyWindow = window as any
         anyWindow.game = game
@@ -74,13 +79,6 @@ function App() {
         }
     }, [])
 
-    useEffect(() => {
-        game.player.emitter.on('selectActor', (actor) => setSelectedActor(actor))
-        game.player.emitter.on('unselectActor', () => setSelectedActor(undefined))
-    }, [])
-
-    const isRunning = game.isRunning()
-
     return (
         <ThemeProvider theme={darkTheme}>
             <Bottom>
@@ -88,13 +86,12 @@ function App() {
                     <ButtonGroup>
                         <Button
                             onClick={() => {
-                                isRunning ? game.stop() : game.start()
-                                render()
+                                started ? game.stop() : game.start()
                             }}
                         >
-                            {isRunning ? 'Stop' : 'Start'}
+                            {started ? 'Stop' : 'Start'}
                         </Button>
-                        {!isRunning && <Button onClick={() => game.tick()}>Tick</Button>}
+                        {!started && <Button onClick={() => game.tick()}>Tick</Button>}
                     </ButtonGroup>
 
                     <FormControl style={{ minWidth: 200 }}>
@@ -124,7 +121,7 @@ function App() {
             </Bottom>
 
             <Right>
-                <ConfigForm onChange={() => render()} />
+                <ConfigForm />
             </Right>
         </ThemeProvider>
     )

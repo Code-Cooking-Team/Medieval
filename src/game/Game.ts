@@ -13,6 +13,8 @@ interface GameEmitterEvents {
     tick: undefined
     actorAdded: AnyActor
     actorRemoved: AnyActor
+    started: undefined
+    stopped: undefined
 }
 
 export class Game {
@@ -31,12 +33,14 @@ export class Game {
     }
 
     public start() {
+        this.emitter.emit('started')
         this.loop = setInterval(() => {
             this.tick()
         }, config.core.tickTime)
     }
 
     public stop() {
+        this.emitter.emit('stopped')
         clearInterval(this.loop)
         this.loop = undefined
     }
