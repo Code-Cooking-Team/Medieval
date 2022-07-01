@@ -5,7 +5,7 @@ name: Deploy to gh-pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   build:
@@ -16,11 +16,13 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
-    - run: yarn install
-    - run: ./deploy.sh
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+      - run: yarn install
+      - run: git config --global user.email "ci@github.com"
+      - run: git config --global user.name "CI"
+      - run: ./deploy.sh
