@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { Game } from '+game/Game'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
 import { seededRandom } from '+helpers/random'
@@ -51,10 +52,11 @@ export class TreeRenderer implements Renderable {
         this.boughInstanceMesh.translateY(1.8)
 
         this.group.add(this.coronaInstanceMesh)
-        this.coronaInstanceMesh.translateY(4.8)
+        this.coronaInstanceMesh.translateY(4.5)
     }
 
     public render(clockInfo: ClockInfo) {
+        const time = clockInfo.elapsedTime * 5
         const treeActors = this.game.findActorsByType(this.actorType) as TreeActor[]
         const dummy = new Object3D()
 
@@ -71,12 +73,28 @@ export class TreeRenderer implements Renderable {
                 const tile = this.game.word.getTile(tree.position)
 
                 dummy.position.set(x, tile.height, y)
-                dummy.scale.set(rnd(1, 1.5), rnd(1, 1.5), rnd(1, 1.5))
+                dummy.scale.set(rnd(0.8, 1.5), rnd(1, 1.5), rnd(0.8, 1.5))
                 dummy.rotation.set(
-                    rnd(-0.1, 0.1) / Math.PI,
-                    rnd(-0.1, 0.1) / Math.PI,
-                    rnd(-0.1, 0.1) / Math.PI,
+                    rnd(-0.5, 0.5) / Math.PI,
+                    rnd(-0.5, 0.5) / Math.PI,
+                    rnd(-0.5, 0.5) / Math.PI,
                 )
+
+                if (config.renderer.treeWaving) {
+                    const sendX = dummy.scale.z * rnd(-0.5, 0.5)
+                    const sendZ = dummy.scale.z * rnd(-0.5, 0.5)
+                    dummy.rotation.z +=
+                        Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / 15
+
+                    dummy.position.x +=
+                        Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / -8
+
+                    dummy.rotation.x +=
+                        Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 15
+
+                    dummy.position.z +=
+                        Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 8
+                }
             } else {
                 // TODO better remove
                 dummy.position.set(0, 0, 0)
