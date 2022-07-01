@@ -4,7 +4,7 @@ import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { AnyActor, Position } from '+game/types'
 
-import { first } from 'lodash'
+import { first, uniq } from 'lodash'
 import { Raycaster, Vector2 } from 'three'
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
@@ -59,7 +59,13 @@ export class Interactions {
         } else {
             const actor = first(this.selectByMouseEvent(event))
             if (actor) {
-                this.game.player.selectActor([actor])
+                if (event.shiftKey || event.ctrlKey) {
+                    this.game.player.selectActors(
+                        uniq([actor, ...this.game.player.selectedActors]),
+                    )
+                } else {
+                    this.game.player.selectActors([actor])
+                }
             } else {
                 this.game.player.unselectActor()
             }
@@ -73,13 +79,13 @@ export class Interactions {
 
         if (building) {
             this.game.player.unselectBuilding()
-        } else if (position && this.game.player.selectedActor.length) {
-            let actorCount = this.game.player.selectedActor.length
+        } else if (position && this.game.player.selectedActors.length) {
+            let actorCount = this.game.player.selectedActors.length
             let actorsInOrder = Math.floor(Math.sqrt(actorCount))
             let actorsInOrderOffset = Math.floor(actorsInOrder / 2)
             if (actorsInOrder < 1) actorsInOrder = 1
 
-            this.game.player.selectedActor.forEach((actor, index) => {
+            this.game.player.selectedActors.forEach((actor, index) => {
                 if (actor instanceof WalkableActor) {
                     let x = position[0] + (index % actorsInOrder)
                     let y =
@@ -141,7 +147,13 @@ export class Interactions {
             .map((item) => item.userData.actor)
             .filter((actor) => !!actor) as AnyActor[]
 
-        this.game.player.selectActor(actors)
+        if (event.shiftKey || event.ctrlKey) {
+            this.game.player.selectActors(
+                uniq([...actors, ...this.game.player.selectedActors]),
+            )
+        } else {
+            this.game.player.selectActors(actors)
+        }
     }
 
     private findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {

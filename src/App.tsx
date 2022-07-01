@@ -43,8 +43,7 @@ function App() {
 
         const builder = new Builder(game)
 
-        builder.build(BuildingKey.Guardian, [100, 120])
-        builder.build(BuildingKey.Guardian, [105, 120])
+        builder.build(BuildingKey.Guardian, [112, 120])
         builder.build(BuildingKey.Guardian, [110, 120])
         builder.build(BuildingKey.LumberjackCabin, [107, 120])
         builder.build(BuildingKey.LumberjackCabin, [117, 100])

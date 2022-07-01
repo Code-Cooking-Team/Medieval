@@ -59,7 +59,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
         group.add(hp)
 
         const interactionShape = new Mesh(
-            new BoxGeometry(2, 2, 2),
+            new BoxGeometry(1, 2, 1),
             new MeshBasicMaterial({ color: 0xffffff, wireframe: true }),
         )
 
@@ -67,7 +67,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
         group.add(interactionShape)
 
         group.position.x = x * config.renderer.tileSize
-        group.position.y = tile.height
+        group.position.y = tile.height + config.renderer.tileSize
         group.position.z = y * config.renderer.tileSize
 
         return { group, interactionShape }
@@ -125,7 +125,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
     private updateSelect() {
         this.actorInteractionShapeMap.forEach((actor, shape) => {
-            shape.visible = this.game.player.selectedActor.includes(actor)
+            shape.visible = this.game.player.selectedActors.includes(actor)
         })
     }
 }
