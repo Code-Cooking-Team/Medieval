@@ -35,9 +35,12 @@ code {
 }
 
 .selectBox {
-    border: 1px solid #55aaff;
-    background-color: rgba(75, 160, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 40px -10px rgba(0, 0, 0, 0.8);
+    opacity: 0.5;
 }
 
 .word {
