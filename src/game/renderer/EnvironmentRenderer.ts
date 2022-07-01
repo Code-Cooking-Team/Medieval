@@ -103,7 +103,11 @@ export class EnvironmentRenderer extends BasicRenderer {
                 Math.sin(time * 1 + 1.9) * 0.3 + 0.7,
             )
 
-            this.scene.fog = new Fog(fogColor, 0, Math.sin(time * 1) + 0.5 * 50 + 200)
+            this.scene.fog = new Fog(
+                fogColor,
+                config.renderer.fogTransparency,
+                Math.sin(time * 1) + config.renderer.fogTransparency * 1.5 * 50 + 200,
+            )
         }
     }
 }
