@@ -30,7 +30,7 @@ export class TreeActor extends StaticActor {
 
     public plantNewTree() {
         const newTreePosition = this.position.map(
-            (pos) => randomArrayItem(config.tree.newTreeRange) + pos,
+            (pos) => randomArrayItem(config.tree.newTreeRange)! + pos,
         ) as Position
 
         const tile = this.game.word.getTile(newTreePosition)

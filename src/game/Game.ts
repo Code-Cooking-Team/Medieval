@@ -90,6 +90,8 @@ export class Game {
 
     public findClosestActorByType(type: ActorType, position: Position, isAlive = true) {
         const actors = this.findActorsByType(type, isAlive)
+        if (!actors[0]) return
+
         return actors.reduce((prev, curr) => {
             const prevDist = distanceBetweenPoints(prev.position, position)
             const currDist = distanceBetweenPoints(curr.position, position)

@@ -74,5 +74,5 @@ const addConfigOption = (category: string, key: string, value: any) => {
     if (!configOptions[category]) {
         configOptions[category] = {}
     }
-    configOptions[category][key] = value
+    configOptions[category]![key] = value
 }

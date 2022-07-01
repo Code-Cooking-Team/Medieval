@@ -17,7 +17,7 @@ export class GroundRenderer extends BasicRenderer {
 
         this.geometry = createWordPlane(this.game.word, 'both')
 
-        const count = this.geometry.attributes.position.count
+        const count = this.geometry.attributes.position!.count
         this.geometry.setAttribute(
             'color',
             new BufferAttribute(new Float32Array(count * 3), 3),
@@ -58,8 +58,8 @@ export class GroundRenderer extends BasicRenderer {
 
         const [wordWidth] = this.game.word.getSize()
 
-        const position = this.groundMesh.geometry.attributes.position
-        const colors = this.geometry.attributes.color
+        const position = this.groundMesh.geometry.attributes.position!
+        const colors = this.geometry.attributes.color!
         const color = new Color()
 
         for (let i = 0; i < position.count; i++) {

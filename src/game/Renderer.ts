@@ -65,9 +65,7 @@ export class Renderer {
 
         if (!intersectPoint) return
 
-        const [width, height] = this.game.word
-            .getSize()
-            .map((v) => v * config.renderer.tileSize)
+        const [width, height] = this.game.word.getRealSize()
 
         const x = Math.round((intersectPoint.x + width / 2) / config.renderer.tileSize)
         const y = Math.round((intersectPoint.z + height / 2) / config.renderer.tileSize)

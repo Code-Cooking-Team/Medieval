@@ -25,7 +25,9 @@ export class Word {
     public tick() {}
 
     public getTile([x, y]: Position) {
-        return this.tiles?.[y]?.[x]
+        const tile = this.tiles?.[y]?.[x]
+        if (!tile) throw new Error(`[Word] No tile at ${x}, ${y}`)
+        return tile
     }
 
     public setTiles(setCallback: (tiles: Tile[][]) => void) {
@@ -34,11 +36,11 @@ export class Word {
     }
 
     public getSize() {
-        return [this.tiles[0].length, this.tiles.length]
+        return [this.tiles[0]!.length, this.tiles.length] as [number, number]
     }
 
     public getRealSize() {
-        return this.getSize().map((v) => v * config.renderer.tileSize)
+        return this.getSize().map((v) => v * config.renderer.tileSize) as [number, number]
     }
 }
 

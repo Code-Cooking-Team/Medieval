@@ -65,7 +65,7 @@ const buildings = {
             createTileGrid(
                 {
                     '.': createFootpathTile,
-                    W: createWallTile,
+                    'W': createWallTile,
                     '!': createInsideTile,
                 },
                 [
@@ -76,7 +76,7 @@ const buildings = {
                     ['.', '.', '.', '.', '.'],
                 ],
                 ([localX, localY], tileFn) => {
-                    tiles[y + localY][x + localX] = tileFn()
+                    tiles[y + localY]![x + localX]! = tileFn()
                 },
             )
         })

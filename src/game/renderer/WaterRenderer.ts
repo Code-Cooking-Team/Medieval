@@ -33,7 +33,7 @@ export class WaterRenderer extends BasicRenderer {
     public render({ elapsedTime }: ClockInfo) {
         const time = elapsedTime * 10
         if (!this.mesh) return
-        const position = this.mesh.geometry.attributes.position
+        const position = this.mesh.geometry.attributes.position!
         for (let i = 0; i < position.count; i++) {
             const y = 0.1 * Math.sin(i / 2 + (time + i) / 8)
             position.setY(i, y)
