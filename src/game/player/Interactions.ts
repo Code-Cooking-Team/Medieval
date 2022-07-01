@@ -21,6 +21,8 @@ export class Interactions {
             this.handleRightClick,
         )
 
+        window.addEventListener('keyup', this.handleKeyup)
+
         this.builder = new Builder(game)
     }
 
@@ -33,10 +35,18 @@ export class Interactions {
             'contextmenu',
             this.handleRightClick,
         )
+        window.removeEventListener('keyup', this.handleKeyup)
     }
 
     public selectBulding(buildingKey: BuildingKey) {
         this.game.player.selectBuilding(buildingKey)
+    }
+
+    private handleKeyup = (event: KeyboardEvent): void => {
+        if (event.key === 'Escape') {
+            this.game.player.unselectActor()
+            this.game.player.unselectBuilding()
+        }
     }
 
     private handleClick = (event: MouseEvent): void => {
