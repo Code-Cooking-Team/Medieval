@@ -24,6 +24,10 @@ export class Word {
 
     public tick() {}
 
+    public hasTile([x, y]: Position) {
+        return this.tiles?.[y]?.[x]!!
+    }
+
     public getTile([x, y]: Position) {
         const tile = this.tiles?.[y]?.[x]
         if (!tile) throw new Error(`[Word] No tile at ${x}, ${y}`)

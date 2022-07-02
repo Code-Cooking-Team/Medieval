@@ -1,13 +1,12 @@
 import { ConfigForm } from '+components/config/ConfigForm'
 import { TreeActor } from '+game/actors/tree/TreeActor'
-import { StaticActor } from '+game/core/StaticActor'
-import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
-import { Builder, BuildingKey, buildingList } from '+game/player/Builder'
+import { Builder } from '+game/player/Builder'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
-import { AnyActor } from '+game/types'
+import { spawnList } from '+game/spawners/spawners'
+import { ActorType, AnyActor } from '+game/types'
 import { Word } from '+game/Word'
 import { seededRandom } from '+helpers/random'
 
@@ -28,7 +27,7 @@ import { useEffect, useMemo, useState } from 'react'
 const gameRoot = document.getElementById('game-root') as HTMLElement
 
 function App() {
-    const [selectedBuilding, setSelectedBuilding] = useState<BuildingKey>()
+    const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
     const [selectedActor, setSelectedActor] = useState<AnyActor[]>([])
     const [started, setStarted] = useState(false)
 
@@ -44,31 +43,31 @@ function App() {
 
         const builder = new Builder(game)
 
-        builder.build(BuildingKey.Guardian, [112, 120])
-        builder.build(BuildingKey.Guardian, [110, 120])
-        builder.build(BuildingKey.LumberjackCabin, [107, 120])
-        builder.build(BuildingKey.LumberjackCabin, [117, 100])
+        builder.spawn(ActorType.Guardian, [112, 120])
+        builder.spawn(ActorType.Guardian, [110, 120])
+        builder.spawn(ActorType.LumberjackCabin, [107, 120])
+        builder.spawn(ActorType.LumberjackCabin, [117, 100])
 
-        builder.build(BuildingKey.Guardian, [101, 120])
-        builder.build(BuildingKey.Guardian, [102, 120])
-        builder.build(BuildingKey.Guardian, [103, 120])
-        builder.build(BuildingKey.Guardian, [104, 120])
-        builder.build(BuildingKey.Guardian, [105, 120])
-        builder.build(BuildingKey.Guardian, [106, 120])
+        builder.spawn(ActorType.Guardian, [101, 120])
+        builder.spawn(ActorType.Guardian, [102, 120])
+        builder.spawn(ActorType.Guardian, [103, 120])
+        builder.spawn(ActorType.Guardian, [104, 120])
+        builder.spawn(ActorType.Guardian, [105, 120])
+        builder.spawn(ActorType.Guardian, [106, 120])
 
-        builder.build(BuildingKey.Guardian, [101, 121])
-        builder.build(BuildingKey.Guardian, [102, 121])
-        builder.build(BuildingKey.Guardian, [103, 121])
-        builder.build(BuildingKey.Guardian, [104, 121])
-        builder.build(BuildingKey.Guardian, [105, 121])
-        builder.build(BuildingKey.Guardian, [106, 121])
+        builder.spawn(ActorType.Guardian, [101, 121])
+        builder.spawn(ActorType.Guardian, [102, 121])
+        builder.spawn(ActorType.Guardian, [103, 121])
+        builder.spawn(ActorType.Guardian, [104, 121])
+        builder.spawn(ActorType.Guardian, [105, 121])
+        builder.spawn(ActorType.Guardian, [106, 121])
 
-        builder.build(BuildingKey.Guardian, [101, 122])
-        builder.build(BuildingKey.Guardian, [102, 122])
-        builder.build(BuildingKey.Guardian, [103, 122])
-        builder.build(BuildingKey.Guardian, [104, 122])
-        builder.build(BuildingKey.Guardian, [105, 122])
-        builder.build(BuildingKey.Guardian, [106, 122])
+        builder.spawn(ActorType.Guardian, [101, 122])
+        builder.spawn(ActorType.Guardian, [102, 122])
+        builder.spawn(ActorType.Guardian, [103, 122])
+        builder.spawn(ActorType.Guardian, [104, 122])
+        builder.spawn(ActorType.Guardian, [105, 122])
+        builder.spawn(ActorType.Guardian, [106, 122])
 
         return { game, player }
     }, [])
@@ -123,7 +122,7 @@ function App() {
                         <Select
                             value={selectedBuilding || ''}
                             onChange={(e) => {
-                                const building = e.target.value as BuildingKey
+                                const building = e.target.value as ActorType
                                 player.selectBuilding(building)
                                 player.emitter.once('unselectBuilding').then(() => {
                                     setSelectedBuilding(undefined)
@@ -131,7 +130,7 @@ function App() {
                             }}
                         >
                             <MenuItem value="">-</MenuItem>
-                            {buildingList.map((option) => (
+                            {spawnList.map((option) => (
                                 <MenuItem key={option} value={option}>
                                     {option}
                                 </MenuItem>

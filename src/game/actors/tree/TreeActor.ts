@@ -33,6 +33,8 @@ export class TreeActor extends StaticActor {
             (pos) => randomArrayItem(config.tree.newTreeRange)! + pos,
         ) as Position
 
+        if (!this.game.word.hasTile(newTreePosition)) return
+
         const tile = this.game.word.getTile(newTreePosition)
 
         if (!tile?.canWalk) return

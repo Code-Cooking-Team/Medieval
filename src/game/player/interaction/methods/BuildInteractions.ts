@@ -34,12 +34,7 @@ export class BuildInteractions {
         const position = this.finder.findPositionByMouseEvent(event)
         if (!position) return
 
-        const currTail = this.game.word.getTile(position)
-
-        // TODO check more tiles around base on building
-        if (currTail.canBuild) {
-            this.builder.build(selectedBuilding, position)
-        }
+        this.builder.spawn(selectedBuilding, position)
     }
 
     private handleContextmenu = (event: MouseEvent) => {

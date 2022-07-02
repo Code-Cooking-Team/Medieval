@@ -1,6 +1,4 @@
 import { config } from '+config'
-import { StaticActor } from '+game/core/StaticActor'
-import { WalkableActor } from '+game/core/WalkableActor'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
@@ -13,7 +11,9 @@ import {
     PointLight,
 } from 'three'
 
-export class LumberjackCabinActorRenderer extends ActorRenderer<StaticActor> {
+import { LumberjackCabinActor } from './LumberjackCabinActor'
+
+export class LumberjackCabinActorRenderer extends ActorRenderer<LumberjackCabinActor> {
     public actorType = ActorType.LumberjackCabin
 
     private wallMaterial = new MeshStandardMaterial({ color: 0x4d4d4d })
@@ -21,7 +21,7 @@ export class LumberjackCabinActorRenderer extends ActorRenderer<StaticActor> {
     private wallGeometry = new BoxGeometry(2, 2, 2)
     private roofGeometry = new OctahedronGeometry(1.5, 0)
 
-    public createActorModel(actor: WalkableActor, tile: Tile) {
+    public createActorModel(actor: LumberjackCabinActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const [x, y] = actor.position
 

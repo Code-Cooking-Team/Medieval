@@ -1,15 +1,13 @@
-import { AnyActor } from '+game/types'
+import { ActorType, AnyActor } from '+game/types'
 import { Emitter } from '+lib/Emitter'
-
-import { BuildingKey } from './Builder'
 
 export class Player {
     public selectedActors: AnyActor[] = []
-    public selectedBuilding?: BuildingKey
+    public selectedBuilding?: ActorType
 
     public emitter = new Emitter<{
-        selectBuilding: BuildingKey
-        unselectBuilding: BuildingKey
+        selectBuilding: ActorType
+        unselectBuilding: ActorType
         selectActor: AnyActor[]
         unselectActor: AnyActor[]
     }>('Player')
@@ -25,7 +23,7 @@ export class Player {
         this.selectedActors = []
     }
 
-    public selectBuilding(building: BuildingKey) {
+    public selectBuilding(building: ActorType) {
         this.emitter.emit('selectBuilding', building)
         this.selectedBuilding = building
     }
