@@ -34,8 +34,4 @@ export class InteractionsManager {
         this.select.removeEventListeners()
         this.building.addEventListeners()
     }
-
-    public selectBuilding(buildingKey: BuildingKey) {
-        this.game.player.selectBuilding(buildingKey)
-    }
 }

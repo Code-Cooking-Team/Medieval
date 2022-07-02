@@ -45,10 +45,6 @@ export class Game {
         this.loop = undefined
     }
 
-    public isRunning() {
-        return this.loop !== undefined
-    }
-
     public tick() {
         this.word.tick()
         this.pf.tick()
