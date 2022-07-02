@@ -27,13 +27,15 @@ export class BuildInteractions {
 
     private handleClick = (event: MouseEvent) => {
         event.preventDefault()
-        const selectedBuilding = this.game.player.selectedBuilding
 
+        const selectedBuilding = this.game.player.selectedBuilding
         if (!selectedBuilding) return
+
         const position = this.finder.findPositionByMouseEvent(event)
         if (!position) return
 
         const currTail = this.game.word.getTile(position)
+
         // TODO check more tiles around base on building
         if (currTail.canBuild) {
             this.builder.build(selectedBuilding, position)

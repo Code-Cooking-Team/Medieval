@@ -1,6 +1,6 @@
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
-import { SelectionDiv } from '+game/player/interactions/methods/lib/SelectionDiv'
+import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Renderer } from '+game/Renderer'
 import { AnyActor } from '+game/types'
 
