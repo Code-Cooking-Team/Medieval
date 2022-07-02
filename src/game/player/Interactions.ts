@@ -16,6 +16,7 @@ export class Interactions {
     private selectionBox: SelectionBox
     private selectionDiv: SelectionDiv
 
+    // TODO move selection when holding space bar
     private isHoldingSpaceBar = false
 
     constructor(public game: Game, public renderer: Renderer) {
@@ -44,7 +45,6 @@ export class Interactions {
 
     private handleKeyDown = (event: KeyboardEvent) => {
         if (event.key === ' ') {
-            // TODO move selection when holding space bar
             this.isHoldingSpaceBar = true
         }
     }
