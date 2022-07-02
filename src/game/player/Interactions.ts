@@ -16,6 +16,8 @@ export class Interactions {
     private selectionBox: SelectionBox
     private selectionDiv: SelectionDiv
 
+    private isHoldingSpaceBar = false
+
     constructor(public game: Game, public renderer: Renderer) {
         this.selectionDiv = new SelectionDiv(renderer.webGLRenderer)
 
@@ -25,7 +27,8 @@ export class Interactions {
         document.addEventListener('pointermove', this.handlePointerMove)
         document.addEventListener('pointerup', this.handlePointerUp)
 
-        window.addEventListener('keyup', this.handleKeyup)
+        window.addEventListener('keyup', this.handleKeyUp)
+        window.addEventListener('keydown', this.handleKeyDown)
 
         this.builder = new Builder(game)
 
@@ -39,7 +42,17 @@ export class Interactions {
         this.game.player.selectBuilding(buildingKey)
     }
 
-    private handleKeyup = (event: KeyboardEvent) => {
+    private handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === ' ') {
+            // TODO move selection when holding space bar
+            this.isHoldingSpaceBar = true
+        }
+    }
+
+    private handleKeyUp = (event: KeyboardEvent) => {
+        if (event.key === ' ') {
+            this.isHoldingSpaceBar = false
+        }
         if (event.key === 'Escape') {
             this.game.player.unselectActor()
             this.game.player.unselectBuilding()
@@ -108,19 +121,20 @@ export class Interactions {
         this.selectionBox.startPoint.set(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1,
-            0.5,
+            0,
         )
     }
 
     private handlePointerMove = (event: PointerEvent) => {
         if (!this.down) return
+
         this.selectionDiv.onMove(event)
         this.distance += 1
 
         this.selectionBox.endPoint.set(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1,
-            0.5,
+            0,
         )
     }
 
@@ -141,13 +155,17 @@ export class Interactions {
             0.5,
         )
 
+        this.boxSelect(event.shiftKey || event.ctrlKey)
+    }
+
+    private boxSelect(add = false) {
         const allSelected = this.selectionBox.select()
 
         const actors = allSelected
             .map((item) => item.userData.actor)
             .filter((actor) => !!actor) as AnyActor[]
 
-        if (event.shiftKey || event.ctrlKey) {
+        if (add) {
             this.game.player.selectActors(
                 uniq([...actors, ...this.game.player.selectedActors]),
             )

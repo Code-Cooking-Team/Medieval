@@ -6,7 +6,6 @@ import { ActorType, ClockInfo } from '+game/types'
 
 import {
     BoxGeometry,
-    Color,
     DoubleSide,
     Group,
     Mesh,

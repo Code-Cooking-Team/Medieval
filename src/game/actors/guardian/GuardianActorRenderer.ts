@@ -1,10 +1,9 @@
 import { WalkableActor } from '+game/core/WalkableActor'
+import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
 
-import { Clock, Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
-
-import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
+import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 
 export class GuardianActorRenderer extends ActorRenderer<WalkableActor> {
     public actorType = ActorType.Guardian

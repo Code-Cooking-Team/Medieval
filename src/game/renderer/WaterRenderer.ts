@@ -1,9 +1,8 @@
-import { config } from '+config'
+import { Game } from '+game/Game'
 import { ClockInfo } from '+game/types'
 
-import { Clock, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
+import { DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 
-import { Game } from '../Game'
 import { BasicRenderer } from './lib/BasicRenderer'
 import { createWordPlane } from './lib/createWordPlane'
 

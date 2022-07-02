@@ -1,4 +1,5 @@
-import { Path, Position } from '../types'
+import { Path, Position } from '+game/types'
+
 import { StaticActor } from './StaticActor'
 
 export abstract class WalkableActor extends StaticActor {

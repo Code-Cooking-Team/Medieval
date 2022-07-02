@@ -1,19 +1,17 @@
 import { config } from '+config'
 import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
+import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { Tile } from '+game/Tile'
-import { ActorType, ClockInfo } from '+game/types'
+import { ActorType } from '+game/types'
 
 import {
     BoxGeometry,
-    Clock,
     Mesh,
     MeshStandardMaterial,
     OctahedronGeometry,
     PointLight,
 } from 'three'
-
-import { ActorRenderer } from '../../renderer/lib/ActorRenderer'
 
 export class LumberjackCabinActorRenderer extends ActorRenderer<StaticActor> {
     public actorType = ActorType.LumberjackCabin

@@ -1,8 +1,8 @@
+import { Config, ConfigOptions } from '+config/types'
 import { localStorageKey } from '+helpers/storage'
 
 import { cloneDeep } from 'lodash'
 
-import { Config, ConfigOptions } from '../types'
 import { booleanCheckbox, minMaxNumber, numberInput, stringInput } from './definitions'
 
 export const configOptions: ConfigOptions = {}

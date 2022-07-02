@@ -1,9 +1,8 @@
+import { Game } from '+game/Game'
+import { ActorType, Position } from '+game/types'
 import { uuid } from '+helpers/basic'
 import { maxValue } from '+helpers/math'
 import { randomSeed } from '+helpers/random'
-
-import { Game } from '../Game'
-import { ActorType, Position } from '../types'
 
 export abstract class StaticActor {
     public id = uuid()

@@ -1,11 +1,10 @@
 import { config } from '+config/config'
-import { Pathfinding } from '+game/core/Pathfinding'
+import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
 import { maxValue } from '+helpers/math'
 import { assert } from '+helpers/quality'
 
-import { WalkableActor } from '../../core/WalkableActor'
 import { TreeActor } from '../tree/TreeActor'
 import { LumberjackCabinActor } from './LumberjackCabinActor'
 

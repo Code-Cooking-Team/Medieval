@@ -1,10 +1,10 @@
 import { config } from '+config'
+import { Game } from '+game/Game'
 import { ClockInfo } from '+game/types'
 
 import {
     AmbientLight,
     Camera,
-    CameraHelper,
     Color,
     DirectionalLight,
     Fog,
@@ -12,7 +12,6 @@ import {
     Scene,
 } from 'three'
 
-import { Game } from '../Game'
 import { BasicRenderer } from './lib/BasicRenderer'
 
 export class EnvironmentRenderer extends BasicRenderer {

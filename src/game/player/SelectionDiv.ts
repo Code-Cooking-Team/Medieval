@@ -11,7 +11,7 @@ export class SelectionDiv {
         this.element.style.pointerEvents = 'none'
     }
 
-    onDown(event: PointerEvent) {
+    public onDown(event: PointerEvent) {
         this.renderer.domElement.parentElement?.appendChild(this.element)
 
         this.element.style.left = event.clientX + 'px'
@@ -23,11 +23,11 @@ export class SelectionDiv {
         this.startPoint.y = event.clientY
     }
 
-    onMove(event: PointerEvent) {
-        this.pointBottomRight.x = Math.max(this.startPoint.x, event.clientX)
-        this.pointBottomRight.y = Math.max(this.startPoint.y, event.clientY)
+    public onMove(event: PointerEvent) {
         this.pointTopLeft.x = Math.min(this.startPoint.x, event.clientX)
         this.pointTopLeft.y = Math.min(this.startPoint.y, event.clientY)
+        this.pointBottomRight.x = Math.max(this.startPoint.x, event.clientX)
+        this.pointBottomRight.y = Math.max(this.startPoint.y, event.clientY)
 
         this.element.style.left = this.pointTopLeft.x + 'px'
         this.element.style.top = this.pointTopLeft.y + 'px'
@@ -35,7 +35,7 @@ export class SelectionDiv {
         this.element.style.height = this.pointBottomRight.y - this.pointTopLeft.y + 'px'
     }
 
-    onUp() {
+    public onUp() {
         this.element.parentElement?.removeChild(this.element)
     }
 }
