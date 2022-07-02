@@ -4,7 +4,7 @@ import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Builder, BuildingKey, buildingList } from '+game/player/Builder'
-import { Interactions } from '+game/player/Interactions'
+import { InteractionsManager } from '+game/player/interactions/InteractionsManager'
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
 import { AnyActor } from '+game/types'
@@ -32,13 +32,14 @@ function App() {
     const [selectedActor, setSelectedActor] = useState<AnyActor[]>([])
     const [started, setStarted] = useState(false)
 
-    const { game, interactions } = useMemo(() => {
+    const { game, player } = useMemo(() => {
         const word = new Word()
         const player = new Player()
         const game = new Game(word, player)
         const renderer = new Renderer(game, gameRoot)
-        const interactions = new Interactions(game, renderer)
+        const interactions = new InteractionsManager(game, renderer)
 
+        interactions.init()
         renderer.init()
 
         const builder = new Builder(game)
@@ -69,7 +70,7 @@ function App() {
         builder.build(BuildingKey.Guardian, [105, 122])
         builder.build(BuildingKey.Guardian, [106, 122])
 
-        return { game, interactions }
+        return { game, player }
     }, [])
 
     useEffect(() => {
@@ -123,9 +124,8 @@ function App() {
                             value={selectedBuilding || ''}
                             onChange={(e) => {
                                 const building = e.target.value as BuildingKey
-                                setSelectedBuilding(building)
-                                interactions.selectBuilding(building)
-                                game.player.emitter.once('unselectBuilding').then(() => {
+                                player.selectBuilding(building)
+                                player.emitter.once('unselectBuilding').then(() => {
                                     setSelectedBuilding(undefined)
                                 })
                             }}
