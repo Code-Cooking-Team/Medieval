@@ -23,7 +23,6 @@ export class LumberjackCabinActorRenderer extends ActorRenderer<LumberjackCabinA
 
     public createActorModel(actor: LumberjackCabinActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
-        const [x, y] = actor.position
 
         const wall = new Mesh(this.wallGeometry, this.wallMaterial)
         const door = new Mesh(this.wallGeometry, this.wallMaterial)

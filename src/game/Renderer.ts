@@ -2,6 +2,7 @@ import Stats from 'stats.js'
 import { Clock, Group, Mesh, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
 
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
+import { HouseActorRenderer } from './actors/house/HouseRenderer'
 import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
 import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'
 import { TreeRenderer } from './actors/tree/TreeRenderer'
@@ -87,6 +88,8 @@ export class Renderer {
         this.addActorRenderer(new LumberjackActorRenderer(this.game))
 
         this.addActorRenderer(new GuardianActorRenderer(this.game))
+
+        this.addActorRenderer(new HouseActorRenderer(this.game))
     }
 
     private addBasicRenderer(renderer: BasicRenderer) {

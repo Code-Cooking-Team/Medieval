@@ -46,7 +46,7 @@ function App() {
 
         builder.spawn(ActorType.Guardian, [112, 120])
         builder.spawn(ActorType.Guardian, [110, 120])
-        builder.spawn(ActorType.LumberjackCabin, [107, 120])
+        builder.spawn(ActorType.LumberjackCabin, [87, 120])
         builder.spawn(ActorType.LumberjackCabin, [117, 100])
 
         builder.spawn(ActorType.Guardian, [101, 120])
