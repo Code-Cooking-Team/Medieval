@@ -79,6 +79,8 @@ function App() {
 
         game.emitter.on('started', () => setStarted(true))
         game.emitter.on('stopped', () => setStarted(false))
+
+        player.emitter.on('unselectBuilding', () => setSelectedBuilding(undefined))
     }, [])
 
     useEffect(() => {
@@ -131,12 +133,9 @@ function App() {
                         <InputLabel>Actor</InputLabel>
                         <Select
                             value={selectedBuilding || ''}
-                            onChange={(e) => {
-                                const building = e.target.value as ActorType
-                                player.selectBuilding(building)
-                                player.emitter.once('unselectBuilding').then(() => {
-                                    setSelectedBuilding(undefined)
-                                })
+                            onChange={({ target }) => {
+                                const building = target.value as ActorType
+                                player.selectBuilding(target.value as ActorType)
                             }}
                         >
                             <MenuItem value="">-</MenuItem>
@@ -151,8 +150,7 @@ function App() {
                 <Stack direction="row" alignItems="center" spacing={2}>
                     {selected.map(([type, count]) => (
                         <Button key={type} onClick={() => selectActorsByType(type)}>
-                            {type}
-                            {count}
+                            {type} ({count})
                         </Button>
                     ))}
                 </Stack>
