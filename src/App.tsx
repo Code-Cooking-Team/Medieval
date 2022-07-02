@@ -74,8 +74,8 @@ function App() {
     }, [])
 
     useEffect(() => {
-        game.player.emitter.on('selectActor', (actor) => setSelectedActors(actor))
-        game.player.emitter.on('unselectActor', () => setSelectedActors([]))
+        game.player.emitter.on('selectActors', (actor) => setSelectedActors(actor))
+        game.player.emitter.on('unselectActors', () => setSelectedActors([]))
 
         game.emitter.on('started', () => setStarted(true))
         game.emitter.on('stopped', () => setStarted(false))

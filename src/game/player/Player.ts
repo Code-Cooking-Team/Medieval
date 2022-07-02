@@ -8,18 +8,18 @@ export class Player {
     public emitter = new Emitter<{
         selectBuilding: ActorType
         unselectBuilding: ActorType
-        selectActor: AnyActor[]
-        unselectActor: AnyActor[]
+        selectActors: AnyActor[]
+        unselectActors: AnyActor[]
     }>('Player')
 
     public selectActors(actor: AnyActor[]) {
-        this.emitter.emit('selectActor', actor)
+        this.emitter.emit('selectActors', actor)
         this.selectedActors = actor
     }
 
     public unselectActor() {
         if (!this.selectedActors) return
-        this.emitter.emit('unselectActor', this.selectedActors)
+        this.emitter.emit('unselectActors', this.selectedActors)
         this.selectedActors = []
     }
 
