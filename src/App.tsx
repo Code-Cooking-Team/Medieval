@@ -22,13 +22,14 @@ import {
     Stack,
     ThemeProvider,
 } from '@mui/material'
+import { countBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
 const gameRoot = document.getElementById('game-root') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
-    const [selectedActor, setSelectedActor] = useState<AnyActor[]>([])
+    const [selectedActors, setSelectedActors] = useState<AnyActor[]>([])
     const [started, setStarted] = useState(false)
 
     const { game, player } = useMemo(() => {
@@ -73,8 +74,8 @@ function App() {
     }, [])
 
     useEffect(() => {
-        game.player.emitter.on('selectActor', (actor) => setSelectedActor(actor))
-        game.player.emitter.on('unselectActor', () => setSelectedActor([]))
+        game.player.emitter.on('selectActor', (actor) => setSelectedActors(actor))
+        game.player.emitter.on('unselectActor', () => setSelectedActors([]))
 
         game.emitter.on('started', () => setStarted(true))
         game.emitter.on('stopped', () => setStarted(false))
@@ -101,6 +102,15 @@ function App() {
             game.stop()
         }
     }, [])
+
+    const selected = Object.entries(countBy(selectedActors, (actor) => actor.type)) as [
+        ActorType,
+        number,
+    ][]
+
+    const selectActorsByType = (type: ActorType) => {
+        player.selectActors(selectedActors.filter((actor) => actor.type === type))
+    }
 
     return (
         <ThemeProvider theme={darkTheme}>
@@ -137,9 +147,13 @@ function App() {
                             ))}
                         </Select>
                     </FormControl>
-
-                    {selectedActor.map((actor) => (
-                        <b key={actor.id}>{actor.type}</b>
+                </Stack>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                    {selected.map(([type, count]) => (
+                        <Button key={type} onClick={() => selectActorsByType(type)}>
+                            {type}
+                            {count}
+                        </Button>
                     ))}
                 </Stack>
             </Bottom>
@@ -165,6 +179,8 @@ const Bottom = styled.div({
     padding: '10px',
     display: 'flex',
     justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
     backdropFilter: 'blur(15px)',
     boxShadow: '0 0 40px -10px rgba(0, 0, 0, 0.3)',
 })
