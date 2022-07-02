@@ -4,7 +4,7 @@ import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { AnyActor, Position } from '+game/types'
 
-import { first, uniq } from 'lodash'
+import { first, uniq, xor } from 'lodash'
 import { Raycaster, Vector2 } from 'three'
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
@@ -71,16 +71,26 @@ export class Interactions {
             }
         } else {
             const actor = first(this.selectByMouseEvent(event))
-            if (actor) {
-                if (event.shiftKey || event.ctrlKey) {
+            const shiftKey = event.shiftKey || event.ctrlKey
+
+            if (!actor) {
+                if (shiftKey) return
+                this.game.player.unselectActor()
+                return
+            }
+
+            const currentSelected = this.game.player.selectedActors
+
+            if (shiftKey) {
+                if (currentSelected.includes(actor)) {
                     this.game.player.selectActors(
-                        uniq([actor, ...this.game.player.selectedActors]),
+                        currentSelected.filter((item) => item !== actor),
                     )
                 } else {
-                    this.game.player.selectActors([actor])
+                    this.game.player.selectActors(uniq([actor, ...currentSelected]))
                 }
             } else {
-                this.game.player.unselectActor()
+                this.game.player.selectActors([actor])
             }
         }
     }
@@ -159,18 +169,21 @@ export class Interactions {
     }
 
     private boxSelect(add = false) {
-        const allSelected = this.selectionBox.select()
+        const currentSelected = this.game.player.selectedActors
+        const selectedMeshes = this.selectionBox.select()
 
-        const actors = allSelected
+        const newSelected = selectedMeshes
             .map((item) => item.userData.actor)
             .filter((actor) => !!actor) as AnyActor[]
 
-        if (add) {
-            this.game.player.selectActors(
-                uniq([...actors, ...this.game.player.selectedActors]),
-            )
+        if (!add) {
+            this.game.player.selectActors(newSelected)
         } else {
-            this.game.player.selectActors(actors)
+            if (newSelected.every((item) => currentSelected.includes(item))) {
+                this.game.player.selectActors(xor(currentSelected, newSelected))
+            } else {
+                this.game.player.selectActors(uniq([...newSelected, ...currentSelected]))
+            }
         }
     }
 
