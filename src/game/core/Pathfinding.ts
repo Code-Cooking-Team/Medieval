@@ -47,16 +47,14 @@ export class Pathfinding {
 
         this.easyStar.removeAllAdditionalPointCosts()
 
-        this.word.tiles.forEach((row, y) =>
-            row.forEach((tile, x) => {
-                if (!tile.walkCost) return
-                this.easyStar.setAdditionalPointCost(x, y, tile.walkCost)
-            }),
-        )
+        this.word.forEachTile((tile, [x, y]) => {
+            if (!tile.walkCost) return
+            this.easyStar.setAdditionalPointCost(x, y, tile.walkCost)
+        })
 
         this.easyStar.setGrid(tiles)
         this.easyStar.setAcceptableTiles([1])
-        if (config.pathfinding.enableDiagonals) this.easyStar.enableDiagonals()
-        if (config.pathfinding.enableCornerCutting) this.easyStar.enableCornerCutting()
+        this.easyStar.enableDiagonals()
+        this.easyStar.enableCornerCutting()
     }
 }

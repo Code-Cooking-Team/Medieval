@@ -23,7 +23,7 @@ export class HouseSpawner extends BuildingSpawner {
             throw new Error(`[HouseSpawner] Unable to spawn at ${x}x${y} position`)
         }
 
-        this.game.word.setTiles((tiles) => {
+        this.game.word.setMultipleTiles((tiles) => {
             createTileGrid(this.grid, ([localX, localY], tile) => {
                 tile.height = currTail.height
                 tiles[y + localY]![x + localX]! = tile

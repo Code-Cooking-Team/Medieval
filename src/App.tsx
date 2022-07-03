@@ -39,7 +39,7 @@ function App() {
         const interactions = new InteractionsManager(game, renderer)
 
         const floraSpawner = new FloraSpawner(game)
-        floraSpawner.spawnTrees()
+        floraSpawner.bulkSpawnTrees()
 
         interactions.init()
         renderer.init()

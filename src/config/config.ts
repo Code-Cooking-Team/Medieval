@@ -1,4 +1,3 @@
-// ha ha
 import { createConfig } from './lib/createConfig'
 import { colorInput, minMaxNumber, select } from './lib/definitions'
 
@@ -19,12 +18,6 @@ export const { config, resetConfig, saveConfig } = createConfig({
         shadow: true,
         treeWaving: true,
         wireframe: true,
-    },
-
-    pathfinding: {
-        actorOnSameTileCost: 3,
-        enableDiagonals: true,
-        enableCornerCutting: true,
     },
 
     tree: {

@@ -1,5 +1,6 @@
 import { config } from '+config/config'
 import { StaticActor } from '+game/core/StaticActor'
+import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
 import { ActorType, Position } from '+game/types'
 import { randomArrayItem } from '+helpers/array'
 import { random } from '+helpers/basic'
@@ -37,9 +38,8 @@ export class TreeActor extends StaticActor {
 
         const tile = this.game.word.getTile(newTreePosition)
 
-        if (!tile?.canWalk) return
-
-        this.game.addActor(new TreeActor(this.game, newTreePosition))
+        const spawner = new FloraSpawner(this.game)
+        spawner.spawnNewTree(tile, newTreePosition)
     }
 
     private treeCount() {

@@ -3,8 +3,8 @@ import { Position } from '+game/types'
 
 import { Spawner } from './Spawner'
 
-export const createUnitSpawner = (ActorClass: any) => {
-    return class UnitSpawner implements Spawner {
+export const createSimpleSpawner = (ActorClass: any, TileClass?: any) => {
+    return class SimpleSpawner implements Spawner {
         public position: Position = [0, 0]
 
         constructor(public game: Game) {}
@@ -21,6 +21,10 @@ export const createUnitSpawner = (ActorClass: any) => {
         public spawn() {
             const actor = new ActorClass(this.game, this.position)
             this.game.addActor(actor)
+
+            if (TileClass) {
+                this.game.word.setTile(this.position, new TileClass())
+            }
         }
     }
 }

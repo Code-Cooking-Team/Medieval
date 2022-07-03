@@ -30,43 +30,41 @@ export class StepTile extends Tile {
     public name = 'Step'
     public color = generateSimilarColor(0xbfaa34, 20, true)
     public canBuild = false
-    public height = random(1, 2) + 0.2
     public treeChance = 0.005
+    public height = random(1, 2) + 0.2
 }
 
 export class WaterTile extends Tile {
     public name = 'Water'
+    public color = generateSimilarColor(0xbdb675, 10)
     public canWalk = false
     public canBuild = false
     public height = random(0, -1) - 0.5
-    public color = generateSimilarColor(0xbdb675, 10)
 }
 
 export class WallTile extends Tile {
     public name = 'Building'
-    public canWalk = false
-    public canBuild = false
     public color = 0x222222
-    public height = 0
+    public canBuild = false
+    public canWalk = false
 }
 
 export class InsideTile extends Tile {
     public name = 'InsideTile'
+    public color = 0x474738
     public canBuild = false
     public walkCost = 3
-    public color = 0x474738
-    public height = 0
 }
 
 export class FootpathTile extends Tile {
     public name = 'Footpath'
     public color = 0x474738
-    public height = 0
 }
 
 export class OvergrownTile extends Tile {
     public name = 'Overgrown'
     public color = generateSimilarColor(0x052507, 4)
-    public height = 0
+    public canBuild = false
+    public treeChance = 0.1
     public walkCost = 3
 }

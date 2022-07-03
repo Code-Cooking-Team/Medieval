@@ -1,24 +1,53 @@
+import { TreeActor } from '+game/actors/tree/TreeActor'
 import { Builder } from '+game/Builder'
 import { Game } from '+game/Game'
-import { ActorType } from '+game/types'
+import { OvergrownTile, Tile } from '+game/Tile'
+import { ActorType, Position } from '+game/types'
 import { seededRandom } from '+helpers/random'
 
 export class FloraSpawner {
-    private builder: Builder
+    private rng = seededRandom(1234567)
 
-    constructor(public game: Game) {
-        this.builder = new Builder(this.game)
-    }
+    constructor(public game: Game) {}
 
-    public spawnTrees() {
-        const rng = seededRandom(1234567)
+    public bulkSpawnTrees() {
+        const tilePositions: Position[] = []
 
-        this.game.word.tiles.forEach((row, y) => {
-            row.forEach((tile, x) => {
-                if (tile.treeChance !== 0 && rng() < tile.treeChance) {
-                    this.builder.spawn(ActorType.Tree, [x, y])
-                }
+        this.game.word.forEachTile((tile, position) => {
+            const shouldSpawn = this.shouldSpawnTree(tile, position)
+            if (!shouldSpawn) return
+
+            tilePositions.push(position)
+
+            const actor = new TreeActor(this.game, position)
+            this.game.addActor(actor)
+        })
+
+        this.game.word.setMultipleTiles((tiles) => {
+            tilePositions.forEach((position) => {
+                const [x, y] = position
+                tiles[y]![x]! = new OvergrownTile()
             })
         })
+    }
+
+    public spawnNewTree(tile: Tile, position: Position) {
+        if (this.shouldSpawnTree(tile, position)) {
+            const builder = new Builder(this.game)
+            builder.spawn(ActorType.Tree, position)
+        }
+    }
+
+    private shouldSpawnTree(tile: Tile, position: Position) {
+        // No three chance so no tree
+        if (tile.treeChance === 0) return false
+
+        // Randomly by tree chance from tile
+        if (this.rng() > tile.treeChance) return false
+
+        // Check if is a tree or other actor already here
+        if (this.game.findActorsByPosition(position, 1).length > 0) return false
+
+        return true
     }
 }

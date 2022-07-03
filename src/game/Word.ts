@@ -30,11 +30,18 @@ export class Word {
 
     public getTile([x, y]: Position) {
         const tile = this.tiles?.[y]?.[x]
-        if (!tile) throw new Error(`[Word] No tile at ${x}, ${y}`)
+        if (!tile) throw new Error(`[Word:getTile] No tile at ${x}, ${y}`)
         return tile
     }
 
-    public setTiles(setCallback: (tiles: Tile[][]) => void) {
+    public setTile([x, y]: Position, tile: Tile) {
+        const currentTile = this.tiles?.[y]?.[x]
+        if (!currentTile) throw new Error(`[Word:setTile] No tile at ${x}, ${y}`)
+        this.tiles[y]![x] = tile
+        this.emitter.emit('tailUpdate')
+    }
+
+    public setMultipleTiles(setCallback: (tiles: Tile[][]) => void) {
         setCallback(this.tiles)
         this.emitter.emit('tailUpdate')
     }
@@ -45,6 +52,14 @@ export class Word {
 
     public getRealSize() {
         return this.getSize().map((v) => v * config.renderer.tileSize) as [number, number]
+    }
+
+    public forEachTile(callback: (tile: Tile, [x, y]: Position) => void) {
+        this.tiles.forEach((row, y) => {
+            row.forEach((tile, x) => {
+                callback(tile, [x, y])
+            })
+        })
     }
 }
 
