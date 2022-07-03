@@ -6,7 +6,7 @@ import { ActorType, Position } from '+game/types'
 import { seededRandom } from '+helpers/random'
 
 export class FloraSpawner {
-    private rng = seededRandom(1234567)
+    private rng = seededRandom()
 
     constructor(public game: Game) {}
 
@@ -23,10 +23,10 @@ export class FloraSpawner {
             this.game.addActor(actor)
         })
 
-        this.game.word.setMultipleTiles((tiles) => {
+        this.game.word.setMultipleTiles((set, get) => {
             tilePositions.forEach((position) => {
-                const [x, y] = position
-                tiles[y]![x]! = new OvergrownTile()
+                const tile = get(position)
+                set(position, new OvergrownTile(tile))
             })
         })
     }

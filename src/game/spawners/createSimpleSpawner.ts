@@ -23,7 +23,8 @@ export const createSimpleSpawner = (ActorClass: any, TileClass?: any) => {
             this.game.addActor(actor)
 
             if (TileClass) {
-                this.game.word.setTile(this.position, new TileClass())
+                const tile = this.game.word.getTile(this.position)
+                this.game.word.setTile(this.position, new TileClass(tile))
             }
         }
     }

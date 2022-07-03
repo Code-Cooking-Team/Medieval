@@ -34,15 +34,19 @@ export class Word {
         return tile
     }
 
-    public setTile([x, y]: Position, tile: Tile) {
-        const currentTile = this.tiles?.[y]?.[x]
-        if (!currentTile) throw new Error(`[Word:setTile] No tile at ${x}, ${y}`)
-        this.tiles[y]![x] = tile
+    public setTile(position: Position, tile: Tile) {
+        this.setTileAt(position, tile)
         this.emitter.emit('tailUpdate')
     }
 
-    public setMultipleTiles(setCallback: (tiles: Tile[][]) => void) {
-        setCallback(this.tiles)
+    public setMultipleTiles(
+        setCallback: (
+            set: (position: Position, tile: Tile) => void,
+            get: (position: Position) => Tile,
+            tiles: Tile[][],
+        ) => void,
+    ) {
+        setCallback(this.setTileAt.bind(this), this.getTile.bind(this), this.tiles)
         this.emitter.emit('tailUpdate')
     }
 
@@ -60,6 +64,12 @@ export class Word {
                 callback(tile, [x, y])
             })
         })
+    }
+
+    private setTileAt([x, y]: Position, tile: Tile) {
+        const currentTile = this.tiles?.[y]?.[x]
+        if (!currentTile) throw new Error(`[Word:setTile] No tile at ${x}, ${y}`)
+        this.tiles[y]![x] = tile
     }
 }
 

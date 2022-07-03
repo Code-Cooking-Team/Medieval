@@ -4,12 +4,15 @@ import { generateSimilarColor } from '+helpers/color'
 export abstract class Tile {
     public id = uuid()
     public name = 'Tile'
+
     public canBuild = true
     public canWalk = true
     public walkCost = 0
     public color = 0x000000
     public height = 0
     public treeChance = 0
+
+    public constructor(public previousTile?: Tile) {}
 }
 
 export class ForestTile extends Tile {

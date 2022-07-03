@@ -29,6 +29,13 @@ export class TreeActor extends StaticActor {
         }
     }
 
+    public death() {
+        const tile = this.game.word.getTile(this.position)
+        if (tile.previousTile) {
+            this.game.word.setTile(this.position, tile.previousTile)
+        }
+    }
+
     public plantNewTree() {
         const newTreePosition = this.position.map(
             (pos) => randomArrayItem(config.tree.newTreeRange)! + pos,

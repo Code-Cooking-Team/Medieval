@@ -82,6 +82,7 @@ function App() {
         game.emitter.on('started', () => setStarted(true))
         game.emitter.on('stopped', () => setStarted(false))
 
+        player.emitter.on('selectBuilding', (building) => setSelectedBuilding(building))
         player.emitter.on('unselectBuilding', () => setSelectedBuilding(undefined))
     }, [])
 
@@ -121,11 +122,10 @@ function App() {
                     </ButtonGroup>
 
                     <FormControl style={{ minWidth: 200 }}>
-                        <InputLabel>Actor</InputLabel>
+                        <InputLabel>Building</InputLabel>
                         <Select
                             value={selectedBuilding || ''}
                             onChange={({ target }) => {
-                                const building = target.value as ActorType
                                 player.selectBuilding(target.value as ActorType)
                             }}
                         >

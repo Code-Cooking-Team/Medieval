@@ -23,9 +23,9 @@ export class Player {
         this.selectedActors = []
     }
 
-    public selectBuilding(building: ActorType) {
-        this.emitter.emit('selectBuilding', building)
-        this.selectedBuilding = building
+    public selectBuilding(actorType: ActorType) {
+        this.emitter.emit('selectBuilding', actorType)
+        this.selectedBuilding = actorType
     }
 
     public unselectBuilding() {

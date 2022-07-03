@@ -28,10 +28,10 @@ export class LumberjackCabinSpawner extends BuildingSpawner {
             )
         }
 
-        this.game.word.setMultipleTiles((tiles) => {
+        this.game.word.setMultipleTiles((set) => {
             createTileGrid(this.grid, ([localX, localY], tile) => {
                 tile.height = currTail.height
-                tiles[y + localY]![x + localX]! = tile
+                set([x + localX, y + localY], tile)
             })
         })
     }
