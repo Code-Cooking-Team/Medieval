@@ -21,6 +21,10 @@ export const { config, resetConfig, saveConfig } = createConfig({
         wireframe: true,
     },
 
+    pathfinding: {
+        actorOnSameTileCost: 3,
+    },
+
     tree: {
         hp: 300,
         removeTickCount: 10,

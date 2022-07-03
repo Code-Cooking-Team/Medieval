@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { Path, Position } from '+game/types'
 import { Word } from '+game/Word'
 
@@ -50,12 +51,16 @@ export class Pathfinding {
 
         this.actors.forEach((actor) => {
             const [x, y] = actor.position
-            this.easyStar.setAdditionalPointCost(x, y, 3)
+            this.easyStar.setAdditionalPointCost(
+                x,
+                y,
+                config.pathfinding.actorOnSameTileCost,
+            )
         })
 
         this.word.tiles.forEach((row, y) =>
             row.forEach((tile, x) => {
-                if (tile.walkCost) return
+                if (!tile.walkCost) return
                 this.easyStar.setAdditionalPointCost(x, y, tile.walkCost)
             }),
         )
