@@ -1,4 +1,3 @@
-import { randomArrayItem } from '+helpers/array'
 import { random, uuid } from '+helpers/basic'
 import { generateSimilarColor } from '+helpers/color'
 
@@ -50,6 +49,7 @@ export class WallTile extends Tile {
     public color = 0x222222
     public height = 0
 }
+
 export class InsideTile extends Tile {
     public name = 'InsideTile'
     public canBuild = false
@@ -62,4 +62,11 @@ export class FootpathTile extends Tile {
     public name = 'Footpath'
     public color = 0x474738
     public height = 0
+}
+
+export class OvergrownTile extends Tile {
+    public name = 'Overgrown'
+    public color = generateSimilarColor(0x052507, 4)
+    public height = 0
+    public walkCost = 3
 }

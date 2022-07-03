@@ -25,7 +25,7 @@ export class Game {
     public emitter = new Emitter<GameEmitterEvents>('Game')
 
     constructor(public word: Word, public player: Player) {
-        this.pf = new Pathfinding(word, this.actors)
+        this.pf = new Pathfinding(word)
 
         this.word.emitter.on('tailUpdate', () => {
             this.pf.update()
@@ -56,11 +56,13 @@ export class Game {
 
     public addActor(actor: StaticActor) {
         this.actors.push(actor)
+        this.pf.update()
         this.emitter.emit('actorAdded', actor)
     }
 
     public removeActor(actor: StaticActor) {
         removeArrayItem(this.actors, actor)
+        this.pf.update()
         this.emitter.emit('actorRemoved', actor)
     }
 

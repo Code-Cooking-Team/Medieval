@@ -5,7 +5,7 @@ import { MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 const fov = 60
-const far = 200
+const far = 350
 const near = 0.1
 
 export class RTSCamera implements Renderable {

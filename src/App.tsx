@@ -1,14 +1,13 @@
 import { ConfigForm } from '+components/config/ConfigForm'
-import { TreeActor } from '+game/actors/tree/TreeActor'
+import { Builder } from '+game/Builder'
 import { Game } from '+game/Game'
-import { Builder } from '+game/player/Builder'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
+import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
 import { spawnList } from '+game/spawners/spawners'
 import { ActorType, AnyActor } from '+game/types'
 import { Word } from '+game/Word'
-import { seededRandom } from '+helpers/random'
 
 import styled from '@emotion/styled'
 import {
@@ -38,6 +37,9 @@ function App() {
         const game = new Game(word, player)
         const renderer = new Renderer(game, gameRoot)
         const interactions = new InteractionsManager(game, renderer)
+
+        const floraSpawner = new FloraSpawner(game)
+        floraSpawner.spawnTrees()
 
         interactions.init()
         renderer.init()
@@ -88,17 +90,6 @@ function App() {
 
         const anyWindow = window as any
         anyWindow.game = game
-
-        // TODO move planting to a separate class
-        const rng = seededRandom(1234567)
-
-        game.word.tiles.forEach((row, y) => {
-            row.forEach((tile, x) => {
-                if (tile.canWalk && rng() < tile.treeChance) {
-                    game.addActor(new TreeActor(game, [x, y]))
-                }
-            })
-        })
 
         return () => {
             game.stop()

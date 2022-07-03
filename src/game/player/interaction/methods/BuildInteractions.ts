@@ -1,5 +1,5 @@
+import { Builder } from '+game/Builder'
 import { Game } from '+game/Game'
-import { Builder } from '+game/player/Builder'
 import { Renderer } from '+game/Renderer'
 
 import { RaycastFinder } from './lib/RaycastFinder'

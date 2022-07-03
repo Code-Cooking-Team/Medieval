@@ -1,5 +1,5 @@
 import Stats from 'stats.js'
-import { Clock, Group, Mesh, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
+import { Clock, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
 
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { HouseActorRenderer } from './actors/house/HouseRenderer'

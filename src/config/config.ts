@@ -23,6 +23,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     pathfinding: {
         actorOnSameTileCost: 3,
+        enableDiagonals: true,
+        enableCornerCutting: true,
     },
 
     tree: {

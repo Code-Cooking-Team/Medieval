@@ -4,13 +4,11 @@ import { Word } from '+game/Word'
 
 import EasyStar from 'easystarjs'
 
-import { StaticActor } from './StaticActor'
-
 export class Pathfinding {
     private easyStar = new EasyStar.js()
     private instanceId?: number
 
-    constructor(private word: Word, private actors: StaticActor[]) {
+    constructor(private word: Word) {
         this.loadTilesGrid()
     }
 
@@ -49,15 +47,6 @@ export class Pathfinding {
 
         this.easyStar.removeAllAdditionalPointCosts()
 
-        this.actors.forEach((actor) => {
-            const [x, y] = actor.position
-            this.easyStar.setAdditionalPointCost(
-                x,
-                y,
-                config.pathfinding.actorOnSameTileCost,
-            )
-        })
-
         this.word.tiles.forEach((row, y) =>
             row.forEach((tile, x) => {
                 if (!tile.walkCost) return
@@ -67,7 +56,7 @@ export class Pathfinding {
 
         this.easyStar.setGrid(tiles)
         this.easyStar.setAcceptableTiles([1])
-        this.easyStar.enableDiagonals()
-        this.easyStar.enableCornerCutting()
+        if (config.pathfinding.enableDiagonals) this.easyStar.enableDiagonals()
+        if (config.pathfinding.enableCornerCutting) this.easyStar.enableCornerCutting()
     }
 }
