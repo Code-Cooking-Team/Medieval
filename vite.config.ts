@@ -5,7 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 // https://vitejs.dev/config/
 export default defineConfig({
     base: '/Medieval/',
-    assetsInclude: ['**/*.gltf'],
+    assetsInclude: ['**/*.gltf', '**/*.hdr'],
     plugins: [
         tsconfigPaths(),
         react({

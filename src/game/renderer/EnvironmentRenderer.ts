@@ -7,17 +7,21 @@ import {
     Camera,
     Color,
     DirectionalLight,
+    EquirectangularReflectionMapping,
     Fog,
     Object3D,
     Scene,
 } from 'three'
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 
 import { BasicRenderer } from './lib/BasicRenderer'
+// royal_esplanade_1k.hdr
+import hdrUrl from './textures/kloetzle_blei_1k.hdr'
 
 export class EnvironmentRenderer extends BasicRenderer {
     private sun = new DirectionalLight(0xffffbb, 0.7)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0x404040, 2)
+    private ambient = new AmbientLight(0x404040, 0.2)
     private camera: Camera
 
     constructor(public game: Game, private scene: Scene, camera: Camera) {
@@ -30,7 +34,7 @@ export class EnvironmentRenderer extends BasicRenderer {
             this.scene.fog = fog
         }
 
-        this.scene.background = new Color(0xb5fffb)
+        // this.scene.background = new Color(0xb5fffb)
 
         if (config.renderer.shadow) {
             this.sun.castShadow = true
@@ -51,6 +55,12 @@ export class EnvironmentRenderer extends BasicRenderer {
         // Helper for the sun
         // const shadowHelper = new CameraHelper(this.sun.shadow.camera)
         // this.scene.add(shadowHelper)
+
+        new RGBELoader().load(hdrUrl, (texture) => {
+            texture.mapping = EquirectangularReflectionMapping
+            this.scene.environment = texture
+            this.scene.background = texture
+        })
 
         this.scene.add(this.sun)
         this.scene.add(this.sunTarget)
@@ -89,11 +99,11 @@ export class EnvironmentRenderer extends BasicRenderer {
             (Math.sin(time * 1 + 1.9) * 0.5 + 0.6) / 4,
         )
 
-        this.scene.background = new Color().setHSL(
-            10 + Math.sin(time * 1) * 0.1,
-            Math.sin(time * 1),
-            Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
-        )
+        // this.scene.background = new Color().setHSL(
+        //     10 + Math.sin(time * 1) * 0.1,
+        //     Math.sin(time * 1),
+        //     Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
+        // )
 
         if (config.renderer.fog) {
             const fogColor = new Color().setHSL(

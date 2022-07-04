@@ -1,5 +1,12 @@
 import Stats from 'stats.js'
-import { Clock, PCFSoftShadowMap, Scene, WebGLRenderer } from 'three'
+import {
+    Clock,
+    EquirectangularReflectionMapping,
+    PCFSoftShadowMap,
+    Scene,
+    sRGBEncoding,
+    WebGLRenderer,
+} from 'three'
 
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { HouseActorRenderer } from './actors/house/HouseRenderer'
@@ -32,6 +39,7 @@ export class Renderer {
     constructor(public game: Game, public el: HTMLElement) {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
+        this.webGLRenderer.outputEncoding = sRGBEncoding
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap

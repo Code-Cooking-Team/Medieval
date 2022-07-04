@@ -6,8 +6,8 @@ import { loadGLTF } from '+helpers/three'
 
 import { PointLight } from 'three'
 
-import houseUrl from './assets/models/house.gltf'
 import { HouseActor } from './HouseActor'
+import houseUrl from './models/house.gltf'
 
 const houseModel = loadGLTF(houseUrl)
 
