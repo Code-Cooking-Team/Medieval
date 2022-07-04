@@ -9,19 +9,22 @@ import {
     DirectionalLight,
     EquirectangularReflectionMapping,
     Fog,
+    HalfFloatType,
     Object3D,
     Scene,
+    UnsignedByteType,
 } from 'three'
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 
 import { BasicRenderer } from './lib/BasicRenderer'
 // royal_esplanade_1k.hdr
-import hdrUrl from './textures/kloetzle_blei_1k.hdr'
+// kloetzle_blei_1k.hdr
+import hdrUrl from './textures/royal_esplanade_1k.hdr'
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xffffbb, 0.7)
+    private sun = new DirectionalLight(0xffffbb, 2)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0x404040, 0.2)
+    private ambient = new AmbientLight(0x404040, 1)
     private camera: Camera
 
     constructor(public game: Game, private scene: Scene, camera: Camera) {
@@ -56,8 +59,9 @@ export class EnvironmentRenderer extends BasicRenderer {
         // const shadowHelper = new CameraHelper(this.sun.shadow.camera)
         // this.scene.add(shadowHelper)
 
-        new RGBELoader().load(hdrUrl, (texture) => {
+        new RGBELoader().setDataType(HalfFloatType).load(hdrUrl, (texture) => {
             texture.mapping = EquirectangularReflectionMapping
+            console.log(texture)
             this.scene.environment = texture
             this.scene.background = texture
         })

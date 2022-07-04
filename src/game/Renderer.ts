@@ -3,6 +3,7 @@ import {
     Clock,
     EquirectangularReflectionMapping,
     PCFSoftShadowMap,
+    ReinhardToneMapping,
     Scene,
     sRGBEncoding,
     WebGLRenderer,
@@ -40,6 +41,8 @@ export class Renderer {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
         this.webGLRenderer.outputEncoding = sRGBEncoding
+        this.webGLRenderer.toneMapping = ReinhardToneMapping
+        this.webGLRenderer.toneMappingExposure = 0.3
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
