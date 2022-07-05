@@ -1,0 +1,12 @@
+{
+  "cSpell.words": [
+    "easystarjs",
+    "Emittery",
+    "Pathfinding",
+    "Raycast",
+    "Raycaster",
+    "Renderable",
+    "wireframe"
+  ],
+  "vitest.enable": true
+}
