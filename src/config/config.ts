@@ -20,6 +20,18 @@ export const { config, resetConfig, saveConfig } = createConfig({
         wireframe: true,
     },
 
+    house: {
+        hp: 1000,
+        newChildCountMin: 100,
+        newChildCountMax: 300,
+    },
+
+    human: {
+        hp: 100,
+        randomWalkChance: 0.01,
+        walkAroundHomeDistance: 7,
+    },
+
     tree: {
         hp: 300,
         removeTickCount: 10,

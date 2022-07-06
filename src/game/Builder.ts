@@ -14,7 +14,7 @@ export class Builder {
         spawner.setPosition(position)
 
         if (spawner.canSpawn()) {
-            spawner.spawn()
+            return spawner.spawn()
         }
     }
 }

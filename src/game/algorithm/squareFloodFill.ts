@@ -1,4 +1,5 @@
 import { Position } from '+game/types'
+import { addVector } from '+helpers/math'
 
 const squareVectors: Position[] = [
     // left/right
@@ -95,5 +96,3 @@ export const squareFloodFill = (
 
     return result
 }
-
-const addVector = (a: Position, b: Position): Position => [a[0] + b[0], a[1] + b[1]]

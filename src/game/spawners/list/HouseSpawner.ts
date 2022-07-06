@@ -29,5 +29,7 @@ export class HouseSpawner extends BuildingSpawner {
                 set([x + localX, y + localY], tile)
             })
         })
+
+        return house
     }
 }

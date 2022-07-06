@@ -1,4 +1,5 @@
 import { GuardianActor } from '+game/actors/guardian/GuardianActor'
+import { HumanActor } from '+game/actors/human/HumanActor'
 import { TreeActor } from '+game/actors/tree/TreeActor'
 import { Game } from '+game/Game'
 import { OvergrownTile } from '+game/Tile'
@@ -17,6 +18,7 @@ export const spawners: Partial<Record<ActorType, Instantiable<Spawner>>> = {
     [ActorType.LumberjackCabin]: LumberjackCabinSpawner,
     [ActorType.House]: HouseSpawner,
     [ActorType.Guardian]: createSimpleSpawner(GuardianActor),
+    [ActorType.Human]: createSimpleSpawner(HumanActor),
     [ActorType.Tree]: createSimpleSpawner(TreeActor, OvergrownTile),
 }
 

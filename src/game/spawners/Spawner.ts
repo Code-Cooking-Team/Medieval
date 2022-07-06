@@ -1,5 +1,5 @@
 import { Game } from '+game/Game'
-import { Position } from '+game/types'
+import { AnyActor, Position } from '+game/types'
 
 import { Grid } from './grid'
 
@@ -7,7 +7,7 @@ export interface Spawner {
     position: Position
     canSpawn(): boolean
     setPosition(position: Position): void
-    spawn(): void
+    spawn(): AnyActor
 }
 
 export abstract class BuildingSpawner implements Spawner {
@@ -26,6 +26,7 @@ export abstract class BuildingSpawner implements Spawner {
         return tile?.canBuild
     }
 
+    // @ts-ignore TODO get rid of this because it's sad :(
     public spawn() {
         throw new Error(`[Spawner] Implement spawn() method`)
     }

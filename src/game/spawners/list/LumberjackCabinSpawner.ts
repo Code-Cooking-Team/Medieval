@@ -16,6 +16,7 @@ export class LumberjackCabinSpawner extends BuildingSpawner {
     public spawn() {
         const [x, y] = this.position
         const cabin = new LumberjackCabinActor(this.game, [x + 2, y + 2])
+        // TODO remove lumberjack actor from here
         const lumberjack = new LumberjackActor(this.game, [x, y], cabin)
 
         this.game.addActor(cabin)
@@ -34,5 +35,7 @@ export class LumberjackCabinSpawner extends BuildingSpawner {
                 set([x + localX, y + localY], tile)
             })
         })
+
+        return cabin
     }
 }
