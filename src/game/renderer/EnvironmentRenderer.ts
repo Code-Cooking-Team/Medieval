@@ -12,6 +12,7 @@ import {
     HalfFloatType,
     Object3D,
     Scene,
+    TextureLoader,
     UnsignedByteType,
 } from 'three'
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
@@ -19,12 +20,12 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 import { BasicRenderer } from './lib/BasicRenderer'
 // royal_esplanade_1k.hdr
 // kloetzle_blei_1k.hdr
-import hdrUrl from './textures/royal_esplanade_1k.hdr'
+import hdrUrl from './textures/bg.jpg'
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xffffbb, 2)
+    private sun = new DirectionalLight(0xffffbb, 0.6)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0x404040, 1)
+    private ambient = new AmbientLight(0x404040, 0.1)
     private camera: Camera
 
     constructor(public game: Game, private scene: Scene, camera: Camera) {
@@ -33,11 +34,11 @@ export class EnvironmentRenderer extends BasicRenderer {
         this.camera = camera
 
         if (config.renderer.fog) {
-            const fog = new Fog(new Color(0xb5fffb), 0, 150)
+            const fog = new Fog(new Color(0xa2d3e8), 0, 150)
             this.scene.fog = fog
         }
 
-        // this.scene.background = new Color(0xb5fffb)
+        this.scene.background = new Color(0xa2d3e8)
 
         if (config.renderer.shadow) {
             this.sun.castShadow = true
@@ -59,11 +60,16 @@ export class EnvironmentRenderer extends BasicRenderer {
         // const shadowHelper = new CameraHelper(this.sun.shadow.camera)
         // this.scene.add(shadowHelper)
 
-        new RGBELoader().setDataType(HalfFloatType).load(hdrUrl, (texture) => {
+        const loader = new TextureLoader()
+
+        // new RGBELoader().setDataType(HalfFloatType).load(hdrUrl, (texture) => {
+        loader.load(hdrUrl, (texture) => {
             texture.mapping = EquirectangularReflectionMapping
             console.log(texture)
+            const background = (texture.clone().mapping =
+                EquirectangularReflectionMapping)
             this.scene.environment = texture
-            this.scene.background = texture
+            // this.scene.background = texture
         })
 
         this.scene.add(this.sun)

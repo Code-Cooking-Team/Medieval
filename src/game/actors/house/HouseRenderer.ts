@@ -7,7 +7,7 @@ import { loadGLTF } from '+helpers/three'
 import { PointLight } from 'three'
 
 import { HouseActor } from './HouseActor'
-import houseUrl from './models/house.gltf'
+import houseUrl from './models/house2.gltf'
 
 const houseModel = loadGLTF(houseUrl)
 
@@ -18,6 +18,15 @@ export class HouseActorRenderer extends ActorRenderer<HouseActor> {
         const { group, interactionShape } = super.createActorModel(actor, tile)
 
         houseModel.then((model) => {
+            model.children.forEach((child) => {
+                child.castShadow = true
+                child.receiveShadow = true
+                // if (child.material) {
+                //     child.material.metalness = 0
+                // }
+                model.position.x = 2
+                model.position.z = 2
+            })
             group.add(model.clone())
         })
 

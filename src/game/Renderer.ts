@@ -1,7 +1,9 @@
 import Stats from 'stats.js'
 import {
+    ACESFilmicToneMapping,
     Clock,
     EquirectangularReflectionMapping,
+    NoToneMapping,
     PCFSoftShadowMap,
     ReinhardToneMapping,
     Scene,
@@ -41,8 +43,8 @@ export class Renderer {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
         this.webGLRenderer.outputEncoding = sRGBEncoding
-        this.webGLRenderer.toneMapping = ReinhardToneMapping
-        this.webGLRenderer.toneMappingExposure = 0.3
+        this.webGLRenderer.toneMapping = NoToneMapping
+        this.webGLRenderer.toneMappingExposure = 1
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap

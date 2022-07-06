@@ -14,12 +14,12 @@ export class WaterRenderer extends BasicRenderer {
         const geometry = createWordPlane(this.game.word, 'random', 1.8)
 
         const material = new MeshStandardMaterial({
-            color: 0x5dd1e8,
+            color: 0xa2d3e8,
             side: DoubleSide,
             transparent: true,
-            opacity: 0.7,
-            roughness: 0.1,
-            metalness: 0.5,
+            opacity: 0.3,
+            roughness: 0,
+            metalness: 1,
             flatShading: true,
         })
 
