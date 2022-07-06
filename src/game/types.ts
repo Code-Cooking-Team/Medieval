@@ -7,11 +7,12 @@ export type Path = { x: number; y: number }[] | null
 
 export enum ActorType {
     Empty = 'Empty',
+    House = 'House',
+    Human = 'Human',
     Tree = 'Tree',
     Lumberjack = 'Lumberjack',
     LumberjackCabin = 'LumberjackCabin',
     Guardian = 'Guardian',
-    House = 'House',
 }
 
 export interface ClockInfo {

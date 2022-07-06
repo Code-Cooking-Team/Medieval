@@ -20,7 +20,7 @@ export class TreeActor extends StaticActor {
         if (this.newTreeCount <= 0) {
             this.newTreeCount = this.treeCount()
 
-            this.plantNewTree()
+            this.spawnNewTree()
         }
 
         if (this.isDead()) {
@@ -36,7 +36,7 @@ export class TreeActor extends StaticActor {
         }
     }
 
-    public plantNewTree() {
+    public spawnNewTree() {
         const newTreePosition = this.position.map(
             (pos) => randomArrayItem(config.tree.newTreeRange)! + pos,
         ) as Position

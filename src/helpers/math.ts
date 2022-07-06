@@ -5,3 +5,8 @@ export const distanceBetweenPoints = ([x1, y1]: Position, [x2, y2]: Position) =>
 
 export const maxValue = (curr: number, expected: number) =>
     curr < expected ? curr : expected
+
+export const addVector = (a: Position, b: Position): Position => [
+    a[0] + b[0],
+    a[1] + b[1],
+]

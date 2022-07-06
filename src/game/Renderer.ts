@@ -11,6 +11,7 @@ import {
     WebGLRenderer,
 } from 'three'
 
+import { actorRenderers, basicRenderers } from './actors'
 import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
 import { HouseActorRenderer } from './actors/house/HouseRenderer'
 import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
@@ -94,15 +95,13 @@ export class Renderer {
         this.addBasicRenderer(this.ground)
         this.addBasicRenderer(this.environment)
 
-        this.addBasicRenderer(new WaterRenderer(this.game))
-        this.addBasicRenderer(new TreeRenderer(this.game))
+        basicRenderers.forEach((BasicRenderer) => {
+            this.addBasicRenderer(new BasicRenderer(this.game))
+        })
 
-        this.addActorRenderer(new LumberjackCabinActorRenderer(this.game))
-        this.addActorRenderer(new LumberjackActorRenderer(this.game))
-
-        this.addActorRenderer(new GuardianActorRenderer(this.game))
-
-        this.addActorRenderer(new HouseActorRenderer(this.game))
+        actorRenderers.forEach((ActorRenderer) => {
+            this.addActorRenderer(new ActorRenderer(this.game))
+        })
     }
 
     private addBasicRenderer(renderer: BasicRenderer) {
