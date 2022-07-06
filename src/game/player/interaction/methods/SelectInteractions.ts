@@ -1,3 +1,4 @@
+import { squareFloodFill } from '+game/algorithm/squareFloodFill'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
@@ -133,22 +134,22 @@ export class SelectInteractions {
         const currentSelected = this.game.player.selectedActors
         const position = this.finder.findPositionByMouseEvent(event)
 
-        if (position && currentSelected.length) {
-            let actorCount = currentSelected.length
-            let actorsInOrder = Math.floor(Math.sqrt(actorCount))
-            let actorsInOrderOffset = Math.floor(actorsInOrder / 2)
-            if (actorsInOrder < 1) actorsInOrder = 1
+        if (!position || !currentSelected.length) return
 
-            currentSelected.forEach((actor, index) => {
-                if (actor instanceof WalkableActor) {
-                    let x = position[0] + (index % actorsInOrder)
-                    let y =
-                        position[1] + (index - (index % actorsInOrder)) / actorsInOrder
+        const isWalkable = (actor: AnyActor): actor is WalkableActor =>
+            actor instanceof WalkableActor
 
-                    actor.goTo([x - actorsInOrderOffset, y - actorsInOrderOffset])
-                }
-            })
-        }
+        const walkableActors = currentSelected.filter(isWalkable)
+
+        const positions = squareFloodFill(position, walkableActors.length, (position) => {
+            if (!this.game.word.hasTile(position)) return false
+            return this.game.word.getTile(position).canWalk
+        })
+
+        walkableActors.forEach((actor, index) => {
+            const pos = positions[index]!
+            actor.goTo(pos)
+        })
     }
 
     private boxSelect(add = false) {

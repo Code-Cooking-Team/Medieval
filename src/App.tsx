@@ -46,6 +46,8 @@ function App() {
 
         const builder = new Builder(game)
 
+        builder.spawn(ActorType.House, [112, 113])
+
         builder.spawn(ActorType.Guardian, [112, 120])
         builder.spawn(ActorType.Guardian, [110, 120])
         builder.spawn(ActorType.LumberjackCabin, [87, 120])

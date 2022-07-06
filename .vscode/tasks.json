@@ -15,6 +15,13 @@
       "problemMatcher": [],
       "label": "npm: test",
       "detail": "vitest"
+    },
+    {
+      "type": "npm",
+      "script": "coverage",
+      "problemMatcher": [],
+      "label": "npm: coverage",
+      "detail": "vitest run --coverage"
     }
   ]
 }
