@@ -147,8 +147,8 @@ export class SelectInteractions {
         })
 
         walkableActors.forEach((actor, index) => {
-            const pos = positions[index]!
-            actor.goTo(pos)
+            const newPosition = positions[index]
+            if (newPosition) actor.goTo(newPosition)
         })
     }
 

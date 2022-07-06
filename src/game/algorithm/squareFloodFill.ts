@@ -70,6 +70,8 @@ export const squareFloodFill = (
         checkAndAddToResults(position)
     }
 
+    if (!result.length) return []
+
     let vectorIndex = 0
     let maxIterations = 100_000
 
