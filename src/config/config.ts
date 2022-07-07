@@ -6,6 +6,9 @@ export const { config, resetConfig, saveConfig } = createConfig({
         tickTime: 200,
         devTilesSize: 60,
         orbitalControls: false,
+        cameraFov: 60,
+        cameraFar: 350,
+        cameraNear: 0.1,
     },
 
     renderer: {

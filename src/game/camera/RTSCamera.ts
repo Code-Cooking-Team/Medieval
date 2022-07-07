@@ -4,16 +4,12 @@ import { ClockInfo, Renderable } from '+game/types'
 import { MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-const fov = 60
-const far = 350
-const near = 0.1
-
 export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
-        fov,
+        config.core.cameraFov,
         window.innerWidth / window.innerHeight,
-        near,
-        far,
+        config.core.cameraNear,
+        config.core.cameraFar,
     )
 
     private keyPressed: { [key: string]: number } = {}
@@ -37,15 +33,10 @@ export class RTSCamera implements Renderable {
         const now = new Date().getTime()
 
         Object.entries(this.keyPressed).forEach(([key, start]) => {
-            const duration = now - start
-            // increase momentum if key pressed longer
-            let speedBustByDistance = this.camera.position.y / 100
-            let momentum = Math.sqrt(duration + 800) * 0.01
-            // adjust for actual time passed
-            momentum = (momentum * deltaTime) / 0.016
-            let momentumTranslate = momentum + speedBustByDistance
+            const momentum = this.getMomentum(now, start, deltaTime)
+            const zoomOutBust = this.camera.position.y / 100
+            const momentumTranslate = momentum + zoomOutBust
 
-            let q = new Quaternion()
             switch (key) {
                 case 'w':
                     this.camera.translateY(momentumTranslate / 1.5)
@@ -61,19 +52,32 @@ export class RTSCamera implements Renderable {
                 case 'a':
                     this.camera.translateX(-momentumTranslate)
                     break
-                case 'e':
-                    q.setFromAxisAngle(new Vector3(0, 1, 0), -momentum * 0.1)
-                    this.camera.applyQuaternion(q)
-                    this.camera.translateX(-momentumTranslate)
-                    break
                 case 'q':
-                    q.setFromAxisAngle(new Vector3(0, 1, 0), momentum * 0.1)
-                    this.camera.applyQuaternion(q)
-                    this.camera.translateX(momentumTranslate)
+                    this.rotateCamera(-momentum)
+                    break
+                case 'e':
+                    this.rotateCamera(momentum)
                     break
                 default:
             }
         })
+    }
+
+    private getMomentum(now: number, start: number, deltaTime: number) {
+        const duration = now - start
+        // increase momentum if key pressed longer
+        let momentum = Math.sqrt(duration + 800) * 0.01
+        // adjust for actual time passed
+        return (momentum * deltaTime) / 0.016
+    }
+
+    private rotateCamera(momentum: number) {
+        const quat = new Quaternion()
+        const v3 = new Vector3(0, 1, 0)
+
+        quat.setFromAxisAngle(v3, momentum * 0.1)
+        this.camera.applyQuaternion(quat)
+        this.camera.translateX(momentum)
     }
 
     private orbitalControls() {

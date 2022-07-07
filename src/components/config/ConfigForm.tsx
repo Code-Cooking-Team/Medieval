@@ -72,6 +72,7 @@ export const ConfigForm = () => {
                         onClick={() => {
                             saveConfig()
                             render()
+                            window.location.reload()
                         }}
                     >
                         Save
