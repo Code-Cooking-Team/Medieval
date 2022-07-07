@@ -76,7 +76,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
     public render(clockInfo: ClockInfo) {
         this.updatePosition()
-        this.updateRotation()
+        this.updateRotation(clockInfo)
         this.updateHP()
         this.updateSelect()
     }
@@ -116,7 +116,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
             group.position.y += (tile.height - group.position.y) * this.moveSpeed
         })
     }
-    private updateRotation() {
+    private updateRotation(clockInfo: ClockInfo) {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
 
@@ -139,8 +139,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
                     newRotation,
                 )
                 if (!group.quaternion.equals(targetQuaternion)) {
-                    // TODO time delta
-                    var step = this.moveSpeed * 1.1
+                    var step = clockInfo.deltaTime * 3
                     group.quaternion.rotateTowards(targetQuaternion, step)
                 }
 

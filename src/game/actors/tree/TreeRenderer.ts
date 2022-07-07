@@ -19,10 +19,18 @@ export class TreeRenderer implements Renderable {
     public actorType: ActorType = ActorType.Tree
 
     private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3)
-    private boughMaterial = new MeshStandardMaterial({ color: 0x2e2625 })
+    private boughMaterial = new MeshStandardMaterial({
+        color: 0x2e2625,
+        metalness: 0.8,
+        roughness: 1,
+    })
 
     private coronaGeometry = new SphereGeometry(1.5, 5, 4)
-    private coronaMaterial = new MeshStandardMaterial({ color: 0x2c420b })
+    private coronaMaterial = new MeshStandardMaterial({
+        color: 0x2c420b,
+        metalness: 0.8,
+        roughness: 0.9,
+    })
 
     public group = new Group()
     public boughInstanceMesh = new InstancedMesh(

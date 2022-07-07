@@ -25,6 +25,8 @@ export class GroundRenderer extends BasicRenderer {
 
         const groundMaterial = new MeshStandardMaterial({
             side: DoubleSide,
+            metalness: 0.8,
+            roughness: 1,
             vertexColors: true,
         })
 
