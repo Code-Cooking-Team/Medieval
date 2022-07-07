@@ -128,10 +128,10 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
             const distance = targetPosition.distanceTo(actorPosition)
             // set the rotation to the direction the actor is going
+            // fix for buildings xD
             if (distance > 1) {
                 const direction = targetPosition.clone().sub(actorPosition)
                 const rotation = direction.angleTo(new Vector3(0, 0, 1))
-                console.log(direction.x > 0 ? rotation * -1 : rotation)
                 let newRotation = direction.x > 0 ? rotation : rotation * -1
 
                 const targetQuaternion = new Quaternion().setFromAxisAngle(
