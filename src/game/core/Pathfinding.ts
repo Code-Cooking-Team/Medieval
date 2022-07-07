@@ -1,4 +1,3 @@
-import { config } from '+config'
 import { Path, Position } from '+game/types'
 import { Word } from '+game/Word'
 
@@ -21,13 +20,17 @@ export class Pathfinding {
     }
 
     public findPath([sx, sy]: Position, [ex, ey]: Position) {
-        return new Promise<Path>((resolve) => {
-            const instanceId = this.easyStar.findPath(sx, sy, ex, ey, (path) => {
-                this.instanceId = undefined
-                path?.shift()
-                resolve(path)
-            })
-            this.instanceId = instanceId
+        return new Promise<Path>((resolve, reject) => {
+            try {
+                const instanceId = this.easyStar.findPath(sx, sy, ex, ey, (path) => {
+                    this.instanceId = undefined
+                    path?.shift()
+                    resolve(path)
+                })
+                this.instanceId = instanceId
+            } catch (error) {
+                reject(error)
+            }
         })
     }
 
