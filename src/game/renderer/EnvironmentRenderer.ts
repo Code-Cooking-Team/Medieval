@@ -65,7 +65,6 @@ export class EnvironmentRenderer extends BasicRenderer {
         // new RGBELoader().setDataType(HalfFloatType).load(hdrUrl, (texture) => {
         loader.load(hdrUrl, (texture) => {
             texture.mapping = EquirectangularReflectionMapping
-            console.log(texture)
             const background = (texture.clone().mapping =
                 EquirectangularReflectionMapping)
             this.scene.environment = texture
