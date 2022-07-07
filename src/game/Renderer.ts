@@ -1,29 +1,20 @@
 import Stats from 'stats.js'
 import {
-    ACESFilmicToneMapping,
     Clock,
-    EquirectangularReflectionMapping,
     NoToneMapping,
     PCFSoftShadowMap,
-    ReinhardToneMapping,
     Scene,
     sRGBEncoding,
     WebGLRenderer,
 } from 'three'
 
 import { actorRenderers, basicRenderers } from './actors'
-import { GuardianActorRenderer } from './actors/guardian/GuardianActorRenderer'
-import { HouseActorRenderer } from './actors/house/HouseRenderer'
-import { LumberjackActorRenderer } from './actors/lumberjack/LumberjackActorRenderer'
-import { LumberjackCabinActorRenderer } from './actors/lumberjack/LumberjackCabinActorRenderer'
-import { TreeRenderer } from './actors/tree/TreeRenderer'
-import { RTSCamera } from './camera/RTSCamera'
+import { RTSCamera } from './core/RTSCamera'
 import { Game } from './Game'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
-import { WaterRenderer } from './renderer/WaterRenderer'
 import { AnyActor, ClockInfo } from './types'
 
 const stats = new Stats()

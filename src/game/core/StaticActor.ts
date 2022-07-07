@@ -1,5 +1,5 @@
 import { Game } from '+game/Game'
-import { ActorType, Position } from '+game/types'
+import { ActorType, AnyActor, Position } from '+game/types'
 import { uuid } from '+helpers/basic'
 import { maxValue } from '+helpers/math'
 import { randomSeed } from '+helpers/random'
@@ -30,6 +30,8 @@ export abstract class StaticActor {
     public isDead() {
         return this.hp <= 0
     }
+
+    public interact(actors: AnyActor[]) {}
 
     public debug(): string {
         return `[${this.type}]\nhp: ${this.hp}/${this.maxHp}`

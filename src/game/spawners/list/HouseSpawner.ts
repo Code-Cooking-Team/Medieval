@@ -19,13 +19,9 @@ export class HouseSpawner extends BuildingSpawner {
     public spawn() {
         const [x, y] = this.position
         const house = new HouseActor(this.game, this.position)
+        const currTail = this.game.word.getTile(this.position)
 
         this.game.addActor(house)
-
-        const currTail = this.game.word.getTile(this.position)
-        if (!currTail) {
-            throw new Error(`[HouseSpawner] Unable to spawn at ${x}x${y} position`)
-        }
 
         this.game.word.setMultipleTiles((set) => {
             createTileGrid(this.grid, ([localX, localY], tile) => {

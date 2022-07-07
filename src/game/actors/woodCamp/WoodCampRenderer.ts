@@ -11,17 +11,17 @@ import {
     PointLight,
 } from 'three'
 
-import { LumberjackCabinActor } from './LumberjackCabinActor'
+import { WoodCampActor } from './WoodCampActor'
 
-export class LumberjackCabinActorRenderer extends ActorRenderer<LumberjackCabinActor> {
-    public actorType = ActorType.LumberjackCabin
+export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
+    public actorType = ActorType.WoodCamp
 
     private wallMaterial = new MeshStandardMaterial({ color: 0x4d4d4d })
     private roofMaterial = new MeshStandardMaterial({ color: 0x800e00 })
     private wallGeometry = new BoxGeometry(2, 2, 2)
     private roofGeometry = new OctahedronGeometry(1.5, 0)
 
-    public createActorModel(actor: LumberjackCabinActor, tile: Tile) {
+    public createActorModel(actor: WoodCampActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
 
         const wall = new Mesh(this.wallGeometry, this.wallMaterial)

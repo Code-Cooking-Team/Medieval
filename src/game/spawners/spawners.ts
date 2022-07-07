@@ -7,7 +7,7 @@ import { ActorType } from '+game/types'
 
 import { createSimpleSpawner } from './createSimpleSpawner'
 import { HouseSpawner } from './list/HouseSpawner'
-import { LumberjackCabinSpawner } from './list/LumberjackCabinSpawner'
+import { WoodCampSpawner } from './list/WoodCampSpawner'
 import { Spawner } from './Spawner'
 
 interface Instantiable<T> extends Function {
@@ -15,7 +15,7 @@ interface Instantiable<T> extends Function {
 }
 
 export const spawners: Partial<Record<ActorType, Instantiable<Spawner>>> = {
-    [ActorType.LumberjackCabin]: LumberjackCabinSpawner,
+    [ActorType.WoodCamp]: WoodCampSpawner,
     [ActorType.House]: HouseSpawner,
     [ActorType.Guardian]: createSimpleSpawner(GuardianActor),
     [ActorType.Human]: createSimpleSpawner(HumanActor),

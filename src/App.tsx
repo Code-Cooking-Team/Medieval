@@ -1,8 +1,11 @@
 import { ConfigForm } from '+components/config/ConfigForm'
+import { HumanActor } from '+game/actors/human/HumanActor'
+import { WoodCampActor } from '+game/actors/woodCamp/WoodCampActor'
 import { Builder } from '+game/Builder'
 import { Game } from '+game/Game'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { Player } from '+game/player/Player'
+import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { Renderer } from '+game/Renderer'
 import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
 import { spawnList } from '+game/spawners/spawners'
@@ -48,11 +51,14 @@ function App() {
 
         builder.spawn(ActorType.House, [112, 113])
 
-        builder.spawn(ActorType.Guardian, [112, 120])
+        const h1 = builder.spawn(ActorType.Human, [112, 120]) as HumanActor
+        const h2 = builder.spawn(ActorType.Human, [110, 120]) as HumanActor
 
-        builder.spawn(ActorType.Guardian, [110, 120])
-        builder.spawn(ActorType.LumberjackCabin, [87, 120])
-        builder.spawn(ActorType.LumberjackCabin, [117, 100])
+        const c1 = builder.spawn(ActorType.WoodCamp, [87, 120]) as WoodCampActor
+        const c2 = builder.spawn(ActorType.WoodCamp, [85, 114]) as WoodCampActor
+
+        c1?.interact([h1])
+        c2?.interact([h2])
 
         builder.spawn(ActorType.Guardian, [101, 120])
         builder.spawn(ActorType.Guardian, [102, 120])

@@ -10,7 +10,6 @@ export class HouseActor extends StaticActor {
     public type = ActorType.House
     public maxHp = config.house.hp
     public residentsLimit = 6
-    public residents: HumanActor[] = []
 
     private newChildCount = this.childCount()
 
@@ -18,16 +17,22 @@ export class HouseActor extends StaticActor {
         this.newChildCount--
         if (this.newChildCount <= 0) {
             this.newChildCount = this.childCount()
-            this.spawnNewChild()
+            this.spawnNewHuman()
         }
     }
 
-    private spawnNewChild() {
-        if (this.residents.length >= this.residentsLimit) return
+    private spawnNewHuman() {
+        const humans = this.game.findActorsByType(ActorType.Human) as HumanActor[]
+        const residents = humans.filter((human) => human.home === this)
+
+        if (residents.length >= this.residentsLimit) return
+
         const builder = new Builder(this.game)
-        const actor = builder.spawn(ActorType.Human, this.position)
+        const actor = builder.spawn(ActorType.Human, this.position) as HumanActor
+
         if (!actor) return
-        this.residents.push(actor as HumanActor)
+
+        actor.setHome(this)
     }
 
     private childCount() {

@@ -137,6 +137,12 @@ export class SelectInteractions {
 
         if (!position || !currentSelected.length) return
 
+        const interactionActor = first(this.finder.findActorsByMouseEvent(event))
+        if (interactionActor) {
+            interactionActor.interact(currentSelected)
+            return
+        }
+
         const isWalkable = (actor: AnyActor): actor is WalkableActor =>
             actor instanceof WalkableActor
 
