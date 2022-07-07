@@ -25,7 +25,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
-    private actorGroupMap = new Map<TActor, Group>()
+    protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
     constructor(public game: Game) {
@@ -68,7 +68,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
         group.add(interactionShape)
 
         group.position.x = x * config.renderer.tileSize
-        group.position.y = tile.height + config.renderer.tileSize
+        group.position.y = tile.height
         group.position.z = y * config.renderer.tileSize
 
         return { group, interactionShape }
@@ -76,7 +76,6 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
     public render(clockInfo: ClockInfo) {
         this.updatePosition()
-        this.updateRotation(clockInfo)
         this.updateHP()
         this.updateSelect()
     }
@@ -105,54 +104,19 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
         this.actorGroupMap.delete(actor)
     }
 
-    private updatePosition() {
+    protected updatePosition() {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
             const tile = this.game.word.getTile(actor.position)
             const tileX = x * config.renderer.tileSize
             const tileY = y * config.renderer.tileSize
-            group.position.x += (tileX - group.position.x) * this.moveSpeed
-            group.position.z += (tileY - group.position.z) * this.moveSpeed
-            group.position.y += (tile.height - group.position.y) * this.moveSpeed
-        })
-    }
-    private updateRotation(clockInfo: ClockInfo) {
-        this.actorGroupMap.forEach((group, actor) => {
-            const [x, y] = actor.position
-
-            const tile = this.game.word.getTile(actor.position)
-            const tileX = x * config.renderer.tileSize
-            const tileY = y * config.renderer.tileSize
-            const actorPosition = group.position
-            const targetPosition = new Vector3(tileX, tile.height, tileY)
-
-            const distance = targetPosition.distanceTo(actorPosition)
-            // set the rotation to the direction the actor is going
-            // fix for buildings xD
-            if (distance > 1) {
-                const direction = targetPosition.clone().sub(actorPosition)
-                const rotation = direction.angleTo(new Vector3(0, 0, 1))
-                let newRotation = direction.x > 0 ? rotation : rotation * -1
-
-                const targetQuaternion = new Quaternion().setFromAxisAngle(
-                    new Vector3(0, 1, 0),
-                    newRotation,
-                )
-                if (!group.quaternion.equals(targetQuaternion)) {
-                    var step = clockInfo.deltaTime * 3
-                    group.quaternion.rotateTowards(targetQuaternion, step)
-                }
-
-                // if (newRotation > group.rotation.y) {
-                //     group.rotation.y += (newRotation - group.rotation.y) * this.moveSpeed
-                // } else {
-                //     group.rotation.y -= (newRotation + group.rotation.y) * this.moveSpeed
-                // }
-            }
+            group.position.x = tileX
+            group.position.z = tileY
+            group.position.y = tile.height
         })
     }
 
-    private updateHP() {
+    protected updateHP() {
         this.actorGroupMap.forEach((group, actor) => {
             const hpMesh = group.getObjectByName('hp') as Mesh
             hpMesh.scale.x = actor.hp / actor.maxHp
@@ -160,7 +124,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
         })
     }
 
-    private updateSelect() {
+    protected updateSelect() {
         this.actorInteractionShapeMap.forEach((actor, shape) => {
             shape.visible = this.game.player.selectedActors.includes(actor)
         })

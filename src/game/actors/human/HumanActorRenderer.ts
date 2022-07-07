@@ -1,11 +1,11 @@
 import { WalkableActor } from '+game/core/WalkableActor'
-import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
+import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
 
 import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 
-export class HumanActorRenderer extends ActorRenderer<WalkableActor> {
+export class HumanActorRenderer extends WalkableActorRenderer<WalkableActor> {
     public actorType = ActorType.Human
 
     private material = new MeshStandardMaterial({ color: 0xe0ac69 })

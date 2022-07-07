@@ -1,4 +1,4 @@
-import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
+import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
 
@@ -6,7 +6,7 @@ import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 
 import { LumberjackActor } from './LumberjackActor'
 
-export class LumberjackActorRenderer extends ActorRenderer<LumberjackActor> {
+export class LumberjackActorRenderer extends WalkableActorRenderer<LumberjackActor> {
     public actorType = ActorType.Lumberjack
 
     private material = new MeshStandardMaterial({ color: 0xff4070 })
