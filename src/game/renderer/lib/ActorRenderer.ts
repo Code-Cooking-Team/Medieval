@@ -12,8 +12,6 @@ import {
     MeshBasicMaterial,
     Object3D,
     PlaneGeometry,
-    Quaternion,
-    Vector3,
 } from 'three'
 
 import { BasicRenderer } from './BasicRenderer'

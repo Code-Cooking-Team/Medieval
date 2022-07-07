@@ -11,10 +11,6 @@ import { ActorRenderer } from './ActorRenderer'
 export abstract class WalkableActorRenderer<
     TActor extends WalkableActor,
 > extends ActorRenderer<TActor> {
-    constructor(public game: Game) {
-        super(game)
-    }
-
     public render(clockInfo: ClockInfo) {
         super.render(clockInfo)
         this.updateRotation(clockInfo)
@@ -31,6 +27,7 @@ export abstract class WalkableActorRenderer<
             group.position.y += (tile.height - group.position.y) * this.moveSpeed
         })
     }
+
     protected updateRotation(clockInfo: ClockInfo) {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
@@ -42,9 +39,8 @@ export abstract class WalkableActorRenderer<
             const targetPosition = new Vector3(tileX, tile.height, tileY)
 
             const distance = targetPosition.distanceTo(actorPosition)
-            // set the rotation to the direction the actor is going
-            // fix for buildings xD
-            if (distance > 1) {
+
+            if (distance > 0.1) {
                 const direction = targetPosition.clone().sub(actorPosition)
                 const rotation = direction.angleTo(new Vector3(0, 0, 1))
                 let newRotation = direction.x > 0 ? rotation : rotation * -1
@@ -57,12 +53,6 @@ export abstract class WalkableActorRenderer<
                     var step = clockInfo.deltaTime * 3
                     group.quaternion.rotateTowards(targetQuaternion, step)
                 }
-
-                // if (newRotation > group.rotation.y) {
-                //     group.rotation.y += (newRotation - group.rotation.y) * this.moveSpeed
-                // } else {
-                //     group.rotation.y -= (newRotation + group.rotation.y) * this.moveSpeed
-                // }
             }
         })
     }
