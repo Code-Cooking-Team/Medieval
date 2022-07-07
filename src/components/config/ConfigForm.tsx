@@ -1,5 +1,6 @@
 import { config, configOptions, resetConfig, saveConfig } from '+config'
 import { useLocalStorage } from '+hooks/useLocalStorage'
+import { useTimeoutState } from '+hooks/useTimeoutState'
 
 import {
     Accordion,
@@ -15,16 +16,17 @@ import { useState } from 'react'
 
 import { ConfigItem } from './ConfigItem'
 
-const openConfig: { [key: string]: boolean } = {}
-
 export const ConfigForm = () => {
-    const [isOpen, setIsOpen, resetIsOpen] = useLocalStorage(
-        'configForm:open',
-        openConfig,
+    const [openCategory, setOpenCategory, resetOpenCategory] = useLocalStorage<string>(
+        'configForm:openCategory',
+        '',
     )
+
+    const [showReload, setShowReload] = useTimeoutState(false)
 
     const [, count] = useState(0)
     const render = () => count((n) => n + 1)
+    const reload = () => window.location.reload()
 
     return (
         <>
@@ -33,12 +35,13 @@ export const ConfigForm = () => {
 
                 return (
                     <Accordion
-                        expanded={isOpen[categoryKey]}
+                        expanded={categoryKey === openCategory}
                         onChange={() => {
-                            setIsOpen({
-                                ...isOpen,
-                                [categoryKey]: !isOpen[categoryKey],
-                            })
+                            if (categoryKey === openCategory) {
+                                setOpenCategory('')
+                            } else {
+                                setOpenCategory(categoryKey)
+                            }
                         }}
                         key={categoryKey}
                     >
@@ -68,22 +71,25 @@ export const ConfigForm = () => {
 
             <Stack direction="row" marginTop={2} justifyContent="center">
                 <ButtonGroup disableElevation variant="contained">
-                    <Button
-                        onClick={() => {
-                            saveConfig()
-                            render()
-                            window.location.reload()
-                        }}
-                    >
-                        Save
-                    </Button>
+                    {showReload ? (
+                        <Button onClick={reload}>Reload</Button>
+                    ) : (
+                        <Button
+                            onClick={() => {
+                                saveConfig()
+                                render()
+                                setShowReload(true)
+                            }}
+                        >
+                            Save
+                        </Button>
+                    )}
 
                     <Button
                         onClick={() => {
                             resetConfig()
-                            resetIsOpen()
-                            render()
-                            window.location.reload()
+                            resetOpenCategory()
+                            reload()
                         }}
                     >
                         Reset
