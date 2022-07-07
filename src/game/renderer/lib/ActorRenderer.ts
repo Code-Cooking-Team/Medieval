@@ -12,6 +12,8 @@ import {
     MeshBasicMaterial,
     Object3D,
     PlaneGeometry,
+    Quaternion,
+    Vector3,
 } from 'three'
 
 import { BasicRenderer } from './BasicRenderer'
@@ -74,6 +76,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
     public render(clockInfo: ClockInfo) {
         this.updatePosition()
+        this.updateRotation()
         this.updateHP()
         this.updateSelect()
     }
@@ -111,6 +114,42 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
             group.position.x += (tileX - group.position.x) * this.moveSpeed
             group.position.z += (tileY - group.position.z) * this.moveSpeed
             group.position.y += (tile.height - group.position.y) * this.moveSpeed
+        })
+    }
+    private updateRotation() {
+        this.actorGroupMap.forEach((group, actor) => {
+            const [x, y] = actor.position
+
+            const tile = this.game.word.getTile(actor.position)
+            const tileX = x * config.renderer.tileSize
+            const tileY = y * config.renderer.tileSize
+            const actorPosition = group.position
+            const targetPosition = new Vector3(tileX, tile.height, tileY)
+
+            const distance = targetPosition.distanceTo(actorPosition)
+            // set the rotation to the direction the actor is going
+            if (distance > 1) {
+                const direction = targetPosition.clone().sub(actorPosition)
+                const rotation = direction.angleTo(new Vector3(0, 0, 1))
+                console.log(direction.x > 0 ? rotation * -1 : rotation)
+                let newRotation = direction.x > 0 ? rotation : rotation * -1
+
+                const targetQuaternion = new Quaternion().setFromAxisAngle(
+                    new Vector3(0, 1, 0),
+                    newRotation,
+                )
+                if (!group.quaternion.equals(targetQuaternion)) {
+                    // TODO time delta
+                    var step = this.moveSpeed * 1.1
+                    group.quaternion.rotateTowards(targetQuaternion, step)
+                }
+
+                // if (newRotation > group.rotation.y) {
+                //     group.rotation.y += (newRotation - group.rotation.y) * this.moveSpeed
+                // } else {
+                //     group.rotation.y -= (newRotation + group.rotation.y) * this.moveSpeed
+                // }
+            }
         })
     }
 

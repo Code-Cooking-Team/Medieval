@@ -18,6 +18,7 @@ export class HumanActorRenderer extends ActorRenderer<WalkableActor> {
         body.castShadow = true
         body.receiveShadow = true
         body.scale.y = 2
+        body.scale.z = 0.5
         body.position.y = 0.5
 
         group.add(body)

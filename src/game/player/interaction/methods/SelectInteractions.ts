@@ -83,12 +83,13 @@ export class SelectInteractions {
             return
         }
 
+        this.selectionDiv.onUp()
+
         if (this.distance < 10) {
             this.handleClick(event)
             return
         }
 
-        this.selectionDiv.onUp()
         this.distance = 0
 
         this.selectionBox.endPoint.set(

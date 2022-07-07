@@ -10,7 +10,13 @@ export const configOptions: ConfigOptions = {}
 export const createConfig = <T extends Config>(initialConfig: T) => {
     const cloned = cloneDeep(initialConfig)
     const configLocalStorage = localStorageKey('config', cloned)
-    const config = simplifyConfigValues(configLocalStorage.get(), cloned)
+
+    const margesConfig = {
+        ...cloned,
+        ...configLocalStorage.get(),
+    }
+
+    const config = simplifyConfigValues(margesConfig, cloned)
 
     return {
         config,
