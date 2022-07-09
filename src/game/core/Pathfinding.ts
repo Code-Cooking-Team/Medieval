@@ -1,5 +1,5 @@
 import { Path, Position } from '+game/types'
-import { Word } from '+game/Word'
+import { Word } from '+game/word/Word'
 
 import EasyStar from 'easystarjs'
 

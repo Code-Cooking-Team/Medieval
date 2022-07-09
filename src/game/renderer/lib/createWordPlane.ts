@@ -1,6 +1,6 @@
 import { config } from '+config'
-import { Word } from '+game/Word'
-import { HorizontalPlaneGeometry } from '+helpers/mesh'
+import { Word } from '+game/word/Word'
+import { HorizontalPlaneGeometry } from '+helpers'
 
 export const createWordPlane = (word: Word, diagonals: string, multiply: number = 1) => {
     const [wordWidth, wordHeight] = word.getSize()

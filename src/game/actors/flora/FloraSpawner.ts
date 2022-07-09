@@ -1,9 +1,8 @@
-import { TreeActor } from '+game/actors/tree/TreeActor'
-import { Builder } from '+game/Builder'
+import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { Game } from '+game/Game'
 import { OvergrownTile, Tile } from '+game/Tile'
-import { ActorType, Position } from '+game/types'
-import { seededRandom } from '+helpers/random'
+import { Position } from '+game/types'
+import { seededRandom } from '+helpers'
 
 export class FloraSpawner {
     private rng = seededRandom()
@@ -33,8 +32,7 @@ export class FloraSpawner {
 
     public spawnNewTree(tile: Tile, position: Position) {
         if (this.shouldSpawnTree(tile, position)) {
-            const builder = new Builder(this.game)
-            builder.spawn(ActorType.Tree, position)
+            this.game.spawnActor(TreeActor, position)
         }
     }
 

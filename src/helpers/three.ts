@@ -1,3 +1,5 @@
+import { DiagonalsPlaneGeometry } from '+game/renderer/lib/DiagonalsPlaneGeometry'
+
 import { Group } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
@@ -16,3 +18,10 @@ export const loadGLTF = (url: string) =>
             },
         )
     })
+
+export class HorizontalPlaneGeometry extends DiagonalsPlaneGeometry {
+    constructor(...args: any[]) {
+        super(...args)
+        this.rotateX(-Math.PI / 2)
+    }
+}

@@ -3,10 +3,9 @@ import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Profession } from '+game/professions/Profession'
 import { ActorType, Position } from '+game/types'
-import { random } from '+helpers/basic'
-import { addVector } from '+helpers/math'
+import { addVector, random } from '+helpers'
 
-import { HouseActor } from '../house/HouseActor'
+import { HouseActor } from '../../buildings/house/HouseActor'
 
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human

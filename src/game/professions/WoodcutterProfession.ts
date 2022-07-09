@@ -1,10 +1,10 @@
 import { config } from '+config'
-import { HumanActor } from '+game/actors/human/HumanActor'
-import { TreeActor } from '+game/actors/tree/TreeActor'
-import { WoodCampActor } from '+game/actors/woodCamp/WoodCampActor'
+import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
+import { TreeActor } from '+game/actors/flora/tree/TreeActor'
+import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
-import { maxValue } from '+helpers/math'
+import { maxValue } from '+helpers'
 
 import { Profession } from './Profession'
 

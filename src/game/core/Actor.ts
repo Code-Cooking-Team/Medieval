@@ -1,8 +1,6 @@
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
-import { uuid } from '+helpers/basic'
-import { maxValue } from '+helpers/math'
-import { randomSeed } from '+helpers/random'
+import { ClassType, maxValue, randomSeed, uuid } from '+helpers'
 
 export abstract class Actor {
     public id = uuid()
@@ -44,3 +42,8 @@ export abstract class Actor {
         return `[${this.type}]\nhp: ${this.hp}/${this.maxHp}`
     }
 }
+
+export type ActorClass<T extends Actor> = ClassType<
+    T,
+    ConstructorParameters<typeof Actor>
+>

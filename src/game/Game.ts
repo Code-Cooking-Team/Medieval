@@ -1,13 +1,15 @@
 import { config } from '+config/config'
 import { Player } from '+game/player/Player'
-import { removeArrayItem } from '+helpers/array'
-import { distanceBetweenPoints } from '+helpers/math'
+import { distanceBetweenPoints } from '+helpers'
+import { removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
-import { Actor } from './core/Actor'
+import { isBuildingActor, isWalkableActor } from './actors/helpers'
+import { Actor, ActorClass } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
 import { ActorType, Position } from './types'
-import { Word } from './Word'
+import { applyTileGrid } from './word/tileCodes'
+import { Word } from './word/Word'
 
 interface GameEmitterEvents {
     tick: undefined
@@ -32,20 +34,20 @@ export class Game {
         })
     }
 
-    public start() {
+    public start(): void {
         this.emitter.emit('started')
         this.loop = setInterval(() => {
             this.tick()
         }, config.core.tickTime)
     }
 
-    public stop() {
+    public stop(): void {
         this.emitter.emit('stopped')
         clearInterval(this.loop)
         this.loop = undefined
     }
 
-    public tick() {
+    public tick(): void {
         this.word.tick()
         this.pf.tick()
         this.actors.forEach((actor) => {
@@ -54,13 +56,13 @@ export class Game {
         this.emitter.emit('tick')
     }
 
-    public addActor(actor: Actor) {
+    public addActor(actor: Actor): void {
         this.actors.push(actor)
         this.pf.update()
         this.emitter.emit('actorAdded', actor)
     }
 
-    public removeActor(actor: Actor) {
+    public removeActor(actor: Actor): void {
         removeArrayItem(this.actors, actor)
         this.pf.update()
         this.emitter.emit('actorRemoved', actor)
@@ -70,28 +72,36 @@ export class Game {
         position: Position,
         range: number,
         additionalCondition?: (actor: Actor) => boolean,
-    ) {
+    ): Actor | undefined {
         return this.actors.find((actor) => {
             if (distanceBetweenPoints(actor.position, position) > range) return false
             return additionalCondition?.(actor) ?? true
         })
     }
 
-    public findActorsByType(type: ActorType, isAlive = true) {
+    public findActorsByType(type: ActorType, isAlive = true): Actor[] {
         return this.actors.filter((actor) => {
             if (isAlive && actor.hp <= 0) return false
             return actor.type === type
         })
     }
 
-    public findActorsByPosition(position: Position, range: number, isAlive = true) {
+    public findActorsByPosition(
+        position: Position,
+        range: number,
+        isAlive = true,
+    ): Actor[] {
         return this.actors.filter((actor) => {
             if (isAlive && actor.hp <= 0) return false
             return distanceBetweenPoints(actor.position, position) <= range
         })
     }
 
-    public findClosestActorByType(type: ActorType, position: Position, isAlive = true) {
+    public findClosestActorByType(
+        type: ActorType,
+        position: Position,
+        isAlive = true,
+    ): Actor | undefined {
         const actors = this.findActorsByType(type, isAlive)
         if (!actors[0]) return
 
@@ -101,5 +111,32 @@ export class Game {
 
             return currDist < prevDist ? curr : prev
         }, actors[0])
+    }
+
+    public spawnActor<T extends Actor>(
+        ActorClass: ActorClass<T>,
+        position: Position,
+    ): T | undefined {
+        const actor = new ActorClass(this, position)
+
+        const currTail = this.word.getTile(position)
+
+        if (isWalkableActor(actor) && !currTail.canWalk) return
+
+        if (isBuildingActor(actor)) {
+            if (!currTail.canBuild) return // TODO check entire grid
+            const [x, y] = position
+
+            this.word.setMultipleTiles((set) => {
+                applyTileGrid(actor.grid, ([localX, localY], tile) => {
+                    tile.height = currTail.height
+                    set([x + localX, y + localY], tile)
+                })
+            })
+        }
+
+        this.addActor(actor)
+
+        return actor
     }
 }

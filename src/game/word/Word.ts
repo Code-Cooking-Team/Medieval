@@ -1,26 +1,18 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
-import Map from './maps/de_grass'
-import { ForestTile, MeadowTile, StepTile, Tile, WaterTile } from './Tile'
-import { Position } from './types'
+import map from '../maps/de_grass'
+import { Tile, TileGrid } from '../Tile'
+import { Position } from '../types'
+import { createTilesFromGrid, TileCodeGrid } from './tileCodes'
 
 interface WordEmitterEvents {
     tailUpdate: undefined
 }
 
 export class Word {
-    public tiles: Tile[][] = Map.map((row: string[]) =>
-        row.map((v: string) => shortcuts[v]()),
-    )
-
+    public tiles: TileGrid = createTilesFromGrid(map as TileCodeGrid)
     public emitter = new Emitter<WordEmitterEvents>('Word')
-
-    // public tiles: Tile[][] = [
-    //     ['.', '.', '.'],
-    //     ['.', '.', '.'],
-    //     ['.', '.', '.'],Tile[][]
-    // ].map((row) => row.map((v) => shortcuts[v]()))
 
     public tick() {}
 
@@ -72,10 +64,3 @@ export class Word {
         this.tiles[y]![x] = tile
     }
 }
-
-const shortcuts = {
-    '.': () => new MeadowTile(),
-    '#': () => new StepTile(),
-    'F': () => new ForestTile(),
-    'W': () => new WaterTile(),
-} as any

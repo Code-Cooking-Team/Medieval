@@ -1,4 +1,4 @@
-import { localStorageKey } from '+helpers/storage'
+import { localStorageKey } from '+helpers'
 
 import { useState } from 'react'
 

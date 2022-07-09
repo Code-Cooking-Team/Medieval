@@ -1,10 +1,8 @@
 import { config } from '+config/config'
+import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { Actor } from '+game/core/Actor'
-import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
 import { ActorType, Position } from '+game/types'
-import { randomArrayItem } from '+helpers/array'
-import { random } from '+helpers/basic'
-import { randomSeed } from '+helpers/random'
+import { random, randomArrayItem, randomSeed } from '+helpers'
 
 export class TreeActor extends Actor {
     public type = ActorType.Tree

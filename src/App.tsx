@@ -1,16 +1,16 @@
 import { ConfigForm } from '+components/config/ConfigForm'
-import { HumanActor } from '+game/actors/human/HumanActor'
-import { WoodCampActor } from '+game/actors/woodCamp/WoodCampActor'
-import { Builder } from '+game/Builder'
+import { HouseActor } from '+game/actors/buildings/house/HouseActor'
+import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
+import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
+import { GuardianActor } from '+game/actors/units/guardian/GuardianActor'
+import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
-import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
-import { spawnList } from '+game/spawners/spawners'
-import { ActorType } from '+game/types'
-import { Word } from '+game/Word'
+import { ActorType, allActorTypes } from '+game/types'
+import { Word } from '+game/word/Word'
 
 import styled from '@emotion/styled'
 import {
@@ -24,7 +24,7 @@ import {
     Stack,
     ThemeProvider,
 } from '@mui/material'
-import { countBy } from 'lodash'
+import { groupBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
 const gameRoot = document.getElementById('game-root') as HTMLElement
@@ -47,39 +47,37 @@ function App() {
         interactions.init()
         renderer.init()
 
-        const builder = new Builder(game)
+        game.spawnActor(HouseActor, [112, 113])
 
-        builder.spawn(ActorType.House, [112, 113])
+        const h1 = game.spawnActor(HumanActor, [112, 120])
+        const h2 = game.spawnActor(HumanActor, [110, 120])
 
-        const h1 = builder.spawn(ActorType.Human, [112, 120]) as HumanActor
-        const h2 = builder.spawn(ActorType.Human, [110, 120]) as HumanActor
+        const c1 = game.spawnActor(WoodCampActor, [87, 120])
+        const c2 = game.spawnActor(WoodCampActor, [85, 114])
 
-        const c1 = builder.spawn(ActorType.WoodCamp, [87, 120]) as WoodCampActor
-        const c2 = builder.spawn(ActorType.WoodCamp, [85, 114]) as WoodCampActor
+        if (h1) c1?.interact([h1])
+        if (h2) c2?.interact([h2])
 
-        c1?.interact([h1])
-        c2?.interact([h2])
+        game.spawnActor(GuardianActor, [101, 120])
+        game.spawnActor(GuardianActor, [102, 120])
+        game.spawnActor(GuardianActor, [103, 120])
+        game.spawnActor(GuardianActor, [104, 120])
+        game.spawnActor(GuardianActor, [105, 120])
+        game.spawnActor(GuardianActor, [106, 120])
 
-        builder.spawn(ActorType.Guardian, [101, 120])
-        builder.spawn(ActorType.Guardian, [102, 120])
-        builder.spawn(ActorType.Guardian, [103, 120])
-        builder.spawn(ActorType.Guardian, [104, 120])
-        builder.spawn(ActorType.Guardian, [105, 120])
-        builder.spawn(ActorType.Guardian, [106, 120])
+        game.spawnActor(GuardianActor, [101, 121])
+        game.spawnActor(GuardianActor, [102, 121])
+        game.spawnActor(GuardianActor, [103, 121])
+        game.spawnActor(GuardianActor, [104, 121])
+        game.spawnActor(GuardianActor, [105, 121])
+        game.spawnActor(GuardianActor, [106, 121])
 
-        builder.spawn(ActorType.Guardian, [101, 121])
-        builder.spawn(ActorType.Guardian, [102, 121])
-        builder.spawn(ActorType.Guardian, [103, 121])
-        builder.spawn(ActorType.Guardian, [104, 121])
-        builder.spawn(ActorType.Guardian, [105, 121])
-        builder.spawn(ActorType.Guardian, [106, 121])
-
-        builder.spawn(ActorType.Guardian, [101, 122])
-        builder.spawn(ActorType.Guardian, [102, 122])
-        builder.spawn(ActorType.Guardian, [103, 122])
-        builder.spawn(ActorType.Guardian, [104, 122])
-        builder.spawn(ActorType.Guardian, [105, 122])
-        builder.spawn(ActorType.Guardian, [106, 122])
+        game.spawnActor(GuardianActor, [101, 122])
+        game.spawnActor(GuardianActor, [102, 122])
+        game.spawnActor(GuardianActor, [103, 122])
+        game.spawnActor(GuardianActor, [104, 122])
+        game.spawnActor(GuardianActor, [105, 122])
+        game.spawnActor(GuardianActor, [106, 122])
 
         return { game, player }
     }, [])
@@ -106,9 +104,9 @@ function App() {
         }
     }, [])
 
-    const selected = Object.entries(countBy(selectedActors, (actor) => actor.type)) as [
+    const selected = Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [
         ActorType,
-        number,
+        Actor[],
     ][]
 
     const selectActorsByType = (type: ActorType) => {
@@ -139,7 +137,7 @@ function App() {
                             }}
                         >
                             <MenuItem value="">-</MenuItem>
-                            {spawnList.map((option) => (
+                            {allActorTypes.map((option) => (
                                 <MenuItem key={option} value={option}>
                                     {option}
                                 </MenuItem>
@@ -148,9 +146,9 @@ function App() {
                     </FormControl>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={2}>
-                    {selected.map(([type, count]) => (
+                    {selected.map(([type, actor]) => (
                         <Button key={type} onClick={() => selectActorsByType(type)}>
-                            {type} ({count})
+                            {type} ({actor.length})
                         </Button>
                     ))}
                 </Stack>

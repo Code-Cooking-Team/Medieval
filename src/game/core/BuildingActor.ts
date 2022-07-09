@@ -1,10 +1,10 @@
-import { Grid } from '+game/types'
+import { TileCodeGrid } from '+game/word/tileCodes'
 
 import { Actor } from './Actor'
 
 export class BuildingActor extends Actor {
     public selectImportance = 1
-    public grid: Grid = [['.']]
+    public grid: TileCodeGrid = [['.']]
     public height = 3
 
     public getSize() {

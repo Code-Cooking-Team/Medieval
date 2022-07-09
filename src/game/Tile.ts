@@ -1,5 +1,5 @@
-import { random, uuid } from '+helpers/basic'
-import { generateSimilarColor } from '+helpers/color'
+import { random, uuid } from '+helpers'
+import { generateSimilarColor } from '+helpers'
 
 export abstract class Tile {
     public id = uuid()
@@ -14,6 +14,8 @@ export abstract class Tile {
 
     public constructor(public previousTile?: Tile) {}
 }
+
+export type TileGrid = Tile[][]
 
 export class ForestTile extends Tile {
     public name = 'Forest'

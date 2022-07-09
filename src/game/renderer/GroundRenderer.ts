@@ -1,7 +1,6 @@
 import { config } from '+config'
 import { Game } from '+game/Game'
-import { getPositionByIndex } from '+helpers/array'
-import { HorizontalPlaneGeometry } from '+helpers/mesh'
+import { getPositionByIndex, HorizontalPlaneGeometry } from '+helpers'
 
 import { BufferAttribute, Color, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 

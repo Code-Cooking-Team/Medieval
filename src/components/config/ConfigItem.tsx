@@ -1,5 +1,5 @@
 import { ConfigType } from '+config/lib/definitions'
-import { color0xToHex, colorHexTo0x } from '+helpers/color'
+import { color0xToHex, colorHexTo0x } from '+helpers'
 
 import {
     FormControl,

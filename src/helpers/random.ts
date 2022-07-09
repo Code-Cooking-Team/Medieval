@@ -1,3 +1,8 @@
+export const random = (min: number, max: number, rounded = false) => {
+    const value = Math.random() * (max - min) + min
+    return rounded ? Math.round(value) : value
+}
+
 // Mulberry32 is a simple generator with a 32-bit state,
 // but is extremely fast and has good quality randomness
 // https://stackoverflow.com/a/47593316/11333665

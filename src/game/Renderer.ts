@@ -16,6 +16,7 @@ import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
+import { WaterRenderer } from './renderer/WaterRenderer'
 import { ClockInfo } from './types'
 
 const stats = new Stats()
@@ -28,6 +29,7 @@ export class Renderer {
     private clock = new Clock()
     private environment: EnvironmentRenderer
     private ground: GroundRenderer
+    private water: WaterRenderer
 
     private basicRendererList: BasicRenderer[] = []
     private actorRendererList: ActorRenderer<Actor>[] = []
@@ -54,6 +56,7 @@ export class Renderer {
             this.rtsCamera.camera,
         )
         this.ground = new GroundRenderer(this.game)
+        this.water = new WaterRenderer(this.game)
 
         this.addRenderers()
     }
@@ -86,6 +89,7 @@ export class Renderer {
     private addRenderers() {
         this.addBasicRenderer(this.ground)
         this.addBasicRenderer(this.environment)
+        this.addBasicRenderer(this.water)
 
         basicRenderers.forEach((BasicRenderer) => {
             this.addBasicRenderer(new BasicRenderer(this.game))

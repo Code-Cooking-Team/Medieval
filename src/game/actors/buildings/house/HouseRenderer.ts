@@ -2,7 +2,7 @@ import { config } from '+config'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
-import { loadGLTF } from '+helpers/three'
+import { loadGLTF } from '+helpers'
 
 import { LOD, PointLight } from 'three'
 
@@ -11,7 +11,7 @@ import houseUrl from './models/house3.gltf'
 
 const houseModel = loadGLTF(houseUrl)
 
-export class HouseActorRenderer extends ActorRenderer<HouseActor> {
+export class HouseRenderer extends ActorRenderer<HouseActor> {
     public actorType = ActorType.House
 
     public createActorModel(actor: HouseActor, tile: Tile) {

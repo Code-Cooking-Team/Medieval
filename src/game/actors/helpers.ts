@@ -2,7 +2,7 @@ import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 
-import { HumanActor } from './human/HumanActor'
+import { HumanActor } from './units/human/HumanActor'
 
 export const isHumanActor = (actor: Actor): actor is HumanActor => {
     return actor instanceof HumanActor

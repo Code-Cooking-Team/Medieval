@@ -1,12 +1,6 @@
-import { Actor } from './core/Actor'
-import { WalkableActor } from './core/WalkableActor'
-
 export type Position = [number, number]
 
 export type Path = { x: number; y: number }[] | null
-
-export type GridTileCode = '.' | '!' | 'W'
-export type Grid = GridTileCode[][]
 
 export enum ActorType {
     Empty = 'Empty',
@@ -16,6 +10,10 @@ export enum ActorType {
     Guardian = 'Guardian',
     WoodCamp = 'WoodCamp',
 }
+
+export const allActorTypes = Object.values(ActorType).filter(
+    (type) => type !== ActorType.Empty,
+)
 
 export interface ClockInfo {
     elapsedTime: number

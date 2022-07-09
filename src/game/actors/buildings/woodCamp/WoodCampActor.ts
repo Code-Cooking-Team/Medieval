@@ -1,19 +1,19 @@
+import { isHumanActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType, Grid } from '+game/types'
-
-import { isHumanActor } from '../helpers'
+import { ActorType } from '+game/types'
+import { TileCodeGrid } from '+game/word/tileCodes'
 
 export class WoodCampActor extends BuildingActor {
     public type = ActorType.WoodCamp
 
-    public readonly grid: Grid = [
-        ['.', '.', '.', '.', '.'],
-        ['.', 'W', 'W', 'W', '.'],
-        ['.', 'W', '!', 'W', '.'],
-        ['.', 'W', '!', 'W', '.'],
-        ['.', '.', '.', '.', '.'],
+    public readonly grid: TileCodeGrid = [
+        ['🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽'],
+        ['🦶🏽', '🧱', '🧱', '🧱', '🦶🏽'],
+        ['🦶🏽', '🧱', '🛖', '🧱', '🦶🏽'],
+        ['🦶🏽', '🧱', '🛖', '🧱', '🦶🏽'],
+        ['🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽'],
     ]
 
     private collectedTreeHP = 0

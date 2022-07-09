@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { Game } from '+game/Game'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
-import { seededRandom } from '+helpers/random'
+import { seededRandom } from '+helpers'
 
 import {
     CylinderGeometry,

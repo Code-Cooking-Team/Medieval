@@ -1,17 +1,15 @@
-import { Builder } from '+game/Builder'
+import { actorByType } from '+game/actors'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 
 import { RaycastFinder } from './lib/RaycastFinder'
 
 export class BuildInteractions {
-    private builder: Builder
     private finder: RaycastFinder
     private el: HTMLCanvasElement
 
     constructor(public game: Game, public renderer: Renderer) {
         this.el = this.renderer.webGLRenderer.domElement
-        this.builder = new Builder(game)
         this.finder = new RaycastFinder(game, renderer)
     }
 
@@ -34,7 +32,9 @@ export class BuildInteractions {
         const position = this.finder.findPositionByMouseEvent(event)
         if (!position) return
 
-        this.builder.spawn(selectedBuilding, position)
+        const ActorClass = actorByType[selectedBuilding]
+
+        this.game.spawnActor(ActorClass, position)
     }
 
     private handleContextmenu = (event: MouseEvent) => {
