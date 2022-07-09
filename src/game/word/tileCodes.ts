@@ -3,6 +3,7 @@ import {
     ForestTile,
     InsideTile,
     MeadowTile,
+    OvergrownTile,
     StepTile,
     Tile,
     WallTile,
@@ -10,42 +11,39 @@ import {
 } from '+game/Tile'
 import { Position } from '+game/types'
 
-const tileCodesEmoji = ['🌱', '🌲', '🌾', '🌊', '🛖', '🧱', '🦶🏽'] as const
-const tileCodesAscii = ['.', 'F', '#', 'W', '!', '=', ','] as const
+const tileCodes = {
+    ['🌱']: MeadowTile,
+    ['.']: MeadowTile,
 
-const tileCodes = [...tileCodesEmoji, ...tileCodesAscii]
+    ['🌲']: ForestTile,
+    ['F']: ForestTile,
 
-export type TileCode = typeof tileCodes[number]
+    ['🌿']: OvergrownTile,
+    ['~']: OvergrownTile,
+
+    ['🌾']: StepTile,
+    ['#']: StepTile,
+
+    ['🌊']: WaterTile,
+    ['W']: WaterTile,
+
+    ['🛖']: InsideTile,
+    ['!']: InsideTile,
+
+    ['🧱']: WallTile,
+    ['=']: WallTile,
+
+    ['🦶🏽']: FootpathTile,
+    [',']: FootpathTile,
+}
+
+export type TileCode = keyof typeof tileCodes
 export type TileCodeGrid = TileCode[][]
 
 export const tileCodeToInstance = (code: TileCode) => {
-    switch (code) {
-        case '🌱':
-        case '.':
-            return new MeadowTile()
-        case '🌲':
-        case 'F':
-            return new ForestTile()
-        case '🌾':
-        case '#':
-            return new StepTile()
-        case '🌊':
-        case 'W':
-            return new WaterTile()
-
-        case '🛖':
-        case '!':
-            return new InsideTile()
-        case '🧱':
-        case '=':
-            return new WallTile()
-        case '🦶🏽':
-        case ',':
-            return new FootpathTile()
-
-        default:
-            throw new Error(`Unknown tile code: ${code}`)
-    }
+    const TileClass = tileCodes[code]
+    if (!TileClass) throw new Error(`Unknown tile code: ${code}`)
+    return new TileClass()
 }
 
 export const applyTileGrid = (
