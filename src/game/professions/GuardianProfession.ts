@@ -5,6 +5,7 @@ import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 import { Profession } from './Profession'
 
 export class GuardianProfession extends Profession {
+    public name = 'Guardian'
     public selectImportance = 5
 
     protected material = new MeshStandardMaterial({ color: 0x40ff70 })

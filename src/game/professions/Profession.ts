@@ -5,6 +5,8 @@ import { Group, Object3D } from 'three'
 
 export abstract class Profession {
     public selectImportance = 4
+    public name = 'No profession name'
+
     constructor(public game: Game) {}
 
     public getAttackDamage(): number {

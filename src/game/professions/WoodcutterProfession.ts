@@ -22,6 +22,7 @@ enum WoodcutterState {
 }
 
 export class WoodcutterProfession extends Profession {
+    public name = 'Guardian'
     public state = WoodcutterState.Idle
     public selectImportance = 4
     private tree?: TreeActor

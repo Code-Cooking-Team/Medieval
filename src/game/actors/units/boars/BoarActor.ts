@@ -27,7 +27,7 @@ export class BoarActor extends WalkableActor {
         ) as HumanActor
 
         if (human) {
-            this.target = human
+            this.setTarget(human)
         }
 
         if (this.target) {
@@ -48,8 +48,12 @@ export class BoarActor extends WalkableActor {
 
     public hitBy(actor?: Actor): void {
         if (actor && !this.target) {
-            this.target = actor
+            this.setTarget(actor)
         }
+    }
+
+    public setTarget(target: Actor) {
+        this.target = target
     }
 
     private walkAround() {
@@ -60,7 +64,7 @@ export class BoarActor extends WalkableActor {
         const vector = [random(dis, -dis, true), random(dis, -dis, true)] as Position
         const position = addVector(this.position, vector)
 
-        if (this.game.word.getTile(position)) {
+        if (this.game.word.hasTile(position)) {
             this.goTo(position)
         }
     }

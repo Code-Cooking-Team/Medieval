@@ -91,7 +91,7 @@ export class HumanActor extends WalkableActor {
         const vector = [random(dis, -dis, true), random(dis, -dis, true)] as Position
         const position = addVector(this.home.position, vector)
 
-        if (this.game.word.getTile(position)) {
+        if (this.game.word.hasTile(position)) {
             this.goTo(position)
         }
     }
