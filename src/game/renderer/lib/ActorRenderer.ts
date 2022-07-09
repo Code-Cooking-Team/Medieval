@@ -1,4 +1,5 @@
 import { config } from '+config'
+import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { Game } from '+game/Game'
@@ -105,7 +106,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
         const ts = config.renderer.tileSize
 
-        if (actor instanceof BuildingActor) {
+        if (isBuildingActor(actor)) {
             ;[width, depth, height] = actor.getSize()
         }
 

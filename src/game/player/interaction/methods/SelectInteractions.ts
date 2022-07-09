@@ -1,3 +1,4 @@
+import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
@@ -137,16 +138,14 @@ export class SelectInteractions {
 
         if (!position || !currentSelected.length) return
 
-        const interactionActor = first(this.finder.findActorsByMouseEvent(event))
-        if (interactionActor) {
-            interactionActor.interact(currentSelected)
-            return
+        const interactionActor = this.finder.findActorsByMouseEvent(event)
+
+        for (const actor of interactionActor) {
+            const interactionHappened = actor.interact(currentSelected)
+            if (interactionHappened) return
         }
 
-        const isWalkable = (actor: AnyActor): actor is WalkableActor =>
-            actor instanceof WalkableActor
-
-        const walkableActors = currentSelected.filter(isWalkable)
+        const walkableActors = currentSelected.filter(isWalkableActor)
 
         const positions = squareFloodFill(position, walkableActors.length, (position) => {
             if (!this.game.word.hasTile(position)) return false

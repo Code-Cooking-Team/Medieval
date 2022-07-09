@@ -21,11 +21,11 @@ export abstract class Actor {
 
     constructor(public game: Game, public position: Position) {}
 
-    public tick() {}
+    public tick(): void {}
 
-    public death() {}
+    public death(): void {}
 
-    public hit(damage: number) {
+    public hit(damage: number): number {
         const maxHit = maxValue(this.hp, damage)
 
         this.hp -= maxHit
@@ -35,11 +35,13 @@ export abstract class Actor {
         return maxHit
     }
 
-    public isDead() {
+    public isDead(): boolean {
         return this.hp <= 0
     }
 
-    public interact(actors: AnyActor[]) {}
+    public interact(actors: AnyActor[]): boolean {
+        return false
+    }
 
     public debug(): string {
         return `[${this.type}]\nhp: ${this.hp}/${this.maxHp}`

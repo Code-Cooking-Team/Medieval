@@ -22,10 +22,13 @@ export class WoodCampActor extends BuildingActor {
     }
 
     public interact(actors: AnyActor[]) {
+        let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {
                 actor.setProfession(new WoodcutterProfession(this.game, actor, this))
+                interactionHappened = true
             }
         }
+        return interactionHappened
     }
 }
