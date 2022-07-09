@@ -8,7 +8,7 @@ import { randomSeed } from '+helpers/random'
 
 export class TreeActor extends Actor {
     public type = ActorType.Tree
-    public selectImportance = 1
+    public selectImportance = 2
     public maxHp = config.tree.hp
     public hp = config.tree.hp
     public seed = randomSeed()

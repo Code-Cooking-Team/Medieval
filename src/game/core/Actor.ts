@@ -7,6 +7,13 @@ import { randomSeed } from '+helpers/random'
 export abstract class Actor {
     public id = uuid()
     public type: ActorType = ActorType.Empty
+    /**
+     * 5 → Very important unit like soldier
+     * 4 → Walkable actors
+     * 3 → Default
+     * 2 → Small and less important actors eg tree
+     * 1 → Buildings because they are quite big
+     */
     public selectImportance = 3
     public maxHp = 100
     public hp = this.maxHp
