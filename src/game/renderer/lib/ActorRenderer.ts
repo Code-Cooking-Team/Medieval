@@ -20,7 +20,6 @@ import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
     public actorType: ActorType = ActorType.Empty
-    public moveSpeed = 0.04
 
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })

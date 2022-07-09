@@ -1,12 +1,11 @@
 import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
-import { WalkableActor } from '+game/core/WalkableActor'
+import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Renderer } from '+game/Renderer'
-import { AnyActor } from '+game/types'
 
-import { first, uniq, xor } from 'lodash'
+import { uniq, xor } from 'lodash'
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -164,7 +163,7 @@ export class SelectInteractions {
 
         const newSelected = selectedMeshes
             .map((item) => item.userData.actor)
-            .filter((actor) => !!actor) as AnyActor[]
+            .filter((actor) => !!actor) as Actor[]
 
         if (!add) {
             this.game.player.selectActors(newSelected)

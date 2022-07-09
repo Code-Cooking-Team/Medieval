@@ -1,11 +1,12 @@
+import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
-import { AnyActor, Position } from '+game/types'
+import { Position } from '+game/types'
 
 export interface Spawner {
     position: Position
     canSpawn(): boolean
     setPosition(position: Position): void
-    spawn(): AnyActor
+    spawn(): Actor
 }
 
 export abstract class BuildingSpawner implements Spawner {

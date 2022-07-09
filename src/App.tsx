@@ -2,14 +2,14 @@ import { ConfigForm } from '+components/config/ConfigForm'
 import { HumanActor } from '+game/actors/human/HumanActor'
 import { WoodCampActor } from '+game/actors/woodCamp/WoodCampActor'
 import { Builder } from '+game/Builder'
+import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { Player } from '+game/player/Player'
-import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { Renderer } from '+game/Renderer'
 import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
 import { spawnList } from '+game/spawners/spawners'
-import { ActorType, AnyActor } from '+game/types'
+import { ActorType } from '+game/types'
 import { Word } from '+game/Word'
 
 import styled from '@emotion/styled'
@@ -31,7 +31,7 @@ const gameRoot = document.getElementById('game-root') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
-    const [selectedActors, setSelectedActors] = useState<AnyActor[]>([])
+    const [selectedActors, setSelectedActors] = useState<Actor[]>([])
     const [started, setStarted] = useState(false)
 
     const { game, player } = useMemo(() => {

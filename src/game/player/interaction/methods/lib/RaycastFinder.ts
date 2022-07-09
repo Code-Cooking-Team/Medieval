@@ -1,7 +1,8 @@
 import { config } from '+config'
+import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
-import { AnyActor, Position } from '+game/types'
+import { Position } from '+game/types'
 
 import { Raycaster, Vector2 } from 'three'
 
@@ -29,7 +30,7 @@ export class RaycastFinder {
         return [x, y]
     }
 
-    public findActorsByMouseEvent = (event: MouseEvent): AnyActor[] => {
+    public findActorsByMouseEvent = (event: MouseEvent): Actor[] => {
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
@@ -41,7 +42,7 @@ export class RaycastFinder {
 
         const intersects = rayCaster.intersectObjects(interactionObjectList, false)
         const intersectActors = intersects
-            .map((intersect) => intersect.object.userData.actor as AnyActor)
+            .map((intersect) => intersect.object.userData.actor as Actor)
             .filter((actor) => !!actor)
 
         intersectActors.sort((a, b) => b.selectImportance - a.selectImportance)
@@ -49,7 +50,7 @@ export class RaycastFinder {
         return intersectActors
     }
 
-    public findSingleActorByMouseEvent(event: MouseEvent): AnyActor | undefined {
+    public findSingleActorByMouseEvent(event: MouseEvent): Actor | undefined {
         const actors = this.findActorsByMouseEvent(event)
 
         if (!actors.length) return

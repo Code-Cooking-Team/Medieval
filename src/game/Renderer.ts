@@ -9,13 +9,14 @@ import {
 } from 'three'
 
 import { actorRenderers, basicRenderers } from './actors'
+import { Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
 import { Game } from './Game'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
-import { AnyActor, ClockInfo } from './types'
+import { ClockInfo } from './types'
 
 const stats = new Stats()
 
@@ -29,7 +30,7 @@ export class Renderer {
     private ground: GroundRenderer
 
     private basicRendererList: BasicRenderer[] = []
-    private actorRendererList: ActorRenderer<AnyActor>[] = []
+    private actorRendererList: ActorRenderer<Actor>[] = []
 
     constructor(public game: Game, public el: HTMLElement) {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
@@ -101,7 +102,7 @@ export class Renderer {
         this.scene.add(renderer.group)
     }
 
-    private addActorRenderer(renderer: ActorRenderer<AnyActor>) {
+    private addActorRenderer(renderer: ActorRenderer<Actor>) {
         this.centerRenderer(renderer)
         this.actorRendererList.push(renderer)
         this.scene.add(renderer.group)

@@ -6,20 +6,20 @@ import { Emitter } from '+lib/Emitter'
 
 import { Actor } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
-import { ActorType, AnyActor, Position } from './types'
+import { ActorType, Position } from './types'
 import { Word } from './Word'
 
 interface GameEmitterEvents {
     tick: undefined
-    actorAdded: AnyActor
-    actorRemoved: AnyActor
+    actorAdded: Actor
+    actorRemoved: Actor
     started: undefined
     stopped: undefined
 }
 
 export class Game {
     public pf: Pathfinding
-    public actors: AnyActor[] = []
+    public actors: Actor[] = []
     loop: any
 
     public emitter = new Emitter<GameEmitterEvents>('Game')

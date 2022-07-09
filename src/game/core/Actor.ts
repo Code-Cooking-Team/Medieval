@@ -1,5 +1,5 @@
 import { Game } from '+game/Game'
-import { ActorType, AnyActor, Position } from '+game/types'
+import { ActorType, Position } from '+game/types'
 import { uuid } from '+helpers/basic'
 import { maxValue } from '+helpers/math'
 import { randomSeed } from '+helpers/random'
@@ -27,11 +27,8 @@ export abstract class Actor {
 
     public hit(damage: number): number {
         const maxHit = maxValue(this.hp, damage)
-
         this.hp -= maxHit
-
         if (!this.hp) this.death()
-
         return maxHit
     }
 
@@ -39,7 +36,7 @@ export abstract class Actor {
         return this.hp <= 0
     }
 
-    public interact(actors: AnyActor[]): boolean {
+    public interact(actors: Actor[]): boolean {
         return false
     }
 

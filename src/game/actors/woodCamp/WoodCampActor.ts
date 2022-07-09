@@ -1,6 +1,7 @@
+import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType, AnyActor, Grid } from '+game/types'
+import { ActorType, Grid } from '+game/types'
 
 import { isHumanActor } from '../helpers'
 
@@ -21,7 +22,7 @@ export class WoodCampActor extends BuildingActor {
         this.collectedTreeHP += hp
     }
 
-    public interact(actors: AnyActor[]) {
+    public interact(actors: Actor[]) {
         let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {

@@ -25,5 +25,3 @@ export interface ClockInfo {
 export interface Renderable {
     render(clock: ClockInfo): void
 }
-
-export type AnyActor = Actor | WalkableActor

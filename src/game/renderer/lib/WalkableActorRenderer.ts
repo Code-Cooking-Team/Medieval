@@ -9,6 +9,8 @@ import { ActorRenderer } from './ActorRenderer'
 export abstract class WalkableActorRenderer<
     TActor extends WalkableActor,
 > extends ActorRenderer<TActor> {
+    private moveSpeed = 0.04
+
     public render(clockInfo: ClockInfo) {
         super.render(clockInfo)
         this.updateRotation(clockInfo)
