@@ -41,9 +41,6 @@ function App() {
         const renderer = new Renderer(game, gameRoot)
         const interactions = new InteractionsManager(game, renderer)
 
-        const floraSpawner = new FloraSpawner(game)
-        floraSpawner.bulkSpawnTrees()
-
         interactions.init()
         renderer.init()
 
@@ -78,6 +75,9 @@ function App() {
         game.spawnActor(GuardianActor, [104, 122])
         game.spawnActor(GuardianActor, [105, 122])
         game.spawnActor(GuardianActor, [106, 122])
+
+        const floraSpawner = new FloraSpawner(game)
+        floraSpawner.bulkSpawnTrees()
 
         return { game, player }
     }, [])
