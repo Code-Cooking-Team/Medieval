@@ -23,16 +23,29 @@ export const { config, resetConfig, saveConfig } = createConfig({
         wireframe: true,
     },
 
+    barracks: {
+        hp: 1000,
+    },
+
     house: {
         hp: 1000,
-        newChildCountMin: 100,
-        newChildCountMax: 300,
+        newChildCountMin: 10,
+        newChildCountMax: 30,
     },
 
     human: {
         hp: 100,
         randomWalkChance: 0.01,
         walkAroundHomeDistance: 7,
+        attackDistance: 1.5,
+        attackDamage: 5,
+    },
+    boar: {
+        hp: 80,
+        randomWalkChance: 0.01,
+        attackDistance: 1.5,
+        lookEnemyDistance: 8,
+        attackDamage: 3,
     },
 
     tree: {
@@ -53,6 +66,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     guardian: {
         hp: 100,
+        attackDamage: 25,
     },
 
     configTest: {

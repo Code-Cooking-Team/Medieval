@@ -1,8 +1,9 @@
 import { ConfigForm } from '+components/config/ConfigForm'
+import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
 import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { GuardianActor } from '+game/actors/units/guardian/GuardianActor'
+import { BoarActor } from '+game/actors/units/boars/BoarActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
@@ -46,6 +47,8 @@ function App() {
 
         game.spawnActor(HouseActor, [112, 113])
 
+        game.spawnActor(BarracksActor, [102, 93])
+
         const h1 = game.spawnActor(HumanActor, [112, 120])
         const h2 = game.spawnActor(HumanActor, [110, 120])
 
@@ -55,26 +58,30 @@ function App() {
         if (h1) c1?.interact([h1])
         if (h2) c2?.interact([h2])
 
-        game.spawnActor(GuardianActor, [101, 120])
-        game.spawnActor(GuardianActor, [102, 120])
-        game.spawnActor(GuardianActor, [103, 120])
-        game.spawnActor(GuardianActor, [104, 120])
-        game.spawnActor(GuardianActor, [105, 120])
-        game.spawnActor(GuardianActor, [106, 120])
+        game.spawnActor(BoarActor, [95, 120])
+        game.spawnActor(BoarActor, [96, 120])
+        game.spawnActor(BoarActor, [97, 120])
 
-        game.spawnActor(GuardianActor, [101, 121])
-        game.spawnActor(GuardianActor, [102, 121])
-        game.spawnActor(GuardianActor, [103, 121])
-        game.spawnActor(GuardianActor, [104, 121])
-        game.spawnActor(GuardianActor, [105, 121])
-        game.spawnActor(GuardianActor, [106, 121])
+        // game.spawnActor(GuardianActor, [101, 120])
+        // game.spawnActor(GuardianActor, [102, 120])
+        // game.spawnActor(GuardianActor, [103, 120])
+        // game.spawnActor(GuardianActor, [104, 120])
+        // game.spawnActor(GuardianActor, [105, 120])
+        // game.spawnActor(GuardianActor, [106, 120])
 
-        game.spawnActor(GuardianActor, [101, 122])
-        game.spawnActor(GuardianActor, [102, 122])
-        game.spawnActor(GuardianActor, [103, 122])
-        game.spawnActor(GuardianActor, [104, 122])
-        game.spawnActor(GuardianActor, [105, 122])
-        game.spawnActor(GuardianActor, [106, 122])
+        // game.spawnActor(GuardianActor, [101, 121])
+        // game.spawnActor(GuardianActor, [102, 121])
+        // game.spawnActor(GuardianActor, [103, 121])
+        // game.spawnActor(GuardianActor, [104, 121])
+        // game.spawnActor(GuardianActor, [105, 121])
+        // game.spawnActor(GuardianActor, [106, 121])
+
+        // game.spawnActor(GuardianActor, [101, 122])
+        // game.spawnActor(GuardianActor, [102, 122])
+        // game.spawnActor(GuardianActor, [103, 122])
+        // game.spawnActor(GuardianActor, [104, 122])
+        // game.spawnActor(GuardianActor, [105, 122])
+        // game.spawnActor(GuardianActor, [106, 122])
 
         const floraSpawner = new FloraSpawner(game)
         floraSpawner.bulkSpawnTrees()

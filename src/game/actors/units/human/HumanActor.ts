@@ -1,9 +1,10 @@
 import { config } from '+config/config'
+import { Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Profession } from '+game/professions/Profession'
-import { ActorType, Position } from '+game/types'
-import { addVector, random } from '+helpers'
+import { ActorType, Path, Position } from '+game/types'
+import { addVector, distanceBetweenPoints, random } from '+helpers'
 
 import { HouseActor } from '../../buildings/house/HouseActor'
 
@@ -11,6 +12,7 @@ export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
     public profession?: Profession
+    public target?: Actor
     public home?: HouseActor
 
     constructor(public game: Game, public position: Position) {
@@ -20,7 +22,18 @@ export class HumanActor extends WalkableActor {
     public tick(): void {
         super.tick()
 
-        if (this.profession) {
+        if (this.target) {
+            const distance = distanceBetweenPoints(this.position, this.target.position)
+            if (distance < config.human.attackDistance) {
+                this.cancelPath()
+                this.target.hit(this.getAttackDamage(), this)
+                if (this.target.isDead()) {
+                    this.target = undefined
+                }
+            } else {
+                this.goTo(this.target.position, false)
+            }
+        } else if (this.profession) {
             this.profession.tick()
         } else {
             this.walkAround()
@@ -34,6 +47,32 @@ export class HumanActor extends WalkableActor {
     public setProfession(profession: Profession) {
         this.profession = profession
         this.selectImportance = profession.selectImportance
+    }
+
+    public setTarget(target: Actor) {
+        this.target = target
+    }
+
+    public hitBy(actor?: Actor) {
+        if (actor && !this.target) {
+            this.setTarget(actor)
+        }
+    }
+
+    public getAttackDamage(): number {
+        let damage = config.human.attackDamage
+        if (this.profession) {
+            const professionDamage = this.profession.getAttackDamage()
+            damage = professionDamage
+        }
+        return damage
+    }
+
+    public goTo(position: Position, cancelTarget = true) {
+        if (cancelTarget) {
+            this.target = undefined
+        }
+        return super.goTo(position)
     }
 
     public getSelectedImportance(): number {

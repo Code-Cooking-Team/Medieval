@@ -6,6 +6,8 @@ import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
 import { maxValue } from '+helpers'
 
+import { Event, Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
+
 import { Profession } from './Profession'
 
 enum WoodcutterState {
@@ -24,6 +26,9 @@ export class WoodcutterProfession extends Profession {
     public selectImportance = 4
     private tree?: TreeActor
     private collectedTreeHP = 0
+
+    protected material = new MeshStandardMaterial({ color: 0x00ff00 })
+    protected geometry = new SphereGeometry(0.5, 5, 5)
 
     constructor(public game: Game, public actor: HumanActor, public camp: WoodCampActor) {
         super(game)
@@ -111,5 +116,19 @@ export class WoodcutterProfession extends Profession {
                 this.state = WoodcutterState.Idle
             }
         }
+    }
+
+    public getModel(): Object3D {
+        const group = super.getModel()
+        const actorModel = new Mesh(this.geometry, this.material)
+
+        actorModel.castShadow = true
+        actorModel.receiveShadow = true
+        actorModel.scale.y = 2
+        actorModel.scale.z = 0.5
+        actorModel.position.y = 0.5
+
+        group.add(actorModel)
+        return group
     }
 }

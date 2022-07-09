@@ -4,11 +4,14 @@ export type Path = { x: number; y: number }[] | null
 
 export enum ActorType {
     Empty = 'Empty',
-    House = 'House',
     Human = 'Human',
-    Tree = 'Tree',
-    Guardian = 'Guardian',
+
+    House = 'House',
     WoodCamp = 'WoodCamp',
+    Barracks = 'Barracks',
+
+    Tree = 'Tree',
+    Boar = 'Boar',
 }
 
 export const allActorTypes = Object.values(ActorType).filter(

@@ -21,12 +21,22 @@ export abstract class Actor {
 
     public tick(): void {}
 
-    public death(): void {}
+    public death(): void {
+        this.game.removeActor(this)
+    }
 
-    public hit(damage: number): number {
+    public hitBy(actor?: Actor): void {}
+
+    public hit(damage: number, byActor?: Actor): number {
+        if (this.hp === 0) return 0
+
         const maxHit = maxValue(this.hp, damage)
         this.hp -= maxHit
+
         if (!this.hp) this.death()
+
+        this.hitBy(byActor)
+
         return maxHit
     }
 
