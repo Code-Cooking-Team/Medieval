@@ -46,4 +46,15 @@ export class RaycastFinder {
 
         return intersectActors
     }
+
+    public findSingleActorByMouseEvent(event: MouseEvent): AnyActor | undefined {
+        const actors = this.findActorsByMouseEvent(event)
+
+        if (!actors.length) return
+
+        return actors.reduce((prev, current) => {
+            if (!prev) return current
+            return prev.selectImportance < current.selectImportance ? current : prev
+        })
+    }
 }

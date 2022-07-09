@@ -1,7 +1,5 @@
 import { config } from '+config'
-import { StaticActor } from '+game/core/StaticActor'
 import { WalkableActor } from '+game/core/WalkableActor'
-import { Game } from '+game/Game'
 import { ClockInfo } from '+game/types'
 
 import { Quaternion, Vector3 } from 'three'

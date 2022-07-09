@@ -1,8 +1,5 @@
 import { FootpathTile, InsideTile, Tile, WallTile } from '+game/Tile'
-import { Position } from '+game/types'
-
-type GridTileCode = '.' | '!' | 'W'
-export type Grid = GridTileCode[][]
+import { GridTileCode, Position } from '+game/types'
 
 const tileCodeToInstance = (code: GridTileCode) => {
     switch (code) {

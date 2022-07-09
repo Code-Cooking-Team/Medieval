@@ -1,13 +1,26 @@
 import { config } from '+config'
 import { Builder } from '+game/Builder'
-import { StaticActor } from '+game/core/StaticActor'
-import { ActorType } from '+game/types'
+import { BuildingActor } from '+game/core/BuildingActor'
+import { ActorType, Grid } from '+game/types'
 import { random } from '+helpers/basic'
 
 import { HumanActor } from '../human/HumanActor'
 
-export class HouseActor extends StaticActor {
+export class HouseActor extends BuildingActor {
     public type = ActorType.House
+
+    public grid: Grid = [
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', 'W', 'W', 'W', 'W', 'W', 'W', '.', 'W'],
+        ['.', 'W', '!', '!', '!', '!', 'W', 'W', '.'],
+        ['.', 'W', '!', 'W', 'W', 'W', 'W', '.', 'W'],
+        ['.', 'W', '!', 'W', '.', '.', '.', '.', '.'],
+        ['.', 'W', '!', '!', '.', '.', '.', '.', '.'],
+        ['.', 'W', '!', 'W', '.', '.', '.', '.', '.'],
+        ['.', 'W', 'W', 'W', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+    ]
+
     public maxHp = config.house.hp
     public residentsLimit = 6
 

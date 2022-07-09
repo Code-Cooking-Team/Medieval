@@ -4,8 +4,8 @@ import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
 import { Emitter } from '+lib/Emitter'
 
+import { Actor } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
-import { StaticActor } from './core/StaticActor'
 import { ActorType, AnyActor, Position } from './types'
 import { Word } from './Word'
 
@@ -54,13 +54,13 @@ export class Game {
         this.emitter.emit('tick')
     }
 
-    public addActor(actor: StaticActor) {
+    public addActor(actor: Actor) {
         this.actors.push(actor)
         this.pf.update()
         this.emitter.emit('actorAdded', actor)
     }
 
-    public removeActor(actor: StaticActor) {
+    public removeActor(actor: Actor) {
         removeArrayItem(this.actors, actor)
         this.pf.update()
         this.emitter.emit('actorRemoved', actor)
@@ -69,7 +69,7 @@ export class Game {
     public findActorByRange(
         position: Position,
         range: number,
-        additionalCondition?: (actor: StaticActor) => boolean,
+        additionalCondition?: (actor: Actor) => boolean,
     ) {
         return this.actors.find((actor) => {
             if (distanceBetweenPoints(actor.position, position) > range) return false

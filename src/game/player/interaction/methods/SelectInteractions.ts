@@ -103,9 +103,9 @@ export class SelectInteractions {
 
     private handleClick = (event: MouseEvent) => {
         const currentSelected = this.game.player.selectedActors
-
-        const actor = first(this.finder.findActorsByMouseEvent(event))
         const shiftKey = event.shiftKey || event.ctrlKey
+
+        const actor = this.finder.findSingleActorByMouseEvent(event)
 
         if (!actor) {
             if (shiftKey) return

@@ -1,8 +1,6 @@
 import { Game } from '+game/Game'
 import { AnyActor, Position } from '+game/types'
 
-import { Grid } from './grid'
-
 export interface Spawner {
     position: Position
     canSpawn(): boolean
@@ -12,7 +10,6 @@ export interface Spawner {
 
 export abstract class BuildingSpawner implements Spawner {
     public position: Position = [0, 0]
-    public readonly grid: Grid = [['.']]
 
     constructor(public game: Game) {}
 

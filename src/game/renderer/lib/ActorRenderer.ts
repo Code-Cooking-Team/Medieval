@@ -1,5 +1,6 @@
 import { config } from '+config'
-import { StaticActor } from '+game/core/StaticActor'
+import { Actor } from '+game/core/Actor'
+import { BuildingActor } from '+game/core/BuildingActor'
 import { Game } from '+game/Game'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
@@ -16,7 +17,7 @@ import {
 
 import { BasicRenderer } from './BasicRenderer'
 
-export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRenderer {
+export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
     public actorType: ActorType = ActorType.Empty
     public moveSpeed = 0.04
 
@@ -57,12 +58,7 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
         group.add(hp)
 
-        const interactionShape = new Mesh(
-            new BoxGeometry(1, 2, 1),
-            new MeshBasicMaterial({ color: 0xffffff, wireframe: true }),
-        )
-
-        interactionShape.userData = { actor }
+        const interactionShape = this.createInteractionMesh(actor)
         group.add(interactionShape)
 
         group.position.x = x * config.renderer.tileSize
@@ -100,6 +96,34 @@ export abstract class ActorRenderer<TActor extends StaticActor> extends BasicRen
 
         this.group.remove(group)
         this.actorGroupMap.delete(actor)
+    }
+
+    protected createInteractionMesh(actor: TActor) {
+        let width = 1
+        let height = 1
+        let depth = 1
+
+        const ts = config.renderer.tileSize
+
+        if (actor instanceof BuildingActor) {
+            ;[width, depth, height] = actor.getSize()
+        }
+
+        width *= ts
+        height *= ts
+        depth *= ts
+
+        const interactionShape = new Mesh(
+            new BoxGeometry(width, height, depth),
+            new MeshBasicMaterial({ color: 0xffffff, wireframe: true }),
+        )
+
+        interactionShape.position.x = width / 2 - ts / 2
+        interactionShape.position.z = depth / 2 - ts / 2
+        interactionShape.position.y = height / 2
+
+        interactionShape.userData = { actor }
+        return interactionShape
     }
 
     protected updatePosition() {

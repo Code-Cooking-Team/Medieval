@@ -1,13 +1,14 @@
 import { config } from '+config/config'
-import { StaticActor } from '+game/core/StaticActor'
+import { Actor } from '+game/core/Actor'
 import { FloraSpawner } from '+game/spawners/initial/FloraSpawner'
 import { ActorType, Position } from '+game/types'
 import { randomArrayItem } from '+helpers/array'
 import { random } from '+helpers/basic'
 import { randomSeed } from '+helpers/random'
 
-export class TreeActor extends StaticActor {
+export class TreeActor extends Actor {
     public type = ActorType.Tree
+    public selectImportance = 1
     public maxHp = config.tree.hp
     public hp = config.tree.hp
     public seed = randomSeed()

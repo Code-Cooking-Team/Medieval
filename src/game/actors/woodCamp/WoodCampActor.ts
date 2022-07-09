@@ -1,11 +1,20 @@
-import { StaticActor } from '+game/core/StaticActor'
+import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType, AnyActor } from '+game/types'
+import { ActorType, AnyActor, Grid } from '+game/types'
 
 import { isHumanActor } from '../helpers'
 
-export class WoodCampActor extends StaticActor {
+export class WoodCampActor extends BuildingActor {
     public type = ActorType.WoodCamp
+
+    public readonly grid: Grid = [
+        ['.', '.', '.', '.', '.'],
+        ['.', 'W', 'W', 'W', '.'],
+        ['.', 'W', '!', 'W', '.'],
+        ['.', 'W', '!', 'W', '.'],
+        ['.', '.', '.', '.', '.'],
+    ]
+
     private collectedTreeHP = 0
 
     public collectTree(hp: number) {

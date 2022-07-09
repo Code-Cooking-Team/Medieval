@@ -4,9 +4,10 @@ import { uuid } from '+helpers/basic'
 import { maxValue } from '+helpers/math'
 import { randomSeed } from '+helpers/random'
 
-export abstract class StaticActor {
+export abstract class Actor {
     public id = uuid()
     public type: ActorType = ActorType.Empty
+    public selectImportance = 3
     public maxHp = 100
     public hp = this.maxHp
     public seed = randomSeed()
