@@ -5,7 +5,7 @@ import { Game } from '+game/Game'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Renderer } from '+game/Renderer'
 
-import { uniq, xor } from 'lodash'
+import { first, uniq, xor } from 'lodash'
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -34,6 +34,7 @@ export class SelectInteractions {
         this.el.addEventListener('pointerdown', this.handlePointerDown)
         document.addEventListener('pointermove', this.handlePointerMove)
         document.addEventListener('pointerup', this.handlePointerUp)
+        this.el.addEventListener('dblclick', this.handleDoubleClick)
     }
 
     public removeEventListeners() {
@@ -155,6 +156,14 @@ export class SelectInteractions {
             const newPosition = positions[index]
             if (newPosition) actor.goTo(newPosition)
         })
+    }
+
+    private handleDoubleClick = () => {
+        const currentSelected = first(this.game.player.selectedActors)
+        if (!currentSelected) return
+
+        const actors = this.game.findActorsByType(currentSelected.type)
+        this.game.player.selectActors(actors)
     }
 
     private boxSelect(add = false) {
