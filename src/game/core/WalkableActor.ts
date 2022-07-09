@@ -7,6 +7,7 @@ export abstract class WalkableActor extends Actor {
     public path: Path = null
 
     public tick() {
+        super.tick()
         if (this.path) {
             const next = this.path.shift()
             if (next) {

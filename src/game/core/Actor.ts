@@ -15,11 +15,16 @@ export abstract class Actor {
     public selectImportance = 3
     public maxHp = 100
     public hp = this.maxHp
+    public hpRegen = 1
     public seed = randomSeed()
 
     constructor(public game: Game, public position: Position) {}
 
-    public tick(): void {}
+    public tick(): void {
+        if (this.hp < this.maxHp) {
+            this.hp = Math.min(this.hp + this.hpRegen, this.maxHp)
+        }
+    }
 
     public death(): void {
         this.game.removeActor(this)

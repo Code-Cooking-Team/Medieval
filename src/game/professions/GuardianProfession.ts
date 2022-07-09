@@ -36,6 +36,7 @@ export class GuardianProfession extends Profession {
         pike.scale.y = -0.01
         pike.scale.z = 2
         pike.rotation.x = Math.PI / -4
+        pike.name = 'weapon'
 
         group.add(body)
         group.add(pike)
