@@ -45,7 +45,9 @@ export class RaycastFinder {
             .map((intersect) => intersect.object.userData.actor as Actor)
             .filter((actor) => !!actor)
 
-        intersectActors.sort((a, b) => b.selectImportance - a.selectImportance)
+        intersectActors.sort(
+            (a, b) => b.getSelectedImportance() - a.getSelectedImportance(),
+        )
 
         return intersectActors
     }
@@ -57,7 +59,9 @@ export class RaycastFinder {
 
         return actors.reduce((prev, current) => {
             if (!prev) return current
-            return prev.selectImportance < current.selectImportance ? current : prev
+            return prev.getSelectedImportance() < current.getSelectedImportance()
+                ? current
+                : prev
         })
     }
 }

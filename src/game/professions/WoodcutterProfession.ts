@@ -21,6 +21,7 @@ enum WoodcutterState {
 
 export class WoodcutterProfession extends Profession {
     public state = WoodcutterState.Idle
+    public selectImportance = 4
     private tree?: TreeActor
     private collectedTreeHP = 0
 

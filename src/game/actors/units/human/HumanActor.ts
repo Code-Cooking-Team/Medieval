@@ -33,6 +33,14 @@ export class HumanActor extends WalkableActor {
 
     public setProfession(profession: Profession) {
         this.profession = profession
+        this.selectImportance = profession.selectImportance
+    }
+
+    public getSelectedImportance(): number {
+        if (this.profession) {
+            return this.profession.selectImportance
+        }
+        return super.getSelectedImportance()
     }
 
     private walkAround() {

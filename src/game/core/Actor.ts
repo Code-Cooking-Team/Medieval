@@ -38,6 +38,10 @@ export abstract class Actor {
         return false
     }
 
+    public getSelectedImportance(): number {
+        return this.selectImportance
+    }
+
     public debug(): string {
         return `[${this.type}]\nhp: ${this.hp}/${this.maxHp}`
     }
