@@ -174,13 +174,23 @@ export class SelectInteractions {
             .map((item) => item.userData.actor)
             .filter((actor) => !!actor) as Actor[]
 
+        const maxSelectImportance = newSelected.reduce((current, actor) => {
+            return Math.max(current, actor.getSelectedImportance())
+        }, 0)
+
+        const importantActors = newSelected.filter(
+            (actor) => actor.getSelectedImportance() === maxSelectImportance,
+        )
+
         if (!add) {
-            this.game.player.selectActors(newSelected)
+            this.game.player.selectActors(importantActors)
         } else {
-            if (newSelected.every((item) => currentSelected.includes(item))) {
-                this.game.player.selectActors(xor(currentSelected, newSelected))
+            if (importantActors.every((item) => currentSelected.includes(item))) {
+                this.game.player.selectActors(xor(currentSelected, importantActors))
             } else {
-                this.game.player.selectActors(uniq([...newSelected, ...currentSelected]))
+                this.game.player.selectActors(
+                    uniq([...importantActors, ...currentSelected]),
+                )
             }
         }
     }
