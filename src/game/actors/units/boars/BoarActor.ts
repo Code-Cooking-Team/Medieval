@@ -4,7 +4,7 @@ import { Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
-import { addVector, distanceBetweenPoints, random } from '+helpers'
+import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { HumanActor } from '../human/HumanActor'
 
@@ -62,7 +62,7 @@ export class BoarActor extends WalkableActor {
 
         const dis = 5
         const vector = [random(dis, -dis, true), random(dis, -dis, true)] as Position
-        const position = addVector(this.position, vector)
+        const position = addPosition(this.position, vector)
 
         if (this.game.word.hasTile(position)) {
             this.goTo(position)

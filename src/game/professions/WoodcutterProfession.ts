@@ -1,10 +1,11 @@
 import { config } from '+config'
+import { colorInput } from '+config/lib/definitions'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
-import { maxValue } from '+helpers'
+import { isSamePositon, maxValue } from '+helpers'
 
 import { Event, Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
 
@@ -87,7 +88,7 @@ export class WoodcutterProfession extends Profession {
         }
 
         if (this.state === WoodcutterState.FullINeedCabin) {
-            this.actor.goTo(this.camp.position).then((path) => {
+            this.actor.goTo(this.camp.getDeliveryPoint()).then((path) => {
                 if (path) {
                     this.state = WoodcutterState.GoingToCabin
                 } else {
@@ -97,12 +98,7 @@ export class WoodcutterProfession extends Profession {
         }
 
         if (this.state === WoodcutterState.GoingToCabin) {
-            const cabin = this.game.findActorByRange(
-                this.actor.position,
-                0,
-                (actor) => actor === this.camp,
-            )
-            if (cabin) {
+            if (isSamePositon(this.camp.getDeliveryPoint(), this.actor.position)) {
                 this.actor.cancelPath() // Needed?
                 this.state = WoodcutterState.GatheringWood
             }

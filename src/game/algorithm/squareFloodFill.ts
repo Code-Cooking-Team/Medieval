@@ -1,5 +1,5 @@
 import { Position } from '+game/types'
-import { addVector } from '+helpers'
+import { addPosition } from '+helpers'
 
 const squareVectors: Position[] = [
     // left/right
@@ -67,7 +67,7 @@ export const squareFloodFill = (
 
     for (const pos of squareVectors) {
         if (counter === 0) break
-        const position = addVector(startPosition, pos)
+        const position = addPosition(startPosition, pos)
         checkAndAddToResults(position)
     }
 
@@ -81,7 +81,7 @@ export const squareFloodFill = (
 
         const l = result.length
         for (let i = 0; i < l; i++) {
-            const position = addVector(result[i]!, vector)
+            const position = addPosition(result[i]!, vector)
             checkAndAddToResults(position)
             if (counter === 0) break
         }

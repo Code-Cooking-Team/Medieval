@@ -4,7 +4,7 @@ import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Profession } from '+game/professions/Profession'
 import { ActorType, Path, Position } from '+game/types'
-import { addVector, distanceBetweenPoints, random } from '+helpers'
+import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { HouseActor } from '../../buildings/house/HouseActor'
 
@@ -89,7 +89,7 @@ export class HumanActor extends WalkableActor {
 
         const dis = config.human.walkAroundHomeDistance
         const vector = [random(dis, -dis, true), random(dis, -dis, true)] as Position
-        const position = addVector(this.home.position, vector)
+        const position = addPosition(this.home.position, vector)
 
         if (this.game.word.hasTile(position)) {
             this.goTo(position)

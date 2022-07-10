@@ -58,9 +58,9 @@ function App() {
         if (h1) c1?.interact([h1])
         if (h2) c2?.interact([h2])
 
-        game.spawnActor(BoarActor, [95, 120])
-        game.spawnActor(BoarActor, [96, 120])
-        game.spawnActor(BoarActor, [97, 120])
+        game.spawnActor(BoarActor, [55, 120])
+        game.spawnActor(BoarActor, [66, 120])
+        game.spawnActor(BoarActor, [67, 120])
 
         // game.spawnActor(GuardianActor, [101, 120])
         // game.spawnActor(GuardianActor, [102, 120])

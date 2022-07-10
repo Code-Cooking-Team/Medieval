@@ -2,8 +2,9 @@ import { isHumanActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType } from '+game/types'
+import { ActorType, Position } from '+game/types'
 import { TileCodeGrid } from '+game/word/tileCodes'
+import { addPosition } from '+helpers'
 
 export class WoodCampActor extends BuildingActor {
     public type = ActorType.WoodCamp
@@ -19,7 +20,13 @@ export class WoodCampActor extends BuildingActor {
         ['🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽'],
     ]
 
+    private readonly deliveryLocalPosition: Position = [2, 5]
+
     private collectedTreeHP = 0
+
+    public getDeliveryPoint() {
+        return addPosition(this.position, this.deliveryLocalPosition)
+    }
 
     public collectTree(hp: number) {
         this.collectedTreeHP += hp
