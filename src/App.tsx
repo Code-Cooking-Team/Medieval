@@ -53,7 +53,7 @@ function App() {
         const h2 = game.spawnActor(HumanActor, [110, 120])
 
         const c1 = game.spawnActor(WoodCampActor, [87, 120])
-        const c2 = game.spawnActor(WoodCampActor, [85, 114])
+        const c2 = game.spawnActor(WoodCampActor, [100, 114])
 
         if (h1) c1?.interact([h1])
         if (h2) c2?.interact([h2])

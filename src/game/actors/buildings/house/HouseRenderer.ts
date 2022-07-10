@@ -22,18 +22,13 @@ export class HouseRenderer extends ActorRenderer<HouseActor> {
             model.children.forEach((child, index) => {
                 child.castShadow = true
                 child.receiveShadow = true
-                // if (child.material) {
-                //     child.material.metalness = 0
-                // }
                 lod.addLevel(child.clone(), (model.children.length - index - 1) * 80)
             })
         })
 
-        // lod.add(model.clone(), 1)
-
         group.add(lod)
 
-        if (config.lumberjack.cabinLight) {
+        if (config.renderer.light) {
             const light = new PointLight(0xfa840e, 1, 15)
             light.position.set(0, 3, 0)
             group.add(light)

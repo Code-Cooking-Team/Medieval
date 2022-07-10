@@ -69,11 +69,11 @@ export class WoodcutterProfession extends Profession {
         if (this.state === WoodcutterState.ChoppingATree) {
             if (this.tree) {
                 const damage = Math.round(
-                    config.lumberjack.choppingDamage * Math.random(),
+                    config.woodCutter.choppingDamage * Math.random(),
                 )
                 this.collectedTreeHP += this.tree.hit(damage)
 
-                if (this.collectedTreeHP >= config.lumberjack.capacity) {
+                if (this.collectedTreeHP >= config.woodCutter.capacity) {
                     this.state = WoodcutterState.FullINeedCabin
                 }
 
@@ -109,7 +109,7 @@ export class WoodcutterProfession extends Profession {
         }
 
         if (this.state === WoodcutterState.GatheringWood) {
-            const value = maxValue(this.collectedTreeHP, config.lumberjack.gatheringSpeed)
+            const value = maxValue(this.collectedTreeHP, config.woodCutter.gatheringSpeed)
             this.collectedTreeHP -= value
             this.camp.collectTree(value)
 

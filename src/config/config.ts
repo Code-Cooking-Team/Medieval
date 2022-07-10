@@ -21,6 +21,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         shadow: true,
         treeWaving: true,
         wireframe: true,
+        light: false,
     },
 
     barracks: {
@@ -56,12 +57,11 @@ export const { config, resetConfig, saveConfig } = createConfig({
         newTreeRange: [-3, -2, 2, 3],
     },
 
-    lumberjack: {
+    woodCutter: {
         hp: 100,
         choppingDamage: 20,
         gatheringSpeed: 5,
         capacity: 50,
-        cabinLight: false,
     },
 
     guardian: {
