@@ -1,5 +1,4 @@
 import { createConfig } from './lib/createConfig'
-import { colorInput, minMaxNumber, select } from './lib/definitions'
 
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
@@ -9,6 +8,10 @@ export const { config, resetConfig, saveConfig } = createConfig({
         cameraFov: 60,
         cameraFar: 350,
         cameraNear: 0.1,
+    },
+
+    debug: {
+        logSelected: false,
     },
 
     renderer: {
@@ -70,6 +73,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         attackDamage: 25,
     },
 
+    /*
     configTest: {
         bool: false,
         number: 20,
@@ -78,4 +82,5 @@ export const { config, resetConfig, saveConfig } = createConfig({
         minMax: minMaxNumber(100, 1, 1000),
         color: colorInput(0xabc123),
     },
+    */
 })

@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { ActorType } from '+game/types'
 import { Emitter } from '+lib/Emitter'
@@ -13,9 +14,12 @@ export class Player {
         unselectActors: Actor[]
     }>('Player')
 
-    public selectActors(actor: Actor[]) {
-        this.emitter.emit('selectActors', actor)
-        this.selectedActors = actor
+    public selectActors(actors: Actor[]) {
+        if (config.debug.logSelected) {
+            console.log('Selected actors', actors)
+        }
+        this.emitter.emit('selectActors', actors)
+        this.selectedActors = actors
     }
 
     public unselectActor() {
