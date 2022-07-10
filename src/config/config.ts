@@ -33,22 +33,6 @@ export const { config, resetConfig, saveConfig } = createConfig({
         newChildCountMin: 10,
         newChildCountMax: 30,
     },
-
-    human: {
-        hp: 100,
-        randomWalkChance: 0.01,
-        walkAroundHomeDistance: 7,
-        attackDistance: 1.5,
-        attackDamage: 5,
-    },
-    boar: {
-        hp: 80,
-        randomWalkChance: 0.01,
-        attackDistance: 1.5,
-        lookEnemyDistance: 8,
-        attackDamage: 3,
-    },
-
     tree: {
         hp: 300,
         removeTickCount: 10,
@@ -57,11 +41,28 @@ export const { config, resetConfig, saveConfig } = createConfig({
         newTreeRange: [-3, -2, 2, 3],
     },
 
+    boar: {
+        hp: 80,
+        randomWalkChance: 0.01,
+        attackDistance: 1.5,
+        lookEnemyDistance: 8,
+        attackDamage: 3,
+    },
+
+    human: {
+        hp: 100,
+        randomWalkChance: 0.01,
+        walkAroundHomeDistance: 7,
+        attackDistance: 1.5,
+        attackDamage: 5,
+    },
+
     woodCutter: {
         hp: 100,
         choppingDamage: 20,
         gatheringSpeed: 5,
         capacity: 50,
+        attackDamage: 15,
     },
 
     guardian: {

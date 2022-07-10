@@ -36,6 +36,10 @@ export class WoodcutterProfession extends Profession {
         super(game)
     }
 
+    public getAttackDamage(): number {
+        return config.woodCutter.attackDamage
+    }
+
     tick(): void {
         if (this.state === WoodcutterState.Idle) {
             if (Math.random() > 0.3) return
@@ -98,6 +102,9 @@ export class WoodcutterProfession extends Profession {
         }
 
         if (this.state === WoodcutterState.GoingToCabin) {
+            if (!this.actor.path) {
+                this.state = WoodcutterState.FullINeedCabin
+            }
             if (isSamePositon(this.camp.getDeliveryPoint(), this.actor.position)) {
                 this.actor.cancelPath() // Needed?
                 this.state = WoodcutterState.GatheringWood

@@ -50,7 +50,7 @@ function App() {
         game.spawnActor(BarracksActor, [102, 93])
 
         const h1 = game.spawnActor(HumanActor, [112, 120])
-        const h2 = game.spawnActor(HumanActor, [110, 120])
+        const h2 = game.spawnActor(HumanActor, [68, 120])
 
         const c1 = game.spawnActor(WoodCampActor, [87, 120])
         const c2 = game.spawnActor(WoodCampActor, [100, 114])

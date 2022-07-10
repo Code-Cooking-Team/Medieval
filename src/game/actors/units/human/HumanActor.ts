@@ -26,12 +26,13 @@ export class HumanActor extends WalkableActor {
             const distance = distanceBetweenPoints(this.position, this.target.position)
             if (distance < config.human.attackDistance) {
                 this.cancelPath()
-                this.target.hit(this.getAttackDamage(), this)
+                const damage = this.getAttackDamage()
+                this.target.hit(damage, this)
                 if (this.target.isDead()) {
                     this.target = undefined
                 }
             } else {
-                this.goTo(this.target.position, false)
+                this.goTo(this.target.position)
             }
         } else if (this.profession) {
             this.profession.tick()
@@ -54,6 +55,7 @@ export class HumanActor extends WalkableActor {
     }
 
     public hitBy(actor?: Actor) {
+        super.hitBy(actor)
         if (actor && !this.target) {
             this.setTarget(actor)
         }
@@ -63,7 +65,7 @@ export class HumanActor extends WalkableActor {
         let damage = config.human.attackDamage
         if (this.profession) {
             const professionDamage = this.profession.getAttackDamage()
-            damage = professionDamage
+            damage += professionDamage
         }
         return damage
     }
