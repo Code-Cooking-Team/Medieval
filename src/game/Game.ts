@@ -8,8 +8,8 @@ import { isBuildingActor, isWalkableActor } from './actors/helpers'
 import { Actor, ActorClass } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
 import { ActorType, Position } from './types'
-import { applyTileGrid } from './word/tileCodes'
-import { Word } from './word/Word'
+import { applyTileGrid } from './world/tileCodes'
+import { World } from './world/World'
 
 interface GameEmitterEvents {
     tick: undefined
@@ -26,10 +26,10 @@ export class Game {
 
     public emitter = new Emitter<GameEmitterEvents>('Game')
 
-    constructor(public word: Word, public player: Player) {
-        this.pf = new Pathfinding(word)
+    constructor(public world: World, public player: Player) {
+        this.pf = new Pathfinding(world)
 
-        this.word.emitter.on('tailUpdate', () => {
+        this.world.emitter.on('tailUpdate', () => {
             this.pf.update()
         })
     }
@@ -48,7 +48,7 @@ export class Game {
     }
 
     public tick(): void {
-        this.word.tick()
+        this.world.tick()
         this.pf.tick()
         this.actors.forEach((actor) => {
             actor.tick()
@@ -119,7 +119,7 @@ export class Game {
     ): T | undefined {
         const actor = new ActorClass(this, position)
 
-        const currTail = this.word.getTile(position)
+        const currTail = this.world.getTile(position)
 
         if (isWalkableActor(actor) && !currTail.canWalk) return
 
@@ -127,7 +127,7 @@ export class Game {
             if (!currTail.canBuild) return // TODO check entire grid
             const [x, y] = position
 
-            this.word.setMultipleTiles((set) => {
+            this.world.setMultipleTiles((set) => {
                 applyTileGrid(actor.grid, ([localX, localY], tile) => {
                     tile.height = currTail.height
                     set([x + localX, y + localY], tile)

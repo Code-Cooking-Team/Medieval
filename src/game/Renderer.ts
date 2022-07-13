@@ -27,8 +27,8 @@ export class Renderer {
     public scene = new Scene()
 
     private clock = new Clock()
-    private environment: EnvironmentRenderer
     private ground: GroundRenderer
+    private environment: EnvironmentRenderer
     private water: WaterRenderer
 
     private basicRendererList: BasicRenderer[] = []
@@ -63,6 +63,7 @@ export class Renderer {
 
     public init() {
         this.rtsCamera.init()
+        this.ground.init()
         this.animate()
         window.addEventListener('resize', this.resize)
 
@@ -87,7 +88,7 @@ export class Renderer {
     }
 
     private addRenderers() {
-        this.addBasicRenderer(this.ground)
+        this.addBasicRenderer(this.ground, false)
         this.addBasicRenderer(this.environment)
         this.addBasicRenderer(this.water)
 
@@ -100,9 +101,11 @@ export class Renderer {
         })
     }
 
-    private addBasicRenderer(renderer: BasicRenderer) {
+    private addBasicRenderer(renderer: BasicRenderer, addToRenderList = true) {
         this.centerRenderer(renderer)
-        this.basicRendererList.push(renderer)
+        if (addToRenderList) {
+            this.basicRendererList.push(renderer)
+        }
         this.scene.add(renderer.group)
     }
 
@@ -113,7 +116,7 @@ export class Renderer {
     }
 
     private centerRenderer(renderer: BasicRenderer) {
-        const [width, height] = this.game.word.getRealSize()
+        const [width, height] = this.game.world.getRealSize()
         renderer.group.position.x = -width / 2
         renderer.group.position.z = -height / 2
     }

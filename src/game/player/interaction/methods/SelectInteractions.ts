@@ -148,8 +148,8 @@ export class SelectInteractions {
         const walkableActors = currentSelected.filter(isWalkableActor)
 
         const positions = squareFloodFill(position, walkableActors.length, (position) => {
-            if (!this.game.word.hasTile(position)) return false
-            return this.game.word.getTile(position).canWalk
+            if (!this.game.world.hasTile(position)) return false
+            return this.game.world.getTile(position).canWalk
         })
 
         walkableActors.forEach((actor, index) => {

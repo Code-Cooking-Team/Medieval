@@ -12,7 +12,7 @@ export class FloraSpawner {
     public bulkSpawnTrees() {
         const tilePositions: Position[] = []
 
-        this.game.word.forEachTile((tile, position) => {
+        this.game.world.forEachTile((tile, position) => {
             const shouldSpawn = this.shouldSpawnTree(tile, position)
             if (!shouldSpawn) return
 
@@ -22,7 +22,7 @@ export class FloraSpawner {
             this.game.addActor(actor)
         })
 
-        this.game.word.setMultipleTiles((set, get) => {
+        this.game.world.setMultipleTiles((set, get) => {
             tilePositions.forEach((position) => {
                 const tile = get(position)
                 set(position, new OvergrownTile(tile))

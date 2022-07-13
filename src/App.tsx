@@ -11,7 +11,7 @@ import { InteractionsManager } from '+game/player/interaction/InteractionsManage
 import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
 import { ActorType, allActorTypes } from '+game/types'
-import { Word } from '+game/word/Word'
+import { World } from '+game/world/World'
 
 import styled from '@emotion/styled'
 import {
@@ -36,7 +36,7 @@ function App() {
     const [started, setStarted] = useState(false)
 
     const { game, player } = useMemo(() => {
-        const word = new Word()
+        const word = new World()
         const player = new Player()
         const game = new Game(word, player)
         const renderer = new Renderer(game, gameRoot)
@@ -46,7 +46,6 @@ function App() {
         renderer.init()
 
         game.spawnActor(HouseActor, [112, 113])
-
         game.spawnActor(BarracksActor, [102, 93])
 
         const h1 = game.spawnActor(HumanActor, [112, 120])
@@ -61,27 +60,6 @@ function App() {
         game.spawnActor(BoarActor, [55, 120])
         game.spawnActor(BoarActor, [66, 120])
         game.spawnActor(BoarActor, [67, 120])
-
-        // game.spawnActor(GuardianActor, [101, 120])
-        // game.spawnActor(GuardianActor, [102, 120])
-        // game.spawnActor(GuardianActor, [103, 120])
-        // game.spawnActor(GuardianActor, [104, 120])
-        // game.spawnActor(GuardianActor, [105, 120])
-        // game.spawnActor(GuardianActor, [106, 120])
-
-        // game.spawnActor(GuardianActor, [101, 121])
-        // game.spawnActor(GuardianActor, [102, 121])
-        // game.spawnActor(GuardianActor, [103, 121])
-        // game.spawnActor(GuardianActor, [104, 121])
-        // game.spawnActor(GuardianActor, [105, 121])
-        // game.spawnActor(GuardianActor, [106, 121])
-
-        // game.spawnActor(GuardianActor, [101, 122])
-        // game.spawnActor(GuardianActor, [102, 122])
-        // game.spawnActor(GuardianActor, [103, 122])
-        // game.spawnActor(GuardianActor, [104, 122])
-        // game.spawnActor(GuardianActor, [105, 122])
-        // game.spawnActor(GuardianActor, [106, 122])
 
         const floraSpawner = new FloraSpawner(game)
         floraSpawner.bulkSpawnTrees()

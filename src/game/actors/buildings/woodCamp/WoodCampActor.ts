@@ -3,7 +3,7 @@ import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType, Position } from '+game/types'
-import { TileCodeGrid } from '+game/word/tileCodes'
+import { TileCodeGrid } from '+game/world/tileCodes'
 import { addPosition } from '+helpers'
 
 export class WoodCampActor extends BuildingActor {

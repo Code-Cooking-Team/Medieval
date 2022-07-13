@@ -79,7 +79,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     }
 
     private onAddActor(actor: TActor) {
-        const tile = this.game.word.getTile(actor.position)
+        const tile = this.game.world.getTile(actor.position)
         const { group, interactionShape } = this.createActorModel(actor, tile)
 
         this.actorGroupMap.set(actor, group)
@@ -129,7 +129,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     protected updatePosition() {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
-            const tile = this.game.word.getTile(actor.position)
+            const tile = this.game.world.getTile(actor.position)
             const tileX = x * config.renderer.tileSize
             const tileY = y * config.renderer.tileSize
             group.position.x = tileX

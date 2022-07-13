@@ -1,8 +1,8 @@
 import { config } from '+config'
-import { Word } from '+game/word/Word'
+import { World } from '+game/world/World'
 import { HorizontalPlaneGeometry } from '+helpers'
 
-export const createWordPlane = (word: Word, diagonals: string, multiply: number = 1) => {
+export const createWordPlane = (word: World, diagonals: string, multiply: number = 1) => {
     const [wordWidth, wordHeight] = word.getSize()
 
     const width = (wordWidth - 1) * config.renderer.tileSize
