@@ -2,7 +2,7 @@ import { config } from '+config'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { ActorType } from '+game/types'
-import { TileCodeGrid } from '+game/word/tileCodes'
+import { TileCodeGrid } from '+game/world/tileCodes'
 import { random } from '+helpers'
 
 export class HouseActor extends BuildingActor {

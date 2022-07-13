@@ -12,6 +12,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     debug: {
         logSelected: false,
+        groundWireframe: true,
     },
 
     renderer: {
@@ -23,8 +24,11 @@ export const { config, resetConfig, saveConfig } = createConfig({
         dayAndNightTimeStart: -500,
         shadow: true,
         treeWaving: true,
-        wireframe: true,
         light: false,
+    },
+
+    ground: {
+        wireframe: false,
     },
 
     barracks: {

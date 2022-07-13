@@ -19,7 +19,7 @@ export abstract class WalkableActorRenderer<
     protected updatePosition() {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
-            const tile = this.game.word.getTile(actor.position)
+            const tile = this.game.world.getTile(actor.position)
             const tileX = x * config.renderer.tileSize
             const tileY = y * config.renderer.tileSize
             group.position.x += (tileX - group.position.x) * this.moveSpeed
@@ -32,7 +32,7 @@ export abstract class WalkableActorRenderer<
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
 
-            const tile = this.game.word.getTile(actor.position)
+            const tile = this.game.world.getTile(actor.position)
             const tileX = x * config.renderer.tileSize
             const tileY = y * config.renderer.tileSize
             const actorPosition = group.position

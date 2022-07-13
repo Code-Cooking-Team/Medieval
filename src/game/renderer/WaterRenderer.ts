@@ -11,7 +11,7 @@ export class WaterRenderer extends BasicRenderer {
 
     constructor(public game: Game) {
         super()
-        const geometry = createWordPlane(this.game.word, 'random', 1.8)
+        const geometry = createWordPlane(this.game.world, 'random', 1.8)
 
         const material = new MeshStandardMaterial({
             color: 0xa2d3e8,

@@ -1,6 +1,7 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
+// Island, TestMap, TestMapBig
 import map from '../maps/de_grass'
 import { Tile, TileGrid } from '../Tile'
 import { Position } from '../types'
@@ -10,7 +11,7 @@ interface WordEmitterEvents {
     tailUpdate: undefined
 }
 
-export class Word {
+export class World {
     public tiles: TileGrid = createTilesFromGrid(map as TileCodeGrid)
     public emitter = new Emitter<WordEmitterEvents>('Word')
 

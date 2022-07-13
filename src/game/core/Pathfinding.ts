@@ -1,5 +1,5 @@
 import { Path, Position } from '+game/types'
-import { Word } from '+game/word/Word'
+import { World } from '+game/world/World'
 
 import EasyStar from 'easystarjs'
 
@@ -7,7 +7,7 @@ export class Pathfinding {
     private easyStar = new EasyStar.js()
     private instanceId?: number
 
-    constructor(private word: Word) {
+    constructor(private word: World) {
         this.loadTilesGrid()
     }
 

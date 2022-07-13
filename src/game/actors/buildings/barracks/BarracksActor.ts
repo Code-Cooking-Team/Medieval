@@ -4,7 +4,7 @@ import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { GuardianProfession } from '+game/professions/GuardianProfession'
 import { ActorType } from '+game/types'
-import { TileCodeGrid } from '+game/word/tileCodes'
+import { TileCodeGrid } from '+game/world/tileCodes'
 
 export class BarracksActor extends BuildingActor {
     public type = ActorType.Barracks

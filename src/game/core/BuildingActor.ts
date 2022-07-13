@@ -1,4 +1,4 @@
-import { TileCodeGrid } from '+game/word/tileCodes'
+import { TileCodeGrid } from '+game/world/tileCodes'
 
 import { Actor } from './Actor'
 

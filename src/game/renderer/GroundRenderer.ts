@@ -14,7 +14,7 @@ export class GroundRenderer extends BasicRenderer {
     constructor(public game: Game) {
         super()
 
-        this.geometry = createWordPlane(this.game.word, 'both')
+        this.geometry = createWordPlane(this.game.world, 'both')
 
         const count = this.geometry.attributes.position!.count
         this.geometry.setAttribute(
@@ -29,47 +29,53 @@ export class GroundRenderer extends BasicRenderer {
             vertexColors: true,
         })
 
-        const groundWireframeMaterial = new MeshStandardMaterial({
-            color: 0x000000,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.05,
-            visible: config.renderer.wireframe,
-        })
-
         this.groundMesh = new Mesh(this.geometry, groundMaterial)
         this.groundMesh.receiveShadow = true
-
-        const wireframeMesh = new Mesh(this.groundMesh.geometry, groundWireframeMaterial)
-        wireframeMesh.receiveShadow = true
-        wireframeMesh.position.y = 0.01
-
-        this.render()
-
         this.group.add(this.groundMesh)
-        this.group.add(wireframeMesh)
 
-        this.game.word.emitter.on('tailUpdate', () => {
+        if (config.debug.groundWireframe) {
+            const groundWireframeMaterial = new MeshStandardMaterial({
+                color: 0x000000,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.05,
+            })
+
+            const wireframeMesh = new Mesh(
+                this.groundMesh.geometry,
+                groundWireframeMaterial,
+            )
+            wireframeMesh.receiveShadow = true
+            wireframeMesh.position.y = 0.01
+            this.group.add(wireframeMesh)
+        }
+
+        this.game.world.emitter.on('tailUpdate', () => {
             this.render()
         })
+    }
+
+    public init() {
+        this.render()
     }
 
     public render() {
         if (!this.groundMesh || !this.geometry) return
 
-        const [wordWidth] = this.game.word.getSize()
+        const [wordWidth] = this.game.world.getSize()
 
         const position = this.groundMesh.geometry.attributes.position!
         const colors = this.geometry.attributes.color!
         const color = new Color()
 
         for (let i = 0; i < position.count; i++) {
-            const tile = this.game.word.getTile(getPositionByIndex(i, wordWidth))
+            const tile = this.game.world.getTile(getPositionByIndex(i, wordWidth))
             position.setY(i, tile.height)
             color.setHex(tile.color)
             colors.setXYZ(i, color.r, color.g, color.b)
             colors.needsUpdate = true
         }
+
         position.needsUpdate = true
     }
 }

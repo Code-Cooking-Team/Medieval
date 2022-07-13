@@ -64,7 +64,7 @@ export class BoarActor extends WalkableActor {
         const vector = [random(dis, -dis, true), random(dis, -dis, true)] as Position
         const position = addPosition(this.position, vector)
 
-        if (this.game.word.hasTile(position)) {
+        if (this.game.world.hasTile(position)) {
             this.goTo(position)
         }
     }

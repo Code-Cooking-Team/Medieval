@@ -78,7 +78,7 @@ export class TreeRenderer implements Renderable {
             if (tree) {
                 const rnd = seededRandom(tree.seed)
                 const [x, y] = tree.position
-                const tile = this.game.word.getTile(tree.position)
+                const tile = this.game.world.getTile(tree.position)
 
                 dummy.position.set(x, tile.height, y)
                 dummy.scale.set(rnd(0.8, 1.5), rnd(1, 1.5), rnd(0.8, 1.5))

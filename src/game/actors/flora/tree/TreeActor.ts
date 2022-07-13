@@ -29,9 +29,9 @@ export class TreeActor extends Actor {
     }
 
     public death() {
-        const tile = this.game.word.getTile(this.position)
+        const tile = this.game.world.getTile(this.position)
         if (tile.previousTile) {
-            this.game.word.setTile(this.position, tile.previousTile)
+            this.game.world.setTile(this.position, tile.previousTile)
         }
     }
 
@@ -40,9 +40,9 @@ export class TreeActor extends Actor {
             (pos) => randomArrayItem(config.tree.newTreeRange)! + pos,
         ) as Position
 
-        if (!this.game.word.hasTile(newTreePosition)) return
+        if (!this.game.world.hasTile(newTreePosition)) return
 
-        const tile = this.game.word.getTile(newTreePosition)
+        const tile = this.game.world.getTile(newTreePosition)
 
         const spawner = new FloraSpawner(this.game)
         spawner.spawnNewTree(tile, newTreePosition)
