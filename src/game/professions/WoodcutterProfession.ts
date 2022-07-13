@@ -8,7 +8,9 @@ import { ActorType } from '+game/types'
 import { isSamePositon, maxValue } from '+helpers'
 
 import { Event, Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
+import { interpret, Interpreter } from 'xstate'
 
+import { woodcutterMachine } from './machines/woodcutterMachine'
 import { Profession } from './Profession'
 
 enum WoodcutterState {
@@ -32,94 +34,124 @@ export class WoodcutterProfession extends Profession {
     protected material = new MeshStandardMaterial({ color: 0x00ff00 })
     protected geometry = new SphereGeometry(0.5, 5, 5)
 
+    private machineService: Interpreter<any, any, any, any, any>
+
     constructor(public game: Game, public actor: HumanActor, public camp: WoodCampActor) {
         super(game)
+
+        this.machineService = interpret(
+            woodcutterMachine.withConfig({
+                actions: {
+                    move: () => {
+                        console.log('Sction: move')
+                        this.actor.move()
+                    },
+                },
+                services: {
+                    findTree: () => {
+                        console.log('Service: findTree')
+                        return new Promise<void>((resolve, reject) => {
+                            const tree = this.game.findClosestActorByType(
+                                ActorType.Tree,
+                                this.actor.position,
+                            )
+
+                            if (!tree) return reject()
+
+                            this.actor.cancelPath()
+                            this.tree = tree as TreeActor
+
+                            return this.actor
+                                .goTo(tree.position)
+                                .then((path) => {
+                                    resolve()
+                                })
+                                .catch(() => {
+                                    reject()
+                                })
+                        })
+                    },
+                    chopTree: () => {
+                        return new Promise<void>((resolve, reject) => {
+                            if (!this.tree) return reject()
+
+                            const damage = Math.round(
+                                config.woodCutter.choppingDamage * Math.random(),
+                            )
+                            this.collectedTreeHP += this.tree.hit(damage)
+
+                            resolve()
+                        })
+                    },
+                    goToCamp: () => {
+                        return new Promise<void>((resolve, reject) => {
+                            this.actor.cancelPath()
+                            this.actor
+                                .goTo(this.camp.getDeliveryPoint())
+                                .then((path) => {
+                                    resolve()
+                                })
+                                .catch(() => {
+                                    reject()
+                                })
+                        })
+                    },
+                    putWood: () => {
+                        return new Promise<void>((resolve, reject) => {
+                            const value = maxValue(
+                                this.collectedTreeHP,
+                                config.woodCutter.gatheringSpeed,
+                            )
+                            this.collectedTreeHP -= value
+                            this.camp.collectTree(value)
+                            resolve()
+                        })
+                    },
+                },
+                guards: {
+                    reachedTree: () => {
+                        console.log('Guard: reachedTree')
+                        const actors = this.game.findActorsByPosition(
+                            this.actor.position,
+                            1.7,
+                        )
+                        return actors.some((actor) => actor.type === ActorType.Tree)
+                    },
+
+                    reachedCamp: () => {
+                        console.log('Guard: reachedCamp')
+                        return isSamePositon(
+                            this.camp.getDeliveryPoint(),
+                            this.actor.position,
+                        )
+                    },
+                    hasPath: () => {
+                        console.log('Guard: hasPath')
+                        return !!this.actor.path
+                    },
+                    hasSpace: () => {
+                        console.log('Guard: hasSpace')
+                        return this.collectedTreeHP < config.woodCutter.capacity
+                    },
+                    hasWood: () => {
+                        console.log('Guard: hasWood')
+                        return this.collectedTreeHP > 0
+                    },
+                },
+            }),
+        )
+            .onTransition((state) => {
+                console.log(state.value)
+            })
+            .start()
     }
 
     public getAttackDamage(): number {
         return config.woodCutter.attackDamage
     }
 
-    tick(): void {
-        if (this.state === WoodcutterState.Idle) {
-            if (Math.random() > 0.3) return
-            const tree = this.game.findClosestActorByType(
-                ActorType.Tree,
-                this.actor.position,
-            )
-            if (tree) {
-                this.state = WoodcutterState.LookingForPathToATree
-                this.actor.goTo(tree.position).then((path) => {
-                    this.state = path
-                        ? WoodcutterState.GoingToATree
-                        : WoodcutterState.Idle
-                })
-            } else if (this.collectedTreeHP > 0) {
-                this.state = WoodcutterState.FullINeedCabin
-            }
-        }
-
-        if (this.state === WoodcutterState.GoingToATree) {
-            const actors = this.game.findActorsByPosition(this.actor.position, 1.7)
-            const tree = actors.find((actor) => actor.type === ActorType.Tree)
-            if (tree) {
-                this.actor.cancelPath()
-                this.state = WoodcutterState.ChoppingATree
-                this.tree = tree as TreeActor
-            } else if (!this.actor.path) {
-                this.state = WoodcutterState.Idle
-            }
-        }
-
-        if (this.state === WoodcutterState.ChoppingATree) {
-            if (this.tree) {
-                const damage = Math.round(
-                    config.woodCutter.choppingDamage * Math.random(),
-                )
-                this.collectedTreeHP += this.tree.hit(damage)
-
-                if (this.collectedTreeHP >= config.woodCutter.capacity) {
-                    this.state = WoodcutterState.FullINeedCabin
-                }
-
-                if (this.tree.isDead()) {
-                    this.tree = undefined
-                    this.state = WoodcutterState.Idle
-                }
-            } else {
-                this.state = WoodcutterState.Idle
-            }
-        }
-
-        if (this.state === WoodcutterState.FullINeedCabin) {
-            this.actor.goTo(this.camp.getDeliveryPoint()).then((path) => {
-                if (path) {
-                    this.state = WoodcutterState.GoingToCabin
-                } else {
-                    // TODO?
-                }
-            })
-        }
-
-        if (this.state === WoodcutterState.GoingToCabin) {
-            if (!this.actor.path) {
-                this.state = WoodcutterState.FullINeedCabin
-            }
-            if (isSamePositon(this.camp.getDeliveryPoint(), this.actor.position)) {
-                this.actor.cancelPath() // Needed?
-                this.state = WoodcutterState.GatheringWood
-            }
-        }
-
-        if (this.state === WoodcutterState.GatheringWood) {
-            const value = maxValue(this.collectedTreeHP, config.woodCutter.gatheringSpeed)
-            this.collectedTreeHP -= value
-            this.camp.collectTree(value)
-
-            if (!this.collectedTreeHP) {
-                this.state = WoodcutterState.Idle
-            }
-        }
+    public tick(): void {
+        this.machineService.send('TICK')
     }
 
     public getModel(): Object3D {

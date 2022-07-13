@@ -25,7 +25,8 @@
     "stats.js": "^0.17.0",
     "three": "^0.141.0",
     "uuid": "^8.3.2",
-    "vite-tsconfig-paths": "^3.4.1"
+    "vite-tsconfig-paths": "^3.4.1",
+    "xstate": "^4.32.1"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^3.2.0",
