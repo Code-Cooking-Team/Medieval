@@ -8,8 +8,12 @@ import { ActorType, ClockInfo } from '+game/types'
 
 import {
     BoxGeometry,
+    CircleGeometry,
     DoubleSide,
+    EdgesGeometry,
     Group,
+    LineBasicMaterial,
+    LineSegments,
     Mesh,
     MeshBasicMaterial,
     Object3D,
@@ -115,7 +119,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
         const interactionShape = new Mesh(
             new BoxGeometry(width, height, depth),
-            new MeshBasicMaterial({ color: 0xffffff, wireframe: true }),
+            new MeshBasicMaterial({ color: 0xffffff, wireframe: true, visible: false }),
         )
 
         interactionShape.position.x = width / 2 - ts / 2
@@ -123,6 +127,24 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         interactionShape.position.y = height / 2
 
         interactionShape.userData = { actor }
+
+
+        const edges = new EdgesGeometry(new CircleGeometry((width + height / 2.2) / 2.2, 64))
+        edges.rotateX(Math.PI / 2)
+
+        const interactionSelect = new LineSegments(
+            edges,
+            new LineBasicMaterial({ color: 0x5eff64, linewidth: 2 }),
+        )
+
+        interactionSelect.position.x = 0
+        interactionSelect.position.z = 0
+        interactionSelect.position.y = 0.3 - height / 2
+
+
+        interactionShape.add(interactionSelect)
+
+
         return interactionShape
     }
 
