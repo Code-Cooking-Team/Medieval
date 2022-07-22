@@ -89,7 +89,7 @@ function App() {
     }, [])
 
     useEffect(() => {
-        game.start()
+        // game.start()
 
         const anyWindow = window as any
         anyWindow.game = game

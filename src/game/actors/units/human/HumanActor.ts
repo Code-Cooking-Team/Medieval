@@ -35,7 +35,9 @@ export class HumanActor extends WalkableActor {
                 this.goTo(this.target.position)
             }
         } else if (this.profession) {
+            console.time('HumanActor.tick')
             this.profession.tick()
+            console.timeEnd('HumanActor.tick')
         } else {
             this.walkAround()
         }
