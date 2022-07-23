@@ -39,7 +39,7 @@ export class BoarActor extends WalkableActor {
                     this.target = undefined
                 }
             } else {
-                this.goTo(this.target.position)
+                this.setPathTo(this.target.position)
             }
         } else {
             this.walkAround()
@@ -65,7 +65,7 @@ export class BoarActor extends WalkableActor {
         const position = addPosition(this.position, vector)
 
         if (this.game.world.hasTile(position)) {
-            this.goTo(position)
+            this.setPathTo(position)
         }
     }
 

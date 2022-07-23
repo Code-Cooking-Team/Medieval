@@ -1,30 +1,6 @@
 import { asArray } from '+helpers'
 
-interface Machine {
-    id?: string
-    initial: string
-    states: { [state: string]: MachineState }
-}
-
-interface MachineState {
-    on?: { [state: string]: MachineTransition | MachineTransition[] }
-}
-
-interface MachineTransition {
-    target?: string
-    actions?: string | string[]
-    cond?: string
-}
-
-interface MachineActions {
-    [action: string]: () => void
-}
-
-interface MachineConditions {
-    [condition: string]: () => boolean
-}
-
-export const createMachine = (machine: Machine) => machine
+import { Machine, MachineActions, MachineConditions } from './types'
 
 export class MachineInterpreter {
     public currentState: string
@@ -37,9 +13,9 @@ export class MachineInterpreter {
         this.currentState = machine.initial
     }
 
-    public send(event: string) {
+    public async send(event: string) {
         const state = this.machine.states[this.currentState]
-        if (!state) throw new Error(`State ${this.currentState} not found`)
+        if (!state) throw new Error(`[Machine] State ${this.currentState} not found`)
         const transitions = state.on?.[event]
 
         const transitionArray = asArray(transitions)
@@ -50,7 +26,7 @@ export class MachineInterpreter {
             const actionsArray = asArray(transition.actions)
 
             for (const actionName of actionsArray) {
-                this.callAction(actionName)
+                await this.callAction(actionName)
             }
 
             if (transition.target) {
@@ -64,13 +40,13 @@ export class MachineInterpreter {
 
     public callAction(actionName: string) {
         const action = this.actions[actionName]
-        if (!action) throw new Error(`Action ${actionName} not found`)
-        action()
+        if (!action) throw new Error(`[Machine] Action ${actionName} not found`)
+        return action()
     }
 
     public callCondition(conditionName: string) {
         const cond = this.conditions[conditionName]
-        if (!cond) throw new Error(`Condition ${conditionName} not found`)
+        if (!cond) throw new Error(`[Machine] Condition ${conditionName} not found`)
         return cond()
     }
 }

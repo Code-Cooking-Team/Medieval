@@ -1,15 +1,13 @@
 import { config } from '+config'
-import { colorInput } from '+config/lib/definitions'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
-import { MachineInterpreter } from '+game/core/Machine'
+import { MachineInterpreter } from '+game/core/machine/Machine'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
 import { isSamePosition, maxValue } from '+helpers'
 
-import { interpret, StateMachine } from '@xstate/fsm'
-import { Event, Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
+import { Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
 
 import { woodcutterMachine } from './machines/woodcutterMachine'
 import { Profession } from './Profession'
@@ -53,7 +51,15 @@ export class WoodcutterProfession extends Profession {
                 this.actor.cancelPath()
                 this.tree = tree as TreeActor
 
-                this.actor.goTo(tree.position)
+                console.log('Action: findTree - START')
+                return this.actor
+                    .setPathTo(tree.position)
+                    .then(() => {
+                        console.log('Action: findTree - DONE')
+                    })
+                    .catch(() => {
+                        console.log('Action: findTree - FAIL')
+                    })
             },
             chopTree: () => {
                 console.log('Action: chopTree')
@@ -73,12 +79,26 @@ export class WoodcutterProfession extends Profession {
                 this.collectedTreeHP -= value
                 this.camp.collectTree(value)
             },
+            findCamp: () => {
+                console.log('Action: findCamp')
+                this.actor.setPathTo(this.camp.getDeliveryPoint())
+            },
+            gatherWood: () => {
+                console.log('Action: gatherWood')
+                const amount = this.gatherWood()
+                this.camp.collectTree(amount)
+            },
         },
         {
             hasPath: () => {
                 console.log('Guard: hasPath')
-                return !!this.actor.path
+                return this.actor.hasPath()
             },
+            isEmpty: () => {
+                console.log('Guard: isEmpty', this.collectedTreeHP)
+                return this.collectedTreeHP === 0
+            },
+
             isFull: () => {
                 console.log('Guard: isFull')
                 return this.collectedTreeHP >= config.woodCutter.capacity
@@ -87,6 +107,10 @@ export class WoodcutterProfession extends Profession {
                 console.log('Guard: nearTree')
                 const actors = this.game.findActorsByPosition(this.actor.position, 1.7)
                 return actors.some((actor) => actor.type === ActorType.Tree)
+            },
+            nearCamp: () => {
+                console.log('Guard: nearCamp')
+                return isSamePosition(this.actor.position, this.camp.getDeliveryPoint())
             },
 
             reachedCamp: () => {
@@ -104,9 +128,18 @@ export class WoodcutterProfession extends Profession {
         return config.woodCutter.attackDamage
     }
 
-    public tick(): void {
-        this.machine.send('TICK')
-        console.log(this.machine.currentState)
+    private gatherWood(): number {
+        const speed = config.woodCutter.gatheringSpeed
+        const amount = this.collectedTreeHP < speed ? this.collectedTreeHP : speed
+        this.collectedTreeHP -= amount
+        return amount
+    }
+
+    public async tick() {
+        console.log('--- Tick ---')
+        console.log('--', this.machine.currentState)
+        await this.machine.send('TICK')
+        console.log('->', this.machine.currentState)
     }
 
     public getModel(): Object3D {

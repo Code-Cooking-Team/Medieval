@@ -154,7 +154,7 @@ export class SelectInteractions {
 
         walkableActors.forEach((actor, index) => {
             const newPosition = positions[index]
-            if (newPosition) actor.goTo(newPosition)
+            if (newPosition) actor.setPathTo(newPosition)
         })
     }
 

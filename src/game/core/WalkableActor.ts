@@ -4,16 +4,20 @@ import { Actor } from './Actor'
 
 export abstract class WalkableActor extends Actor {
     public selectImportance = 4
-    public path: Path = null
+    public path: Path = []
 
-    public async goTo(position: Position) {
+    public async setPathTo(position: Position) {
         const pathSearch = await this.game.pf.findPath(this.position, position)
         this.path = pathSearch
         return pathSearch
     }
 
     public cancelPath() {
-        this.path = null
+        this.path = []
+    }
+
+    public hasPath() {
+        return this.path.length > 0
     }
 
     public move() {
@@ -24,7 +28,7 @@ export abstract class WalkableActor extends Actor {
         if (next) {
             this.position = [next.x, next.y]
         } else {
-            this.path = null
+            this.path = []
         }
     }
 }

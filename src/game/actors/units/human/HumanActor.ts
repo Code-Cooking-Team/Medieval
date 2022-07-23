@@ -32,7 +32,7 @@ export class HumanActor extends WalkableActor {
                     this.target = undefined
                 }
             } else {
-                this.goTo(this.target.position)
+                this.setPathTo(this.target.position)
             }
         } else if (this.profession) {
             console.time('HumanActor.tick')
@@ -72,11 +72,11 @@ export class HumanActor extends WalkableActor {
         return damage
     }
 
-    public goTo(position: Position, cancelTarget = true) {
+    public setPathTo(position: Position, cancelTarget = true) {
         if (cancelTarget) {
             this.target = undefined
         }
-        return super.goTo(position)
+        return super.setPathTo(position)
     }
 
     public getSelectedImportance(): number {
@@ -96,7 +96,7 @@ export class HumanActor extends WalkableActor {
         const position = addPosition(this.home.position, vector)
 
         if (this.game.world.hasTile(position)) {
-            this.goTo(position)
+            this.setPathTo(position)
         }
     }
 }

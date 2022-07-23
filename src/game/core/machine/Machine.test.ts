@@ -1,4 +1,5 @@
-import { createMachine, MachineInterpreter } from './Machine'
+import { createMachine } from './createMachine'
+import { MachineInterpreter } from './Machine'
 
 const conditions = { isFalse: () => false, isTrue: () => true }
 
