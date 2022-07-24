@@ -3,7 +3,7 @@ import { Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { Profession } from '+game/professions/Profession'
-import { ActorType, Path, Position } from '+game/types'
+import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { HouseActor } from '../../buildings/house/HouseActor'

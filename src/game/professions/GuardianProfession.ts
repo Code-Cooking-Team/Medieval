@@ -8,7 +8,7 @@ export class GuardianProfession extends Profession {
     public name = 'Guardian'
     public selectImportance = 5
 
-    protected material = new MeshStandardMaterial({ color: 0x40ff70 })
+    protected material = new MeshStandardMaterial({ color: config.guardian.color })
     protected geometry = new SphereGeometry(0.5, 5, 5)
 
     public getAttackDamage(): number {

@@ -30,18 +30,16 @@ export class WoodcutterProfession extends Profession {
     private tree?: TreeActor
     private collectedTreeHP = 0
 
-    protected material = new MeshStandardMaterial({ color: 0x00ff00 })
+    protected material = new MeshStandardMaterial({ color: config.woodcutter.color })
     protected geometry = new SphereGeometry(0.5, 5, 5)
 
     private machine = new MachineInterpreter(
         woodcutterMachine,
         {
             move: () => {
-                console.log('Action: move')
                 this.actor.move()
             },
             findTree: () => {
-                console.log('Action: findTree')
                 const tree = this.game.findClosestActorByType(
                     ActorType.Tree,
                     this.actor.position,
@@ -51,70 +49,55 @@ export class WoodcutterProfession extends Profession {
                 this.actor.cancelPath()
                 this.tree = tree as TreeActor
 
-                console.log('Action: findTree - START')
                 return this.actor
                     .setPathTo(tree.position)
-                    .then(() => {
-                        console.log('Action: findTree - DONE')
-                    })
-                    .catch(() => {
-                        console.log('Action: findTree - FAIL')
-                    })
+                    .then(() => {})
+                    .catch(() => {})
             },
             chopTree: () => {
-                console.log('Action: chopTree')
                 if (!this.tree) return
 
                 const damage = Math.round(
-                    config.woodCutter.choppingDamage * Math.random(),
+                    config.woodcutter.choppingDamage * Math.random(),
                 )
                 this.collectedTreeHP += this.tree.hit(damage)
             },
             putWood: () => {
-                console.log('Action: putWood')
                 const value = maxValue(
                     this.collectedTreeHP,
-                    config.woodCutter.gatheringSpeed,
+                    config.woodcutter.gatheringSpeed,
                 )
                 this.collectedTreeHP -= value
                 this.camp.collectTree(value)
             },
             findCamp: () => {
-                console.log('Action: findCamp')
                 this.actor.setPathTo(this.camp.getDeliveryPoint())
             },
             gatherWood: () => {
-                console.log('Action: gatherWood')
                 const amount = this.gatherWood()
                 this.camp.collectTree(amount)
             },
         },
         {
             hasPath: () => {
-                console.log('Guard: hasPath')
                 return this.actor.hasPath()
             },
             isEmpty: () => {
-                console.log('Guard: isEmpty', this.collectedTreeHP)
                 return this.collectedTreeHP === 0
             },
 
             isFull: () => {
-                console.log('Guard: isFull')
-                return this.collectedTreeHP >= config.woodCutter.capacity
+                return this.collectedTreeHP >= config.woodcutter.capacity
             },
             nearTree: () => {
-                console.log('Guard: nearTree')
                 const actors = this.game.findActorsByPosition(this.actor.position, 1.7)
                 return actors.some((actor) => actor.type === ActorType.Tree)
             },
             nearCamp: () => {
-                console.log('Guard: nearCamp')
                 return isSamePosition(this.actor.position, this.camp.getDeliveryPoint())
             },
 
             reachedCamp: () => {
-                console.log('Guard: reachedCamp')
                 return isSamePosition(this.camp.getDeliveryPoint(), this.actor.position)
             },
         },
@@ -125,21 +108,18 @@ export class WoodcutterProfession extends Profession {
     }
 
     public getAttackDamage(): number {
-        return config.woodCutter.attackDamage
+        return config.woodcutter.attackDamage
     }
 
     private gatherWood(): number {
-        const speed = config.woodCutter.gatheringSpeed
+        const speed = config.woodcutter.gatheringSpeed
         const amount = this.collectedTreeHP < speed ? this.collectedTreeHP : speed
         this.collectedTreeHP -= amount
         return amount
     }
 
     public async tick() {
-        console.log('--- Tick ---')
-        console.log('--', this.machine.currentState)
         await this.machine.send('TICK')
-        console.log('->', this.machine.currentState)
     }
 
     public getModel(): Object3D {

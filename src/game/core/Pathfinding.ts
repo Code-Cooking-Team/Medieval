@@ -58,6 +58,7 @@ export class Pathfinding {
         this.easyStar.setGrid(tiles)
         this.easyStar.setAcceptableTiles([1])
         this.easyStar.enableDiagonals()
-        this.easyStar.enableCornerCutting()
+        // this.easyStar.enableCornerCutting()
+        this.easyStar.setIterationsPerCalculation(1000)
     }
 }

@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { Profession } from '+game/professions/Profession'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
@@ -11,7 +12,7 @@ import { HumanActor } from './HumanActor'
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
     public actorType = ActorType.Human
 
-    private material = new MeshStandardMaterial({ color: 0xe0ac69 })
+    private material = new MeshStandardMaterial({ color: config.human.color })
     private geometry = new SphereGeometry(0.5, 5, 5)
 
     public createActorModel(actor: HumanActor, tile: Tile) {

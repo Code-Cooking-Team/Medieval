@@ -9,22 +9,21 @@ import { ActorRenderer } from './ActorRenderer'
 export abstract class WalkableActorRenderer<
     TActor extends WalkableActor,
 > extends ActorRenderer<TActor> {
-    private moveSpeed = 0.04
-
     public render(clockInfo: ClockInfo) {
         super.render(clockInfo)
         this.updateRotation(clockInfo)
     }
 
-    protected updatePosition() {
+    protected updatePosition(clockInfo: ClockInfo) {
         this.actorGroupMap.forEach((group, actor) => {
+            const speed = clockInfo.deltaTime * config.walkableRenderer.movementSmoothness
             const [x, y] = actor.position
             const tile = this.game.world.getTile(actor.position)
             const tileX = x * config.renderer.tileSize
             const tileY = y * config.renderer.tileSize
-            group.position.x += (tileX - group.position.x) * this.moveSpeed
-            group.position.z += (tileY - group.position.z) * this.moveSpeed
-            group.position.y += (tile.height - group.position.y) * this.moveSpeed
+            group.position.x += (tileX - group.position.x) * speed
+            group.position.z += (tileY - group.position.z) * speed
+            group.position.y += (tile.height - group.position.y) * speed
         })
     }
 
@@ -50,7 +49,8 @@ export abstract class WalkableActorRenderer<
                     newRotation,
                 )
                 if (!group.quaternion.equals(targetQuaternion)) {
-                    var step = clockInfo.deltaTime * 3
+                    const step =
+                        clockInfo.deltaTime * config.walkableRenderer.rotationSmoothness
                     group.quaternion.rotateTowards(targetQuaternion, step)
                 }
             }

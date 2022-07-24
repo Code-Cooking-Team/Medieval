@@ -4,6 +4,7 @@ import { Machine, MachineActions, MachineConditions } from './types'
 
 export class MachineInterpreter {
     public currentState: string
+    private locked = false
 
     constructor(
         private machine: Machine,
@@ -14,6 +15,8 @@ export class MachineInterpreter {
     }
 
     public async send(event: string) {
+        if (this.locked) return
+
         const state = this.machine.states[this.currentState]
         if (!state) throw new Error(`[Machine] State ${this.currentState} not found`)
         const transitions = state.on?.[event]
@@ -26,7 +29,9 @@ export class MachineInterpreter {
             const actionsArray = asArray(transition.actions)
 
             for (const actionName of actionsArray) {
+                this.locked = true
                 await this.callAction(actionName)
+                this.locked = false
             }
 
             if (transition.target) {
