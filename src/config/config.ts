@@ -1,4 +1,5 @@
 import { createConfig } from './lib/createConfig'
+import { colorInput } from './lib/definitions'
 
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
@@ -11,7 +12,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     },
 
     debug: {
-        logSelected: false,
+        logSelected: true,
         groundWireframe: true,
     },
 
@@ -27,8 +28,9 @@ export const { config, resetConfig, saveConfig } = createConfig({
         light: false,
     },
 
-    ground: {
-        wireframe: false,
+    walkableRenderer: {
+        movementSmoothness: 3,
+        rotationSmoothness: 3,
     },
 
     barracks: {
@@ -40,6 +42,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         newChildCountMin: 10,
         newChildCountMax: 30,
     },
+
     tree: {
         hp: 300,
         removeTickCount: 10,
@@ -62,29 +65,21 @@ export const { config, resetConfig, saveConfig } = createConfig({
         walkAroundHomeDistance: 7,
         attackDistance: 1.5,
         attackDamage: 5,
+        color: colorInput(0xe0ac69),
     },
 
-    woodCutter: {
+    woodcutter: {
         hp: 100,
         choppingDamage: 20,
         gatheringSpeed: 5,
         capacity: 50,
         attackDamage: 15,
+        color: colorInput(0x00ff00),
     },
 
     guardian: {
         hp: 100,
         attackDamage: 25,
+        color: colorInput(0x40ff70),
     },
-
-    /*
-    configTest: {
-        bool: false,
-        number: 20,
-        string: 'Hello',
-        select: select('first', ['first', 'second', 'third']),
-        minMax: minMaxNumber(100, 1, 1000),
-        color: colorInput(0xabc123),
-    },
-    */
 })

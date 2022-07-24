@@ -1,8 +1,8 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
-// Island, TestMap, TestMapBig
-import map from '../maps/de_grass'
+// Island, TestMap, TestMapBig, de_grass
+import map from '../maps/Island'
 import { Tile, TileGrid } from '../Tile'
 import { Position } from '../types'
 import { createTilesFromGrid, TileCodeGrid } from './tileCodes'

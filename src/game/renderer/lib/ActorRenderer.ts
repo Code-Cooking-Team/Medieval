@@ -1,7 +1,6 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
-import { BuildingActor } from '+game/core/BuildingActor'
 import { Game } from '+game/Game'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
@@ -73,7 +72,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     }
 
     public render(clockInfo: ClockInfo) {
-        this.updatePosition()
+        this.updatePosition(clockInfo)
         this.updateHP()
         this.updateSelect()
     }
@@ -128,8 +127,9 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
         interactionShape.userData = { actor }
 
-
-        const edges = new EdgesGeometry(new CircleGeometry((width + height / 2.2) / 2.2, 64))
+        const edges = new EdgesGeometry(
+            new CircleGeometry((width + height / 2.2) / 2.2, 64),
+        )
         edges.rotateX(Math.PI / 2)
 
         const interactionSelect = new LineSegments(
@@ -141,14 +141,12 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         interactionSelect.position.z = 0
         interactionSelect.position.y = 0.3 - height / 2
 
-
         interactionShape.add(interactionSelect)
-
 
         return interactionShape
     }
 
-    protected updatePosition() {
+    protected updatePosition(clockInfo: ClockInfo) {
         this.actorGroupMap.forEach((group, actor) => {
             const [x, y] = actor.position
             const tile = this.game.world.getTile(actor.position)

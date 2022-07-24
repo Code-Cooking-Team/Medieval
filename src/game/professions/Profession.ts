@@ -6,6 +6,7 @@ import { Group, Object3D } from 'three'
 export abstract class Profession {
     public selectImportance = 4
     public name = 'No profession name'
+    public isPristine = true
 
     constructor(public game: Game) {}
 
@@ -19,5 +20,11 @@ export abstract class Profession {
         return group
     }
 
-    tick(): void {}
+    public tick(): void {
+        if (this.isPristine) this.isPristine = false
+    }
+
+    public reset(): void {
+        this.isPristine = true
+    }
 }

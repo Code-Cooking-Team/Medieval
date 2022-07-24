@@ -1,6 +1,6 @@
 export type Position = [number, number]
 
-export type Path = { x: number; y: number }[] | null
+export type Path = { x: number; y: number }[]
 
 export enum ActorType {
     Empty = 'Empty',

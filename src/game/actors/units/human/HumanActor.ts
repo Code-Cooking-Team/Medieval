@@ -1,9 +1,8 @@
 import { config } from '+config/config'
 import { Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
-import { Game } from '+game/Game'
 import { Profession } from '+game/professions/Profession'
-import { ActorType, Path, Position } from '+game/types'
+import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { HouseActor } from '../../buildings/house/HouseActor'
@@ -15,25 +14,12 @@ export class HumanActor extends WalkableActor {
     public target?: Actor
     public home?: HouseActor
 
-    constructor(public game: Game, public position: Position) {
-        super(game, position)
-    }
-
     public tick(): void {
         super.tick()
 
         if (this.target) {
-            const distance = distanceBetweenPoints(this.position, this.target.position)
-            if (distance < config.human.attackDistance) {
-                this.cancelPath()
-                const damage = this.getAttackDamage()
-                this.target.hit(damage, this)
-                if (this.target.isDead()) {
-                    this.target = undefined
-                }
-            } else {
-                this.goTo(this.target.position)
-            }
+            this.cancelProfession()
+            this.fight()
         } else if (this.profession) {
             this.profession.tick()
         } else {
@@ -70,11 +56,11 @@ export class HumanActor extends WalkableActor {
         return damage
     }
 
-    public goTo(position: Position, cancelTarget = true) {
+    public setPathTo(position: Position, cancelTarget = true) {
         if (cancelTarget) {
             this.target = undefined
         }
-        return super.goTo(position)
+        return super.setPathTo(position)
     }
 
     public getSelectedImportance(): number {
@@ -84,8 +70,14 @@ export class HumanActor extends WalkableActor {
         return super.getSelectedImportance()
     }
 
+    private cancelProfession() {
+        if (!this.profession || this.profession.isPristine) return
+        this.profession.reset()
+    }
+
     private walkAround() {
-        if (this.path) return
+        this.move()
+        if (this.hasPath()) return
         if (Math.random() > config.human.randomWalkChance) return
         if (!this.home) return
 
@@ -94,7 +86,26 @@ export class HumanActor extends WalkableActor {
         const position = addPosition(this.home.position, vector)
 
         if (this.game.world.hasTile(position)) {
-            this.goTo(position)
+            this.setPathTo(position)
+        }
+    }
+
+    private fight() {
+        if (!this.target) return
+
+        this.move()
+
+        const distance = distanceBetweenPoints(this.position, this.target.position)
+        if (distance < config.human.attackDistance) {
+            this.cancelPath()
+            const damage = this.getAttackDamage()
+            this.target.hit(damage, this)
+            if (this.target.isDead()) {
+                this.target = undefined
+            }
+        } else {
+            if (this.hasPath()) return
+            this.setPathTo(this.target.position)
         }
     }
 }

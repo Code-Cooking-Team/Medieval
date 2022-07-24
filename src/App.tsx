@@ -9,6 +9,7 @@ import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { Player } from '+game/player/Player'
+import '+game/professions/machines/woodcutterMachine'
 import { Renderer } from '+game/Renderer'
 import { ActorType, allActorTypes } from '+game/types'
 import { World } from '+game/world/World'
@@ -35,6 +36,8 @@ function App() {
     const [selectedActors, setSelectedActors] = useState<Actor[]>([])
     const [started, setStarted] = useState(false)
 
+    // if (1 === 1) return null
+
     const { game, player } = useMemo(() => {
         const word = new World()
         const player = new Player()
@@ -45,21 +48,28 @@ function App() {
         interactions.init()
         renderer.init()
 
-        game.spawnActor(HouseActor, [112, 113])
-        game.spawnActor(BarracksActor, [102, 93])
-
-        const h1 = game.spawnActor(HumanActor, [112, 120])
-        const h2 = game.spawnActor(HumanActor, [68, 120])
-
-        const c1 = game.spawnActor(WoodCampActor, [87, 120])
-        const c2 = game.spawnActor(WoodCampActor, [100, 114])
+        // Island
+        const h1 = game.spawnActor(HumanActor, [14, 14])
+        const c1 = game.spawnActor(WoodCampActor, [15, 15])
 
         if (h1) c1?.interact([h1])
-        if (h2) c2?.interact([h2])
 
-        game.spawnActor(BoarActor, [55, 120])
-        game.spawnActor(BoarActor, [66, 120])
-        game.spawnActor(BoarActor, [67, 120])
+        // de_grass
+        // game.spawnActor(HouseActor, [112, 113])
+        // game.spawnActor(BarracksActor, [102, 93])
+
+        // const h1 = game.spawnActor(HumanActor, [112, 120])
+        // const h2 = game.spawnActor(HumanActor, [68, 120])
+
+        // const c1 = game.spawnActor(WoodCampActor, [87, 120])
+        // const c2 = game.spawnActor(WoodCampActor, [100, 114])
+
+        // if (h1) c1?.interact([h1])
+        // if (h2) c2?.interact([h2])
+
+        // game.spawnActor(BoarActor, [55, 120])
+        // game.spawnActor(BoarActor, [66, 120])
+        // game.spawnActor(BoarActor, [67, 120])
 
         const floraSpawner = new FloraSpawner(game)
         floraSpawner.bulkSpawnTrees()
@@ -79,7 +89,7 @@ function App() {
     }, [])
 
     useEffect(() => {
-        game.start()
+        // game.start()
 
         const anyWindow = window as any
         anyWindow.game = game

@@ -12,6 +12,5 @@
     "Renderable",
     "wireframe"
   ],
-  "vitest.enable": true,
-  "testing.automaticallyOpenPeekView": "never"
+  "vitest.enable": true
 }
