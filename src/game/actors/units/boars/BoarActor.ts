@@ -31,16 +31,7 @@ export class BoarActor extends WalkableActor {
         }
 
         if (this.target) {
-            const distance = distanceBetweenPoints(this.position, this.target.position)
-            if (distance < config.human.attackDistance) {
-                this.cancelPath()
-                this.target.hit(config.human.attackDamage, this)
-                if (this.target.isDead()) {
-                    this.target = undefined
-                }
-            } else {
-                this.setPathTo(this.target.position)
-            }
+            this.fight()
         } else {
             this.walkAround()
         }
@@ -57,7 +48,8 @@ export class BoarActor extends WalkableActor {
     }
 
     private walkAround() {
-        if (this.path) return
+        this.move()
+        if (this.hasPath()) return
         if (Math.random() > 0.1) return
 
         const dis = 5
@@ -66,6 +58,22 @@ export class BoarActor extends WalkableActor {
 
         if (this.game.world.hasTile(position)) {
             this.setPathTo(position)
+        }
+    }
+
+    private fight() {
+        if (!this.target) return
+        this.move()
+
+        const distance = distanceBetweenPoints(this.position, this.target.position)
+        if (distance < config.boar.attackDistance) {
+            this.cancelPath()
+            this.target.hit(config.boar.attackDamage, this)
+            if (this.target.isDead()) {
+                this.target = undefined
+            }
+        } else {
+            this.setPathTo(this.target.position)
         }
     }
 

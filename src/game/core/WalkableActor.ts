@@ -21,14 +21,10 @@ export abstract class WalkableActor extends Actor {
     }
 
     public move() {
-        if (!this.path) return
-
         const next = this.path.shift()
 
         if (next) {
             this.position = [next.x, next.y]
-        } else {
-            this.path = []
         }
     }
 }

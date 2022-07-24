@@ -1,7 +1,6 @@
 import { config } from '+config/config'
 import { Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
-import { Game } from '+game/Game'
 import { Profession } from '+game/professions/Profession'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
@@ -15,29 +14,14 @@ export class HumanActor extends WalkableActor {
     public target?: Actor
     public home?: HouseActor
 
-    constructor(public game: Game, public position: Position) {
-        super(game, position)
-    }
-
     public tick(): void {
         super.tick()
 
         if (this.target) {
-            const distance = distanceBetweenPoints(this.position, this.target.position)
-            if (distance < config.human.attackDistance) {
-                this.cancelPath()
-                const damage = this.getAttackDamage()
-                this.target.hit(damage, this)
-                if (this.target.isDead()) {
-                    this.target = undefined
-                }
-            } else {
-                this.setPathTo(this.target.position)
-            }
+            this.cancelProfession()
+            this.fight()
         } else if (this.profession) {
-            console.time('HumanActor.tick')
             this.profession.tick()
-            console.timeEnd('HumanActor.tick')
         } else {
             this.walkAround()
         }
@@ -86,8 +70,14 @@ export class HumanActor extends WalkableActor {
         return super.getSelectedImportance()
     }
 
+    private cancelProfession() {
+        if (!this.profession || this.profession.isPristine) return
+        this.profession.reset()
+    }
+
     private walkAround() {
-        if (this.path) return
+        this.move()
+        if (this.hasPath()) return
         if (Math.random() > config.human.randomWalkChance) return
         if (!this.home) return
 
@@ -97,6 +87,25 @@ export class HumanActor extends WalkableActor {
 
         if (this.game.world.hasTile(position)) {
             this.setPathTo(position)
+        }
+    }
+
+    private fight() {
+        if (!this.target) return
+
+        this.move()
+
+        const distance = distanceBetweenPoints(this.position, this.target.position)
+        if (distance < config.human.attackDistance) {
+            this.cancelPath()
+            const damage = this.getAttackDamage()
+            this.target.hit(damage, this)
+            if (this.target.isDead()) {
+                this.target = undefined
+            }
+        } else {
+            if (this.hasPath()) return
+            this.setPathTo(this.target.position)
         }
     }
 }

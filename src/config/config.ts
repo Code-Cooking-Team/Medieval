@@ -82,15 +82,4 @@ export const { config, resetConfig, saveConfig } = createConfig({
         attackDamage: 25,
         color: colorInput(0x40ff70),
     },
-
-    /*
-    configTest: {
-        bool: false,
-        number: 20,
-        string: 'Hello',
-        select: select('first', ['first', 'second', 'third']),
-        minMax: minMaxNumber(100, 1, 1000),
-        color: colorInput(0xabc123),
-    },
-    */
 })

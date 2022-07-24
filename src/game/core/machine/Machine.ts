@@ -43,13 +43,18 @@ export class MachineInterpreter {
         }
     }
 
-    public callAction(actionName: string) {
+    public reset() {
+        this.currentState = this.machine.initial
+        this.locked = false
+    }
+
+    private callAction(actionName: string) {
         const action = this.actions[actionName]
         if (!action) throw new Error(`[Machine] Action ${actionName} not found`)
         return action()
     }
 
-    public callCondition(conditionName: string) {
+    private callCondition(conditionName: string) {
         const cond = this.conditions[conditionName]
         if (!cond) throw new Error(`[Machine] Condition ${conditionName} not found`)
         return cond()
