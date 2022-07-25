@@ -28,6 +28,7 @@ import { groupBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
 const gameRoot = document.getElementById('game-root') as HTMLElement
+const gameRoot2 = document.getElementById('game-root-2') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
@@ -37,13 +38,21 @@ function App() {
     const { game, humanPlayer } = useMemo(() => {
         const word = new World()
         const humanPlayer = new HumanPlayer()
+        const humanPlayer2 = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
-        const game = new Game(word, [humanPlayer, naturePlayer])
+        const game = new Game(word, [humanPlayer, humanPlayer2, naturePlayer])
+
         const renderer = new Renderer(game, humanPlayer, gameRoot)
         const interactions = new InteractionsManager(game, renderer, humanPlayer)
 
+        const renderer2 = new Renderer(game, humanPlayer2, gameRoot2)
+        const interactions2 = new InteractionsManager(game, renderer2, humanPlayer2)
+
         interactions.init()
         renderer.init()
+
+        interactions2.init()
+        renderer2.init()
 
         // Island
         const h1 = game.spawnActor(HumanActor, humanPlayer, [14, 14])

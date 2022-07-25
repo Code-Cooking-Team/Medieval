@@ -21,13 +21,19 @@ body {
     justify-content: center;
 }
 
-#game-root {
+#game-root,
+#game-root-2 {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    right: 50%;
     bottom: 0;
     user-select: none;
+}
+
+#game-root-2 {
+    right: 0;
+    left: 50%;
 }
 
 code {
