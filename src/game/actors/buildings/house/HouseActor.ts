@@ -40,7 +40,7 @@ export class HouseActor extends BuildingActor {
 
         if (residents.length >= this.residentsLimit) return
 
-        const actor = this.game.spawnActor(HumanActor, this.position)
+        const actor = this.game.spawnActor(HumanActor, this.player, this.position)
 
         if (!actor) return
 

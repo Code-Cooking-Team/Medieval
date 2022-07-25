@@ -13,10 +13,6 @@ export class BoarActor extends WalkableActor {
     public maxHp = config.boar.hp
     public target?: Actor
 
-    constructor(public game: Game, public position: Position) {
-        super(game, position)
-    }
-
     public tick(): void {
         super.tick()
 

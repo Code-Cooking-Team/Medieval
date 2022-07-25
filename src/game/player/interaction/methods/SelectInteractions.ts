@@ -2,7 +2,9 @@ import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
+import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
@@ -19,7 +21,11 @@ export class SelectInteractions {
     private selectionDiv: SelectionDiv
     private el: HTMLCanvasElement
 
-    constructor(public game: Game, public renderer: Renderer) {
+    constructor(
+        public game: Game,
+        public renderer: Renderer,
+        public player: HumanPlayer,
+    ) {
         this.el = this.renderer.webGLRenderer.domElement
         this.selectionDiv = new SelectionDiv(renderer.webGLRenderer)
         this.finder = new RaycastFinder(game, renderer)
@@ -48,7 +54,7 @@ export class SelectInteractions {
     private distance = 0
 
     private handlePointerDown = (event: PointerEvent) => {
-        const selectedBuilding = this.game.player.selectedBuilding
+        const selectedBuilding = this.player.selectedBuilding
         this.down = true
 
         if (event.button !== LEFT_MOUSE_BUTTON || selectedBuilding) return
@@ -103,27 +109,25 @@ export class SelectInteractions {
     }
 
     private handleClick = (event: MouseEvent) => {
-        const currentSelected = this.game.player.selectedActors
+        const currentSelected = this.player.selectedActors
         const shiftKey = event.shiftKey || event.ctrlKey
 
         const actor = this.finder.findSingleActorByMouseEvent(event)
 
         if (!actor) {
             if (shiftKey) return
-            this.game.player.unselectActor()
+            this.player.unselectActor()
             return
         }
 
         if (shiftKey) {
             if (currentSelected.includes(actor)) {
-                this.game.player.selectActors(
-                    currentSelected.filter((item) => item !== actor),
-                )
+                this.player.selectActors(currentSelected.filter((item) => item !== actor))
             } else {
-                this.game.player.selectActors(uniq([actor, ...currentSelected]))
+                this.player.selectActors(uniq([actor, ...currentSelected]))
             }
         } else {
-            this.game.player.selectActors([actor])
+            this.player.selectActors([actor])
         }
     }
 
@@ -133,7 +137,7 @@ export class SelectInteractions {
 
     private handleRightClick = (event: MouseEvent) => {
         event.preventDefault()
-        const currentSelected = this.game.player.selectedActors
+        const currentSelected = this.player.selectedActors
         const position = this.finder.findPositionByMouseEvent(event)
 
         if (!position || !currentSelected.length) return
@@ -159,15 +163,15 @@ export class SelectInteractions {
     }
 
     private handleDoubleClick = () => {
-        const currentSelected = first(this.game.player.selectedActors)
+        const currentSelected = first(this.player.selectedActors)
         if (!currentSelected) return
 
         const actors = this.game.findActorsByType(currentSelected.type)
-        this.game.player.selectActors(actors)
+        this.player.selectActors(actors)
     }
 
     private boxSelect(add = false) {
-        const currentSelected = this.game.player.selectedActors
+        const currentSelected = this.player.selectedActors
         const selectedMeshes = this.selectionBox.select()
 
         const newSelected = selectedMeshes
@@ -183,14 +187,12 @@ export class SelectInteractions {
         )
 
         if (!add) {
-            this.game.player.selectActors(importantActors)
+            this.player.selectActors(importantActors)
         } else {
             if (importantActors.every((item) => currentSelected.includes(item))) {
-                this.game.player.selectActors(xor(currentSelected, importantActors))
+                this.player.selectActors(xor(currentSelected, importantActors))
             } else {
-                this.game.player.selectActors(
-                    uniq([...importantActors, ...currentSelected]),
-                )
+                this.player.selectActors(uniq([...importantActors, ...currentSelected]))
             }
         }
     }

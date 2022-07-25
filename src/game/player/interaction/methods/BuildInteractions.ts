@@ -1,5 +1,6 @@
 import { actorByType } from '+game/actors'
 import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -8,7 +9,11 @@ export class BuildInteractions {
     private finder: RaycastFinder
     private el: HTMLCanvasElement
 
-    constructor(public game: Game, public renderer: Renderer) {
+    constructor(
+        public game: Game,
+        public renderer: Renderer,
+        public player: HumanPlayer,
+    ) {
         this.el = this.renderer.webGLRenderer.domElement
         this.finder = new RaycastFinder(game, renderer)
     }
@@ -26,7 +31,7 @@ export class BuildInteractions {
     private handleClick = (event: MouseEvent) => {
         event.preventDefault()
 
-        const selectedBuilding = this.game.player.selectedBuilding
+        const selectedBuilding = this.player.selectedBuilding
         if (!selectedBuilding) return
 
         const position = this.finder.findPositionByMouseEvent(event)
@@ -34,11 +39,11 @@ export class BuildInteractions {
 
         const ActorClass = actorByType[selectedBuilding]
 
-        this.game.spawnActor(ActorClass, position)
+        this.game.spawnActor(ActorClass, this.player, position)
     }
 
     private handleContextmenu = (event: MouseEvent) => {
         event.preventDefault()
-        this.game.player.unselectBuilding()
+        this.player.unselectBuilding()
     }
 }

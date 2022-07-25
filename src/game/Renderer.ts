@@ -12,6 +12,7 @@ import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
 import { Game } from './Game'
+import { HumanPlayer } from './player/HumanPlayer'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
@@ -34,7 +35,7 @@ export class Renderer {
     private basicRendererList: BasicRenderer[] = []
     private actorRendererList: ActorRenderer<Actor>[] = []
 
-    constructor(public game: Game, public el: HTMLElement) {
+    constructor(public game: Game, public player: HumanPlayer, public el: HTMLElement) {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
         this.webGLRenderer.outputEncoding = sRGBEncoding
@@ -97,7 +98,7 @@ export class Renderer {
         })
 
         actorRenderers.forEach((ActorRenderer) => {
-            this.addActorRenderer(new ActorRenderer(this.game))
+            this.addActorRenderer(new ActorRenderer(this.game, this.player))
         })
     }
 
