@@ -23,9 +23,9 @@ import { BasicRenderer } from './lib/BasicRenderer'
 import hdrUrl from './textures/bg.jpg'
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xffffbb, 0.6)
+    private sun = new DirectionalLight(0xffffbb, 1.6)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0x404040, 0.1)
+    private ambient = new AmbientLight(0x404040, 1.1)
     private camera: Camera
 
     constructor(public game: Game, private scene: Scene, camera: Camera) {

@@ -8,6 +8,11 @@ import {
     Vector2,
     WebGLRenderer,
 } from 'three'
+// Post processing
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
@@ -18,21 +23,15 @@ import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { ClockInfo } from './types'
-
-// Post processing
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { ActorType, ClockInfo } from './types'
 
 const stats = new Stats()
 
 export class Renderer {
     public webGLRenderer = new WebGLRenderer({ antialias: true })
 
-    public composer = new EffectComposer(this.webGLRenderer);
-    public outlinePass: any;
+    public composer = new EffectComposer(this.webGLRenderer)
+    public outlinePass?: OutlinePass
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
@@ -46,8 +45,6 @@ export class Renderer {
     private actorRendererList: ActorRenderer<Actor>[] = []
 
     constructor(public game: Game, public el: HTMLElement) {
-        this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
-        this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
         this.webGLRenderer.outputEncoding = sRGBEncoding
         this.webGLRenderer.toneMapping = NoToneMapping
         this.webGLRenderer.toneMappingExposure = 1
@@ -55,11 +52,6 @@ export class Renderer {
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
         this.webGLRenderer.xr.enabled = true
-
-
-
-
-
 
         el.append(this.webGLRenderer.domElement)
 
@@ -73,19 +65,16 @@ export class Renderer {
         )
         this.ground = new GroundRenderer(this.game)
         this.water = new WaterRenderer(this.game)
-
-
-
-
-
-        this.addRenderers()
     }
 
     public init() {
+        this.addComposerPasses()
+        this.addRenderers()
         this.rtsCamera.init()
-        this.initPostProd()
         this.ground.init()
         this.animate()
+
+        this.resize()
         window.addEventListener('resize', this.resize)
 
         const anyWindow = window as any
@@ -98,24 +87,6 @@ export class Renderer {
         }
     }
 
-
-    private initPostProd() {
-        const camera = this.rtsCamera.camera
-
-        const renderPass = new RenderPass(this.scene, camera);
-        this.composer.addPass(renderPass);
-
-        this.outlinePass = new OutlinePass(
-            new Vector2(window.innerWidth,
-                window.innerHeight), this.scene, camera
-        );
-
-        this.composer.addPass(this.outlinePass);
-        this.outlinePass.selectedObjects = []
-
-
-    }
-
     public getGroundChildren() {
         return this.ground!.group.children
     }
@@ -124,6 +95,21 @@ export class Renderer {
         return this.actorRendererList.flatMap((renderer) =>
             renderer.getInteractionShapes(),
         )
+    }
+
+    private addComposerPasses() {
+        const camera = this.rtsCamera.camera
+
+        const renderPass = new RenderPass(this.scene, camera)
+
+        this.outlinePass = new OutlinePass(
+            new Vector2(window.innerWidth, window.innerHeight),
+            this.scene,
+            camera,
+        )
+
+        this.composer.addPass(renderPass)
+        this.composer.addPass(this.outlinePass)
     }
 
     private addRenderers() {
@@ -152,8 +138,11 @@ export class Renderer {
         this.centerRenderer(renderer)
         this.actorRendererList.push(renderer)
         this.scene.add(renderer.group)
-        if (this.outlinePass)
-            this.outlinePass.selectedObjects.push(renderer.group)
+
+        // TODO refactor this to renderer.hasOutline or something
+        if (renderer.actorType === ActorType.Human) {
+            this.outlinePass?.selectedObjects.push(renderer.group)
+        }
     }
 
     private centerRenderer(renderer: BasicRenderer) {
@@ -163,11 +152,11 @@ export class Renderer {
     }
 
     private resize = () => {
-
         this.rtsCamera.camera.aspect = window.innerWidth / window.innerHeight
         this.rtsCamera.camera.updateProjectionMatrix()
+        this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
-        this.composer.setSize(window.innerWidth, window.innerHeight);
+        this.composer.setSize(window.innerWidth, window.innerHeight)
     }
 
     private animate = () => {
@@ -188,6 +177,6 @@ export class Renderer {
         this.rtsCamera.render(clockInfo)
         this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
 
-        this.composer.render();
+        this.composer.render()
     }
 }

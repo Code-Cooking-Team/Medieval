@@ -38,7 +38,7 @@ function App() {
 
     // if (1 === 1) return null
 
-    const { game, player } = useMemo(() => {
+    const { game, player, renderer } = useMemo(() => {
         const word = new World()
         const player = new Player()
         const game = new Game(word, player)
@@ -74,7 +74,7 @@ function App() {
         const floraSpawner = new FloraSpawner(game)
         floraSpawner.bulkSpawnTrees()
 
-        return { game, player }
+        return { game, player, renderer }
     }, [])
 
     useEffect(() => {
@@ -93,6 +93,7 @@ function App() {
 
         const anyWindow = window as any
         anyWindow.game = game
+        anyWindow.renderer = renderer
 
         return () => {
             game.stop()
