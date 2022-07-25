@@ -12,20 +12,8 @@ import { Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
 import { woodcutterMachine } from './machines/woodcutterMachine'
 import { Profession } from './Profession'
 
-enum WoodcutterState {
-    Idle = 'Idle',
-    LookingForPathToATree = 'LookingForPathToATree',
-    GoingToATree = 'GoingToATree',
-    ChoppingATree = 'ChoppingATree',
-    FullINeedCabin = 'FullINeedCabin',
-    GoingToCabin = 'GoingToCabin',
-
-    GatheringWood = 'GatheringWood',
-}
-
 export class WoodcutterProfession extends Profession {
-    public name = 'Guardian'
-    public state = WoodcutterState.Idle
+    public name = 'Woodcutter'
     public selectImportance = 4
 
     private tree?: TreeActor
