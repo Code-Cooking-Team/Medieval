@@ -15,17 +15,19 @@ export class WaterRenderer extends BasicRenderer {
 
         const material = new MeshStandardMaterial({
             color: 0xa2d3e8,
-            side: DoubleSide,
+            // side: DoubleSide,
             transparent: true,
-            opacity: 0.3,
+            opacity: 0.7,
             roughness: 0,
             metalness: 1,
             flatShading: true,
+            depthTest: true,
+            depthWrite: false
         })
 
         this.mesh = new Mesh(geometry, material)
         this.mesh.position.y = -0.5
-
+        this.mesh.renderOrder = 0
         this.group.add(this.mesh)
     }
 

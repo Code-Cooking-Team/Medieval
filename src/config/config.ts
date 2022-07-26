@@ -74,7 +74,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         gatheringSpeed: 5,
         capacity: 50,
         attackDamage: 15,
-        color: colorInput(0x00ff00),
+        color: colorInput(0x134714),
     },
 
     guardian: {
