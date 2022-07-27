@@ -79,6 +79,16 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         this.updateSelect()
     }
 
+    public getSelectedGroups() {
+        const selected: Object3D[] = []
+        this.actorGroupMap.forEach((group, actor) => {
+            if (this.player.selectedActors.includes(actor)) {
+                selected.push(group)
+            }
+        })
+        return selected
+    }
+
     public getInteractionShapes(): Object3D[] {
         return Array.from(this.actorInteractionShapeMap.keys())
     }

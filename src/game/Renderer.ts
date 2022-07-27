@@ -95,9 +95,16 @@ export class Renderer {
         this.resize()
         window.addEventListener('resize', this.resize)
 
+        this.player.emitter.on(['selectActors', 'unselectActors'], (actor) => {
+            if (this.outlinePass) {
+                this.outlinePass.selectedObjects = this.getSelectedGroupList()
+            }
+        })
+
         const anyWindow = window as any
 
         anyWindow.logStats = () => {
+            console.log('Device pixel ratio', window.devicePixelRatio)
             console.log('Scene polycount:', this.webGLRenderer.info.render.triangles)
             console.log('Active Drawcalls:', this.webGLRenderer.info.render.calls)
             console.log('Textures in Memory', this.webGLRenderer.info.memory.textures)
@@ -113,6 +120,10 @@ export class Renderer {
         return this.actorRendererList.flatMap((renderer) =>
             renderer.getInteractionShapes(),
         )
+    }
+
+    private getSelectedGroupList() {
+        return this.actorRendererList.flatMap((renderer) => renderer.getSelectedGroups())
     }
 
     private addComposerPasses() {
@@ -195,11 +206,6 @@ export class Renderer {
         this.centerRenderer(renderer)
         this.actorRendererList.push(renderer)
         this.scene.add(renderer.group)
-
-        // TODO refactor this to renderer.hasOutline or something
-        // if (renderer.actorType === ActorType.Human) {
-        //     this.outlinePass?.selectedObjects.push(renderer.group)
-        // }
     }
 
     private centerRenderer(renderer: BasicRenderer) {
@@ -211,7 +217,9 @@ export class Renderer {
     private resize = () => {
         this.rtsCamera.camera.aspect = window.innerWidth / window.innerHeight
         this.rtsCamera.camera.updateProjectionMatrix()
-        this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
+
+        const pixelRatio = window.devicePixelRatio
+        this.webGLRenderer.setPixelRatio(window.devicePixelRatio * pixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
 
         if (config.postProcessing.postprocessingEnable) {

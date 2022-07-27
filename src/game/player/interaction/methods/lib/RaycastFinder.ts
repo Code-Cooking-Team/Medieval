@@ -9,12 +9,6 @@ import { Intersection, Object3D, Raycaster, Vector2 } from 'three'
 export class RaycastFinder {
     constructor(public game: Game, public renderer: Renderer) {}
 
-    public setOutline = (objectList: Object3D[]) => {
-        if (this.renderer.outlinePass) {
-            this.renderer.outlinePass.selectedObjects = objectList
-        }
-    }
-
     public findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
@@ -60,8 +54,6 @@ export class RaycastFinder {
             if (intersect && intersect.object && intersect.object.parent)
                 objectList.push(intersect.object.parent as Object3D)
         })
-
-        this.setOutline(objectList)
 
         intersectActors.sort(
             (a, b) => b.getSelectedImportance() - a.getSelectedImportance(),
