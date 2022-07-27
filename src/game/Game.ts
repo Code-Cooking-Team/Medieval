@@ -26,7 +26,7 @@ export class Game {
 
     public emitter = new Emitter<GameEmitterEvents>('Game')
 
-    constructor(public world: World, public player: Player) {
+    constructor(public world: World, public players: Player[]) {
         this.pf = new Pathfinding(world)
 
         this.world.emitter.on('tailUpdate', () => {
@@ -115,9 +115,10 @@ export class Game {
 
     public spawnActor<T extends Actor>(
         ActorClass: ActorClass<T>,
+        player: Player,
         position: Position,
     ): T | undefined {
-        const actor = new ActorClass(this, position)
+        const actor = new ActorClass(this, player, position)
 
         const currTail = this.world.getTile(position)
 

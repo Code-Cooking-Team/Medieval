@@ -2,6 +2,7 @@ import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
 
@@ -31,7 +32,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
-    constructor(public game: Game) {
+    constructor(public game: Game, public player: HumanPlayer) {
         super()
 
         this.game.emitter.on('actorAdded', (actor) => {
@@ -169,7 +170,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
     protected updateSelect() {
         this.actorInteractionShapeMap.forEach((actor, shape) => {
-            shape.visible = this.game.player.selectedActors.includes(actor)
+            shape.visible = this.player.selectedActors.includes(actor)
         })
     }
 }

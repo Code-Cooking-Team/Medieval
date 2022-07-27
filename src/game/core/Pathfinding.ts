@@ -3,6 +3,13 @@ import { World } from '+game/world/World'
 
 import EasyStar from 'easystarjs'
 
+type FindPathResult =
+    | {
+          x: number
+          y: number
+      }[]
+    | null
+
 export class Pathfinding {
     private easyStar = new EasyStar.js()
     private instanceId?: number
@@ -20,13 +27,24 @@ export class Pathfinding {
     }
 
     public findPath([sx, sy]: Position, [ex, ey]: Position) {
-        return new Promise<Path>((resolve, reject) => {
+        return new Promise<Path | undefined>((resolve, reject) => {
             try {
-                const instanceId = this.easyStar.findPath(sx, sy, ex, ey, (path) => {
-                    this.instanceId = undefined
-                    path?.shift()
-                    resolve(path)
-                })
+                const instanceId = this.easyStar.findPath(
+                    sx,
+                    sy,
+                    ex,
+                    ey,
+                    (path: FindPathResult) => {
+                        this.instanceId = undefined
+
+                        if (!path) {
+                            return resolve(undefined)
+                        }
+
+                        path.shift() // remove start position
+                        resolve(path)
+                    },
+                )
                 this.instanceId = instanceId
             } catch (error) {
                 reject(error)
@@ -58,6 +76,7 @@ export class Pathfinding {
         this.easyStar.setGrid(tiles)
         this.easyStar.setAcceptableTiles([1])
         this.easyStar.enableDiagonals()
+        // This don't work work check https://github.com/prettymuchbryce/easystarjs/pull/100
         // this.easyStar.enableCornerCutting()
         this.easyStar.setIterationsPerCalculation(1000)
     }

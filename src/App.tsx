@@ -1,14 +1,12 @@
 import { ConfigForm } from '+components/config/ConfigForm'
-import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
-import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { BoarActor } from '+game/actors/units/boars/BoarActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
-import { Player } from '+game/player/Player'
+import { NaturePlayer } from '+game/player/NaturePlayer'
 import '+game/professions/machines/woodcutterMachine'
 import { Renderer } from '+game/Renderer'
 import { ActorType, allActorTypes } from '+game/types'
@@ -36,21 +34,20 @@ function App() {
     const [selectedActors, setSelectedActors] = useState<Actor[]>([])
     const [started, setStarted] = useState(false)
 
-    // if (1 === 1) return null
-
-    const { game, player, renderer } = useMemo(() => {
+    const { game, humanPlayer } = useMemo(() => {
         const word = new World()
-        const player = new Player()
-        const game = new Game(word, player)
-        const renderer = new Renderer(game, gameRoot)
-        const interactions = new InteractionsManager(game, renderer)
+        const humanPlayer = new HumanPlayer()
+        const naturePlayer = new NaturePlayer()
+        const game = new Game(word, [humanPlayer, naturePlayer])
+        const renderer = new Renderer(game, humanPlayer, gameRoot)
+        const interactions = new InteractionsManager(game, renderer, humanPlayer)
 
         interactions.init()
         renderer.init()
 
         // Island
-        const h1 = game.spawnActor(HumanActor, [14, 14])
-        const c1 = game.spawnActor(WoodCampActor, [15, 15])
+        const h1 = game.spawnActor(HumanActor, humanPlayer, [14, 14])
+        const c1 = game.spawnActor(WoodCampActor, humanPlayer, [15, 15])
 
         if (h1) c1?.interact([h1])
 
@@ -71,21 +68,23 @@ function App() {
         // game.spawnActor(BoarActor, [66, 120])
         // game.spawnActor(BoarActor, [67, 120])
 
-        const floraSpawner = new FloraSpawner(game)
+        const floraSpawner = new FloraSpawner(game, naturePlayer)
         floraSpawner.bulkSpawnTrees()
 
-        return { game, player, renderer }
+        return { game, humanPlayer }
     }, [])
 
     useEffect(() => {
-        game.player.emitter.on('selectActors', (actor) => setSelectedActors(actor))
-        game.player.emitter.on('unselectActors', () => setSelectedActors([]))
+        humanPlayer.emitter.on('selectActors', (actor) => setSelectedActors(actor))
+        humanPlayer.emitter.on('unselectActors', () => setSelectedActors([]))
 
         game.emitter.on('started', () => setStarted(true))
         game.emitter.on('stopped', () => setStarted(false))
 
-        player.emitter.on('selectBuilding', (building) => setSelectedBuilding(building))
-        player.emitter.on('unselectBuilding', () => setSelectedBuilding(undefined))
+        humanPlayer.emitter.on('selectBuilding', (building) =>
+            setSelectedBuilding(building),
+        )
+        humanPlayer.emitter.on('unselectBuilding', () => setSelectedBuilding(undefined))
     }, [])
 
     useEffect(() => {
@@ -106,7 +105,7 @@ function App() {
     ][]
 
     const selectActorsByType = (type: ActorType) => {
-        player.selectActors(selectedActors.filter((actor) => actor.type === type))
+        humanPlayer.selectActors(selectedActors.filter((actor) => actor.type === type))
     }
 
     return (
@@ -129,7 +128,7 @@ function App() {
                         <Select
                             value={selectedBuilding || ''}
                             onChange={({ target }) => {
-                                player.selectBuilding(target.value as ActorType)
+                                humanPlayer.selectBuilding(target.value as ActorType)
                             }}
                         >
                             <MenuItem value="">-</MenuItem>

@@ -8,7 +8,9 @@ export abstract class WalkableActor extends Actor {
 
     public async setPathTo(position: Position) {
         const pathSearch = await this.game.pf.findPath(this.position, position)
-        this.path = pathSearch
+        if (pathSearch) {
+            this.path = pathSearch
+        }
         return pathSearch
     }
 

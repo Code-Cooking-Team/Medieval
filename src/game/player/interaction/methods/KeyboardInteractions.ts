@@ -1,11 +1,16 @@
 import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
 
 export class KeyboardInteractions {
     // TODO move selection when holding space bar
     public isHoldingSpaceBar = false
 
-    constructor(public game: Game, public renderer: Renderer) {}
+    constructor(
+        public game: Game,
+        public renderer: Renderer,
+        public player: HumanPlayer,
+    ) {}
 
     public addEventListeners() {
         window.addEventListener('keyup', this.handleKeyUp)
@@ -28,8 +33,8 @@ export class KeyboardInteractions {
             this.isHoldingSpaceBar = false
         }
         if (event.key === 'Escape') {
-            this.game.player.unselectActor()
-            this.game.player.unselectBuilding()
+            this.player.unselectActor()
+            this.player.unselectBuilding()
         }
     }
 }

@@ -44,7 +44,7 @@ export class TreeActor extends Actor {
 
         const tile = this.game.world.getTile(newTreePosition)
 
-        const spawner = new FloraSpawner(this.game)
+        const spawner = new FloraSpawner(this.game, this.player)
         spawner.spawnNewTree(tile, newTreePosition)
     }
 

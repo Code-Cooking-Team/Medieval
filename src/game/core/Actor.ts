@@ -1,4 +1,5 @@
 import { Game } from '+game/Game'
+import { Player } from '+game/player/Player'
 import { ActorType, Position } from '+game/types'
 import { ClassType, maxValue, randomSeed, uuid } from '+helpers'
 
@@ -18,7 +19,7 @@ export abstract class Actor {
     public hpRegen = 1
     public seed = randomSeed()
 
-    constructor(public game: Game, public position: Position) {}
+    constructor(public game: Game, public player: Player, public position: Position) {}
 
     public tick(): void {
         if (this.hp < this.maxHp) {
