@@ -13,7 +13,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     debug: {
         logSelected: true,
-        groundWireframe: true,
+        groundWireframe: false,
     },
 
     renderer: {
@@ -26,6 +26,21 @@ export const { config, resetConfig, saveConfig } = createConfig({
         shadow: true,
         treeWaving: true,
         light: false,
+    },
+
+    postProcessing: {
+        exposure: 1.25,
+        postprocessingEnable: true,
+        bloom: true,
+        bloomStrength: 0.25,
+        bloomThreshold: 0.5,
+        bloomRadius: 0.25,
+        outlineEnable: true,
+        outlineEdgeStrength: 2.0,
+        outlineEdgeGlow: 0.0,
+        outlineEdgeThickness: 0.2,
+        outlinePulsePeriod: 5,
+        FXAAEnable: true,
     },
 
     walkableRenderer: {
@@ -65,7 +80,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         walkAroundHomeDistance: 7,
         attackDistance: 1.5,
         attackDamage: 5,
-        color: colorInput(0xe0ac69),
+        color: colorInput(0x63523c),
     },
 
     woodcutter: {
@@ -80,6 +95,6 @@ export const { config, resetConfig, saveConfig } = createConfig({
     guardian: {
         hp: 100,
         attackDamage: 25,
-        color: colorInput(0x40ff70),
+        color: colorInput(0x225c43),
     },
 })

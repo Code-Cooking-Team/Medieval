@@ -17,12 +17,12 @@ export class WaterRenderer extends BasicRenderer {
             color: 0xa2d3e8,
             // side: DoubleSide,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.5,
             roughness: 0,
             metalness: 1,
             flatShading: true,
             depthTest: true,
-            depthWrite: false
+            depthWrite: false,
         })
 
         this.mesh = new Mesh(geometry, material)

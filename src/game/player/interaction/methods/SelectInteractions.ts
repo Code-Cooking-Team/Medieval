@@ -6,6 +6,7 @@ import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
+import { Object3D } from 'three'
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -106,7 +107,6 @@ export class SelectInteractions {
         const currentSelected = this.game.player.selectedActors
         const shiftKey = event.shiftKey || event.ctrlKey
 
-
         const actor = this.finder.findSingleActorByMouseEvent(event)
 
         if (!actor) {
@@ -125,7 +125,6 @@ export class SelectInteractions {
             }
         } else {
             this.game.player.selectActors([actor])
-
         }
     }
 

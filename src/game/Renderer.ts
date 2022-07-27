@@ -1,8 +1,11 @@
+import { config } from '+config'
+
 import Stats from 'stats.js'
 import {
     Clock,
     NoToneMapping,
     PCFSoftShadowMap,
+    ReinhardToneMapping,
     Scene,
     sRGBEncoding,
     Vector2,
@@ -13,8 +16,8 @@ import { EffectComposer, Pass } from 'three/examples/jsm/postprocessing/EffectCo
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
@@ -31,9 +34,9 @@ const stats = new Stats()
 
 export class Renderer {
     public webGLRenderer = new WebGLRenderer({
-        antialias: false,
+        antialias: true,
         powerPreference: 'high-performance',
-        logarithmicDepthBuffer: true
+        logarithmicDepthBuffer: true,
     })
 
     public composer = new EffectComposer(this.webGLRenderer)
@@ -52,9 +55,15 @@ export class Renderer {
     private actorRendererList: ActorRenderer<Actor>[] = []
 
     constructor(public game: Game, public el: HTMLElement) {
-        this.webGLRenderer.outputEncoding = sRGBEncoding
-        this.webGLRenderer.toneMapping = NoToneMapping
-        this.webGLRenderer.toneMappingExposure = 1
+        // Better visual but don't work with composer
+        // this.webGLRenderer.outputEncoding = sRGBEncoding
+        // this.webGLRenderer.toneMapping = NoToneMapping
+        // this.webGLRenderer.toneMappingExposure = 1
+        this.webGLRenderer.toneMapping = ReinhardToneMapping
+        this.webGLRenderer.toneMappingExposure = Math.pow(
+            config.postProcessing.exposure,
+            4.0,
+        )
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
@@ -75,7 +84,7 @@ export class Renderer {
     }
 
     public init() {
-        this.addComposerPasses()
+        if (config.postProcessing.postprocessingEnable) this.addComposerPasses()
         this.addRenderers()
         this.rtsCamera.init()
         this.ground.init()
@@ -109,48 +118,53 @@ export class Renderer {
 
         const renderPass = new RenderPass(this.scene, camera)
 
-
         // OUTLINE
-        const outlineParams = {
-            edgeStrength: 3.0,
-            edgeGlow: 0.0,
-            edgeThickness: 1.0,
-            pulsePeriod: 0,
-            rotate: false,
-            usePatternTexture: false
-        };
-
-        this.outlinePass = new OutlinePass(
-            new Vector2(window.innerWidth, window.innerHeight),
-            this.scene,
-            camera,
-        )
-        this.outlinePass.edgeStrength = outlineParams.edgeStrength;
-        this.outlinePass.edgeGlow = outlineParams.edgeGlow;
-        this.outlinePass.edgeThickness = outlineParams.edgeThickness;
-        this.outlinePass.pulsePeriod = outlineParams.pulsePeriod;
-        this.outlinePass.visibleEdgeColor.set(0x5eff64);
-        this.outlinePass.hiddenEdgeColor.set(0x5eff64);
-        this.composer.addPass(renderPass)
-        this.composer.addPass(this.outlinePass)
+        if (config.postProcessing.outlineEnable) {
+            const outlineParams = {
+                edgeStrength: config.postProcessing.outlineEdgeStrength,
+                edgeGlow: config.postProcessing.outlineEdgeGlow,
+                edgeThickness: config.postProcessing.outlineEdgeThickness,
+                pulsePeriod: config.postProcessing.outlinePulsePeriod,
+            }
+            this.outlinePass = new OutlinePass(
+                new Vector2(window.innerWidth, window.innerHeight),
+                this.scene,
+                camera,
+            )
+            this.outlinePass.edgeStrength = outlineParams.edgeStrength
+            this.outlinePass.edgeGlow = outlineParams.edgeGlow
+            this.outlinePass.edgeThickness = outlineParams.edgeThickness
+            this.outlinePass.pulsePeriod = outlineParams.pulsePeriod
+            this.outlinePass.visibleEdgeColor.set(0x5eff64)
+            this.outlinePass.hiddenEdgeColor.set(0x5eff64)
+            this.composer.addPass(renderPass)
+            this.composer.addPass(this.outlinePass)
+        }
 
         //BLOOM
         const bloomPassParams = {
-            exposure: 1,
-            bloomStrength: 1.5,
-            bloomThreshold: 0.79,
-            bloomRadius: 1
-        };
-        const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        bloomPass.threshold = bloomPassParams.bloomThreshold;
-        bloomPass.strength = bloomPassParams.bloomStrength;
-        bloomPass.radius = bloomPassParams.bloomRadius;
-        this.composer.addPass(bloomPass);
+            bloomStrength: config.postProcessing.bloomStrength,
+            bloomThreshold: config.postProcessing.bloomThreshold,
+            bloomRadius: config.postProcessing.bloomRadius,
+        }
+        if (config.postProcessing.bloom) {
+            const bloomPass = new UnrealBloomPass(
+                new Vector2(window.innerWidth, window.innerHeight),
+                1.5,
+                0.4,
+                0.85,
+            )
+            bloomPass.threshold = bloomPassParams.bloomThreshold
+            bloomPass.strength = bloomPassParams.bloomStrength
+            bloomPass.radius = bloomPassParams.bloomRadius
+            this.composer.addPass(bloomPass)
+        }
 
         // FXAA
-        this.FXAAPass = new ShaderPass(FXAAShader)
-        this.composer.addPass(this.FXAAPass)
-
+        if (config.postProcessing.FXAAEnable) {
+            this.FXAAPass = new ShaderPass(FXAAShader)
+            this.composer.addPass(this.FXAAPass)
+        }
     }
 
     private addRenderers() {
@@ -197,11 +211,17 @@ export class Renderer {
         this.rtsCamera.camera.updateProjectionMatrix()
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
-        this.composer.setSize(window.innerWidth, window.innerHeight)
 
-        this.FXAAPass.material.uniforms.resolution.value.x = 1 / (window.innerWidth * window.devicePixelRatio);
+        if (config.postProcessing.postprocessingEnable)
+            this.composer.setSize(window.innerWidth, window.innerHeight)
 
-        this.FXAAPass.material.uniforms.resolution.value.y = 1 / (window.innerHeight * window.devicePixelRatio);
+        if (this.FXAAPass) {
+            this.FXAAPass.material.uniforms.resolution.value.x =
+                1 / (window.innerWidth * window.devicePixelRatio)
+
+            this.FXAAPass.material.uniforms.resolution.value.y =
+                1 / (window.innerHeight * window.devicePixelRatio)
+        }
     }
 
     private animate = () => {
@@ -220,8 +240,11 @@ export class Renderer {
         this.actorRendererList.forEach((renderer) => renderer.render(clockInfo))
 
         this.rtsCamera.render(clockInfo)
-        this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
 
-        this.composer.render()
+        if (config.postProcessing.postprocessingEnable) {
+            this.composer.render()
+        } else {
+            this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
+        }
     }
 }

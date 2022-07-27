@@ -108,11 +108,11 @@ export class EnvironmentRenderer extends BasicRenderer {
             (Math.sin(time * 1 + 1.9) * 0.5 + 0.6) / 4,
         )
 
-        // this.scene.background = new Color().setHSL(
-        //     10 + Math.sin(time * 1) * 0.1,
-        //     Math.sin(time * 1),
-        //     Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
-        // )
+        this.scene.background = new Color().setHSL(
+            10 + Math.sin(time * 1) * 0.1,
+            Math.sin(time * 1),
+            Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
+        )
 
         if (config.renderer.fog) {
             const fogColor = new Color().setHSL(

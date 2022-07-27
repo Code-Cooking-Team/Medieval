@@ -4,10 +4,16 @@ import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
 
-import { Raycaster, Vector2 } from 'three'
+import { Intersection, Object3D, Raycaster, Vector2 } from 'three'
 
 export class RaycastFinder {
-    constructor(public game: Game, public renderer: Renderer) { }
+    constructor(public game: Game, public renderer: Renderer) {}
+
+    public setOutline = (objectList: Object3D[]) => {
+        if (this.renderer.outlinePass) {
+            this.renderer.outlinePass.selectedObjects = objectList
+        }
+    }
 
     public findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
         const rayCaster = new Raycaster()
@@ -17,9 +23,7 @@ export class RaycastFinder {
         )
         rayCaster.setFromCamera(pointer, this.renderer.rtsCamera.camera)
 
-        const intersects = rayCaster.intersectObjects(
-            this.renderer.getGroundChildren()
-        )
+        const intersects = rayCaster.intersectObjects(this.renderer.getGroundChildren())
         const intersectPoint = intersects[0]?.point
 
         if (!intersectPoint) return
@@ -42,15 +46,22 @@ export class RaycastFinder {
 
         const interactionObjectList = this.renderer.getInteractionObjectList()
 
-        const intersects = rayCaster.intersectObjects(interactionObjectList, false)
+        const intersects = rayCaster.intersectObjects(
+            interactionObjectList,
+            false,
+        ) as Intersection<Object3D<Event>>[]
+
         const intersectActors = intersects
             .map((intersect) => intersect.object.userData.actor as Actor)
             .filter((actor) => !!actor)
 
-        console.log(intersects, this.renderer.outlinePass);
-        if (this.renderer.outlinePass)
-            this.renderer.outlinePass.selectedObjects = intersects.map((intersect) => intersect.object.parent)
+        const objectList: Object3D[] = []
+        intersects.forEach((intersect) => {
+            if (intersect && intersect.object && intersect.object.parent)
+                objectList.push(intersect.object.parent as Object3D)
+        })
 
+        this.setOutline(objectList)
 
         intersectActors.sort(
             (a, b) => b.getSelectedImportance() - a.getSelectedImportance(),
