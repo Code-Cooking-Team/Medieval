@@ -39,12 +39,15 @@ export class GroundRenderer extends BasicRenderer {
                 wireframe: true,
                 transparent: true,
                 opacity: 0.05,
+                depthWrite: false,
             })
 
             const wireframeMesh = new Mesh(
                 this.groundMesh.geometry,
                 groundWireframeMaterial,
             )
+
+            wireframeMesh.renderOrder = 1
             wireframeMesh.receiveShadow = true
             wireframeMesh.position.y = 0.01
             this.group.add(wireframeMesh)

@@ -23,9 +23,9 @@ import { BasicRenderer } from './lib/BasicRenderer'
 import hdrUrl from './textures/bg.jpg'
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xffffbb, 0.6)
+    private sun = new DirectionalLight(0xfff2c7, 3.0)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0x404040, 0.1)
+    private ambient = new AmbientLight(0xdae6e8, 8.0)
     private camera: Camera
 
     constructor(public game: Game, private scene: Scene, camera: Camera) {
@@ -108,11 +108,11 @@ export class EnvironmentRenderer extends BasicRenderer {
             (Math.sin(time * 1 + 1.9) * 0.5 + 0.6) / 4,
         )
 
-        // this.scene.background = new Color().setHSL(
-        //     10 + Math.sin(time * 1) * 0.1,
-        //     Math.sin(time * 1),
-        //     Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
-        // )
+        this.scene.background = new Color().setHSL(
+            10 + Math.sin(time * 1) * 0.1,
+            Math.sin(time * 1),
+            Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
+        )
 
         if (config.renderer.fog) {
             const fogColor = new Color().setHSL(

@@ -92,6 +92,7 @@ function App() {
 
         const anyWindow = window as any
         anyWindow.game = game
+        anyWindow.renderer = renderer
 
         return () => {
             game.stop()

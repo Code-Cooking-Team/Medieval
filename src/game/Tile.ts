@@ -12,7 +12,7 @@ export abstract class Tile {
     public height = 0
     public treeChance = 0
 
-    public constructor(public previousTile?: Tile) {}
+    public constructor(public previousTile?: Tile) { }
 }
 
 export type TileGrid = Tile[][]
@@ -33,7 +33,7 @@ export class MeadowTile extends Tile {
 
 export class StepTile extends Tile {
     public name = 'Step'
-    public color = generateSimilarColor(0xbfaa34, 20, true)
+    public color = generateSimilarColor(0x5c5b58, 20, true)
     public canBuild = false
     public treeChance = 0.005
     public height = random(1, 2) + 0.2

@@ -16,6 +16,7 @@ import {
     LineSegments,
     Mesh,
     MeshBasicMaterial,
+    NotEqualDepth,
     Object3D,
     PlaneGeometry,
 } from 'three'
@@ -135,7 +136,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
         const interactionSelect = new LineSegments(
             edges,
-            new LineBasicMaterial({ color: 0x5eff64, linewidth: 2 }),
+            new LineBasicMaterial({ color: 0x5eff64, linewidth: 2, depthFunc: NotEqualDepth }),
         )
 
         interactionSelect.position.x = 0

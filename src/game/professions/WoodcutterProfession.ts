@@ -7,7 +7,7 @@ import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
 import { isSamePosition, maxValue } from '+helpers'
 
-import { Mesh, MeshStandardMaterial, Object3D, SphereGeometry } from 'three'
+import { GreaterDepth, GreaterEqualDepth, LessEqualDepth, Mesh, MeshStandardMaterial, NeverDepth, NotEqualDepth, Object3D, SphereGeometry } from 'three'
 
 import { woodcutterMachine } from './machines/woodcutterMachine'
 import { Profession } from './Profession'
@@ -62,7 +62,10 @@ export class WoodcutterProfession extends Profession {
 
     public getModel(): Object3D {
         const group = super.getModel()
+        // this.material.depthTest = false;
+        this.material.depthFunc = NotEqualDepth;
         const actorModel = new Mesh(this.geometry, this.material)
+        actorModel.renderOrder = 1;
 
         actorModel.castShadow = true
         actorModel.receiveShadow = true
@@ -71,6 +74,8 @@ export class WoodcutterProfession extends Profession {
         actorModel.position.y = 0.5
 
         group.add(actorModel)
+
+
         return group
     }
 

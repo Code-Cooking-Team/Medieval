@@ -8,6 +8,7 @@ import { Player } from '+game/player/Player'
 import { Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
+import { Object3D } from 'three'
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox'
 
 import { RaycastFinder } from './lib/RaycastFinder'

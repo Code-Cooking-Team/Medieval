@@ -15,7 +15,7 @@ export class World {
     public tiles: TileGrid = createTilesFromGrid(map as TileCodeGrid)
     public emitter = new Emitter<WordEmitterEvents>('Word')
 
-    public tick() {}
+    public tick() { }
 
     public hasTile([x, y]: Position) {
         return this.tiles?.[y]?.[x]!!
