@@ -19,7 +19,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const actorModel = new Mesh(this.geometry, this.material)
 
-        this.material.depthFunc = NotEqualDepth;
+        this.material.depthFunc = NotEqualDepth
         actorModel.name = ACTOR_MODEL_OBJECT3D_NAME
         actorModel.castShadow = true
         actorModel.receiveShadow = true

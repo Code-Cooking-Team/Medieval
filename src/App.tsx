@@ -1,6 +1,9 @@
 import { ConfigForm } from '+components/config/ConfigForm'
+import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
+import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
+import { BoarActor } from '+game/actors/units/boars/BoarActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
@@ -46,27 +49,27 @@ function App() {
         renderer.init()
 
         // Island
-        const h1 = game.spawnActor(HumanActor, humanPlayer, [14, 14])
-        const c1 = game.spawnActor(WoodCampActor, humanPlayer, [15, 15])
-
-        if (h1) c1?.interact([h1])
-
-        // de_grass
-        // game.spawnActor(HouseActor, [112, 113])
-        // game.spawnActor(BarracksActor, [102, 93])
-
-        // const h1 = game.spawnActor(HumanActor, [112, 120])
-        // const h2 = game.spawnActor(HumanActor, [68, 120])
-
-        // const c1 = game.spawnActor(WoodCampActor, [87, 120])
-        // const c2 = game.spawnActor(WoodCampActor, [100, 114])
+        // const h1 = game.spawnActor(HumanActor, humanPlayer, [14, 14])
+        // const c1 = game.spawnActor(WoodCampActor, humanPlayer, [15, 15])
 
         // if (h1) c1?.interact([h1])
-        // if (h2) c2?.interact([h2])
 
-        // game.spawnActor(BoarActor, [55, 120])
-        // game.spawnActor(BoarActor, [66, 120])
-        // game.spawnActor(BoarActor, [67, 120])
+        // de_grass
+        game.spawnActor(HouseActor, humanPlayer, [112, 113])
+        game.spawnActor(BarracksActor, humanPlayer, [102, 93])
+
+        const h1 = game.spawnActor(HumanActor, humanPlayer, [112, 120])
+        const h2 = game.spawnActor(HumanActor, humanPlayer, [68, 120])
+
+        const c1 = game.spawnActor(WoodCampActor, humanPlayer, [87, 120])
+        const c2 = game.spawnActor(WoodCampActor, humanPlayer, [100, 114])
+
+        if (h1) c1?.interact([h1])
+        if (h2) c2?.interact([h2])
+
+        game.spawnActor(BoarActor, humanPlayer, [55, 120])
+        game.spawnActor(BoarActor, humanPlayer, [66, 120])
+        game.spawnActor(BoarActor, humanPlayer, [67, 120])
 
         const floraSpawner = new FloraSpawner(game, naturePlayer)
         floraSpawner.bulkSpawnTrees()

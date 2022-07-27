@@ -2,7 +2,7 @@ import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
 // Island, TestMap, TestMapBig, de_grass
-import map from '../maps/Island'
+import map from '../maps/de_grass'
 import { Tile, TileGrid } from '../Tile'
 import { Position } from '../types'
 import { createTilesFromGrid, TileCodeGrid } from './tileCodes'
@@ -15,7 +15,7 @@ export class World {
     public tiles: TileGrid = createTilesFromGrid(map as TileCodeGrid)
     public emitter = new Emitter<WordEmitterEvents>('Word')
 
-    public tick() { }
+    public tick() {}
 
     public hasTile([x, y]: Position) {
         return this.tiles?.[y]?.[x]!!

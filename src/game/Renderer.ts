@@ -56,12 +56,11 @@ export class Renderer {
     private actorRendererList: ActorRenderer<Actor>[] = []
 
     constructor(public game: Game, public player: HumanPlayer, public el: HTMLElement) {
-    
         // Better visual but don't work with composer
         // this.webGLRenderer.outputEncoding = sRGBEncoding
         // this.webGLRenderer.toneMapping = NoToneMapping
         // this.webGLRenderer.toneMappingExposure = 1
-        
+
         this.webGLRenderer.toneMapping = ReinhardToneMapping
         this.webGLRenderer.toneMappingExposure = Math.pow(
             config.postProcessing.exposure,
@@ -215,8 +214,10 @@ export class Renderer {
         this.webGLRenderer.setPixelRatio(window.devicePixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
 
-        if (config.postProcessing.postprocessingEnable)
+        if (config.postProcessing.postprocessingEnable) {
             this.composer.setSize(window.innerWidth, window.innerHeight)
+            this.composer.setPixelRatio(window.devicePixelRatio)
+        }
 
         if (this.FXAAPass) {
             this.FXAAPass.material.uniforms.resolution.value.x =

@@ -12,7 +12,7 @@ export abstract class Tile {
     public height = 0
     public treeChance = 0
 
-    public constructor(public previousTile?: Tile) { }
+    public constructor(public previousTile?: Tile) {}
 }
 
 export type TileGrid = Tile[][]
