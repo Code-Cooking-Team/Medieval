@@ -1,4 +1,6 @@
 import { config } from '+config'
+import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
@@ -12,7 +14,9 @@ import houseUrl from './models/house3.gltf'
 const houseModel = loadGLTF(houseUrl)
 
 export class HouseRenderer extends ActorRenderer<HouseActor> {
-    public actorType = ActorType.House
+    constructor(game: Game, player: HumanPlayer) {
+        super(game, player, ActorType.House)
+    }
 
     public createActorModel(actor: HouseActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)

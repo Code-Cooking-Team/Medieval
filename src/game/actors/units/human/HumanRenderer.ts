@@ -1,5 +1,7 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
+import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Profession } from '+game/professions/Profession'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { Tile } from '+game/Tile'
@@ -10,7 +12,9 @@ import { Mesh, MeshStandardMaterial, NotEqualDepth, SphereGeometry } from 'three
 import { HumanActor } from './HumanActor'
 
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
-    public actorType = ActorType.Human
+    constructor(game: Game, player: HumanPlayer) {
+        super(game, player, ActorType.Human)
+    }
 
     private material = new MeshStandardMaterial({ color: config.human.color })
     private geometry = new SphereGeometry(0.5, 5, 5)
@@ -19,7 +23,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const actorModel = new Mesh(this.geometry, this.material)
 
-        this.material.depthFunc = NotEqualDepth
+        // this.material.depthFunc = NotEqualDepth
         actorModel.name = ACTOR_MODEL_OBJECT3D_NAME
         actorModel.castShadow = true
         actorModel.receiveShadow = true

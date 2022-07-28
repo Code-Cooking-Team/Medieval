@@ -1,17 +1,12 @@
 import { config } from '+config'
+import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
 import { loadGLTF } from '+helpers'
 
-import {
-    BoxGeometry,
-    LOD,
-    Mesh,
-    MeshStandardMaterial,
-    OctahedronGeometry,
-    PointLight,
-} from 'three'
+import { LOD, PointLight } from 'three'
 
 import woodCampUrl from './models/woodCamp.gltf'
 import { WoodCampActor } from './WoodCampActor'
@@ -20,6 +15,9 @@ const houseModel = loadGLTF(woodCampUrl)
 
 export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp
+    constructor(game: Game, player: HumanPlayer) {
+        super(game, player, ActorType.WoodCamp)
+    }
 
     public createActorModel(actor: WoodCampActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)

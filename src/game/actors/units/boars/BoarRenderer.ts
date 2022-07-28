@@ -1,3 +1,5 @@
+import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
@@ -7,7 +9,9 @@ import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 import { BoarActor } from './BoarActor'
 
 export class BoarRenderer extends WalkableActorRenderer<BoarActor> {
-    public actorType = ActorType.Boar
+    constructor(game: Game, player: HumanPlayer) {
+        super(game, player, ActorType.Boar)
+    }
 
     private material = new MeshStandardMaterial({ color: 0x4a2505 })
     private geometry = new SphereGeometry(0.5, 5, 5)

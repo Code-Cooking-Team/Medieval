@@ -58,7 +58,6 @@ export class Game {
 
     public addActor(actor: Actor): void {
         this.actors.push(actor)
-        this.pf.update()
         this.emitter.emit('actorAdded', actor)
     }
 
@@ -162,8 +161,6 @@ export class Game {
             }
             return actorFromJSON(data, game, player)
         })
-
-        console.log('game.fromJSON', game.actors)
 
         return game
     }

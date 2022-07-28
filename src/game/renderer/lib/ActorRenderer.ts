@@ -24,24 +24,27 @@ import {
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
-    public actorType: ActorType = ActorType.Empty
-
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
     protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
-    constructor(public game: Game, public player: HumanPlayer) {
+    constructor(
+        public game: Game,
+        public player: HumanPlayer,
+        public actorType: ActorType = ActorType.Empty,
+    ) {
         super()
+
+        if (this.actorType === ActorType.Empty) {
+            throw new Error('[ActorRenderer] actorType is not set')
+        }
 
         this.game.emitter.on('actorAdded', this.handleActorAdded)
         this.game.emitter.on('actorRemoved', this.handleActorRemoved)
 
         const currentActors = this.game.findActorsByType(this.actorType) as TActor[]
-
-        console.log('[ActorRenderer] Current actors', currentActors)
-        console.log('[ActorRenderer] @up There should be list of actors…')
 
         currentActors.forEach((actor) => {
             this.onAddActor(actor)

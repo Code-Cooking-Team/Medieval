@@ -91,8 +91,8 @@ function App() {
         const renderer = new Renderer(game, humanPlayer, gameRoot)
         const interactions = new InteractionsManager(game, renderer, humanPlayer)
 
-        interactions.init()
         renderer.init()
+        interactions.init()
 
         const started = () => setStarted(true)
         const stopped = () => setStarted(false)
