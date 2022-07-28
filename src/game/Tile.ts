@@ -1,7 +1,18 @@
-import { random, uuid } from '+helpers'
-import { generateSimilarColor } from '+helpers'
+import { generateSimilarColor, random, uuid } from '+helpers'
 
-export abstract class Tile {
+export interface TileJSON {
+    id: string
+    name: string
+    canBuild: boolean
+    canWalk: boolean
+    walkCost: number
+    color: number
+    height: number
+    treeChance: number
+    previousTile?: TileJSON
+}
+
+export class Tile {
     public id = uuid()
     public name = 'Tile'
 
@@ -13,6 +24,36 @@ export abstract class Tile {
     public treeChance = 0
 
     public constructor(public previousTile?: Tile) {}
+
+    public toJSON(): TileJSON {
+        return {
+            id: this.id,
+            name: this.name,
+            canBuild: this.canBuild,
+            canWalk: this.canWalk,
+            walkCost: this.walkCost,
+            color: this.color,
+            height: this.height,
+            treeChance: this.treeChance,
+            previousTile: this.previousTile?.toJSON(),
+        }
+    }
+
+    public static fromJSON(json: TileJSON) {
+        const tile = new Tile()
+        tile.id = json.id
+        tile.name = json.name
+        tile.canBuild = json.canBuild
+        tile.canWalk = json.canWalk
+        tile.walkCost = json.walkCost
+        tile.color = json.color
+        tile.height = json.height
+        tile.treeChance = json.treeChance
+        tile.previousTile = json.previousTile
+            ? Tile.fromJSON(json.previousTile)
+            : undefined
+        return tile
+    }
 }
 
 export type TileGrid = Tile[][]

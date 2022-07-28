@@ -1,11 +1,14 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
 import { ActorType } from '+game/types'
+import { uuid } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
-import { Player } from './Player'
+import { Player, PlayerJSON, PlayerType } from './types'
 
 export class HumanPlayer implements Player {
+    public id = uuid()
+    public type = PlayerType.Human
     public name = 'Unnamed player'
 
     public selectedActors: Actor[] = []
@@ -41,5 +44,19 @@ export class HumanPlayer implements Player {
         if (!this.selectedBuilding) return
         this.emitter.emit('unselectBuilding', this.selectedBuilding)
         this.selectedBuilding = undefined
+    }
+
+    public toJSON(): PlayerJSON {
+        return {
+            id: this.id,
+            type: this.type,
+            name: this.name,
+        }
+    }
+
+    public fromJSON(json: PlayerJSON): void {
+        if (this.type !== json.type) throw new Error('Invalid player type')
+        this.id = json.id
+        this.name = json.name
     }
 }

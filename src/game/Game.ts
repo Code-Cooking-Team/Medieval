@@ -1,54 +1,54 @@
 import { config } from '+config/config'
-import { Player } from '+game/player/Player'
+import { Player, PlayerJSON } from '+game/player/types'
 import { distanceBetweenPoints } from '+helpers'
 import { removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
+import { actorFromJSON } from './actors'
 import { isBuildingActor, isWalkableActor } from './actors/helpers'
-import { Actor, ActorClass } from './core/Actor'
+import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
+import { playerFromJSON } from './player'
 import { ActorType, Position } from './types'
 import { applyTileGrid } from './world/tileCodes'
-import { World } from './world/World'
-
-interface GameEmitterEvents {
-    tick: undefined
-    actorAdded: Actor
-    actorRemoved: Actor
-    started: undefined
-    stopped: undefined
-}
+import { WordJSON, World } from './world/World'
 
 export class Game {
     public pf: Pathfinding
     public actors: Actor[] = []
     loop: any
 
-    public emitter = new Emitter<GameEmitterEvents>('Game')
+    public emitter = new Emitter<{
+        tick: undefined
+        actorAdded: Actor
+        actorRemoved: Actor
+        started: undefined
+        stopped: undefined
+    }>('Game')
 
     constructor(public world: World, public players: Player[]) {
         this.pf = new Pathfinding(world)
-
-        this.world.emitter.on('tailUpdate', () => {
-            this.pf.update()
-        })
     }
 
     public start(): void {
         this.emitter.emit('started')
+
         this.loop = setInterval(() => {
             this.tick()
         }, config.core.tickTime)
+
+        this.world.emitter.on('tailUpdate', this.handleTailUpdate)
     }
 
     public stop(): void {
         this.emitter.emit('stopped')
         clearInterval(this.loop)
         this.loop = undefined
+
+        this.world.emitter.off('tailUpdate', this.handleTailUpdate)
     }
 
     public tick(): void {
-        this.world.tick()
         this.pf.tick()
         this.actors.forEach((actor) => {
             actor.tick()
@@ -140,4 +140,41 @@ export class Game {
 
         return actor
     }
+
+    public toJSON(): GameJSON {
+        return {
+            world: this.world.toJSON(),
+            players: this.players.map((player) => player.toJSON()),
+            actors: this.actors.map((actor) => actor.toJSON()),
+        }
+    }
+
+    static fromJSON(data: GameJSON) {
+        const world = World.fromJSON(data.world)
+        const players = data.players.map((player) => playerFromJSON(player))
+
+        const game = new Game(world, players)
+
+        game.actors = data.actors.map((data) => {
+            const player = players.find((player) => player.id === data.playerId)
+            if (!player) {
+                throw new Error(`Player not found [ID: ${data.playerId}]`)
+            }
+            return actorFromJSON(data, game, player)
+        })
+
+        console.log('game.fromJSON', game.actors)
+
+        return game
+    }
+
+    private handleTailUpdate = () => {
+        this.pf.update()
+    }
+}
+
+export interface GameJSON {
+    world: WordJSON
+    players: PlayerJSON[]
+    actors: ActorJSON[]
 }

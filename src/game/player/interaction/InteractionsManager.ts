@@ -29,6 +29,15 @@ export class InteractionsManager {
         this.selectMode()
     }
 
+    public destroy() {
+        this.keyboard.removeEventListeners()
+        this.build.removeEventListeners()
+        this.select.removeEventListeners()
+
+        this.player.emitter.off('selectBuilding', this.buildMode)
+        this.player.emitter.off('unselectBuilding', this.selectMode)
+    }
+
     public selectMode = () => {
         this.select.addEventListeners()
         this.build.removeEventListeners()

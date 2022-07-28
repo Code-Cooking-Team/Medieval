@@ -35,19 +35,22 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     constructor(public game: Game, public player: HumanPlayer) {
         super()
 
-        this.game.emitter.on('actorAdded', (actor) => {
-            if (actor.type === this.actorType) this.onAddActor(actor as TActor)
-        })
+        this.game.emitter.on('actorAdded', this.handleActorAdded)
+        this.game.emitter.on('actorRemoved', this.handleActorRemoved)
 
-        this.game.emitter.on('actorRemoved', (actor) => {
-            if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
-        })
+        const currentActors = this.game.findActorsByType(this.actorType) as TActor[]
 
-        const treeActors = this.game.findActorsByType(this.actorType) as TActor[]
+        console.log('[ActorRenderer] Current actors', currentActors)
+        console.log('[ActorRenderer] @up There should be list of actors…')
 
-        treeActors.forEach((actor) => {
+        currentActors.forEach((actor) => {
             this.onAddActor(actor)
         })
+    }
+
+    public destroy() {
+        this.game.emitter.off('actorAdded', this.handleActorAdded)
+        this.game.emitter.off('actorRemoved', this.handleActorRemoved)
     }
 
     public createActorModel(
@@ -93,7 +96,17 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return Array.from(this.actorInteractionShapeMap.keys())
     }
 
+    private handleActorAdded = (actor: Actor) => {
+        if (actor.type === this.actorType) this.onAddActor(actor as TActor)
+    }
+
+    private handleActorRemoved = (actor: Actor) => {
+        if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
+    }
+
     private onAddActor(actor: TActor) {
+        console.log('[ActorRenderer] Adding actor', actor)
+
         const tile = this.game.world.getTile(actor.position)
         const { group, interactionShape } = this.createActorModel(actor, tile)
 

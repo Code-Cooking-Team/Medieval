@@ -4,7 +4,7 @@ import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
-import { Player } from '+game/player/Player'
+import { Player } from '+game/player/types'
 import { Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
