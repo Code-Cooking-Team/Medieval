@@ -100,7 +100,7 @@ export interface ActorJSON {
     seed: number
 }
 
-export type ActorClass<T extends Actor> = ClassType<
+export type ActorClass<T extends Actor = Actor> = ClassType<
     T,
     ConstructorParameters<typeof Actor>
 >

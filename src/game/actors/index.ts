@@ -30,7 +30,7 @@ const emptyActor = () => {
     throw new Error(`[actorByType] Don't use empty actor`)
 }
 
-export const actorByType: Record<ActorType, ActorClass<Actor>> = {
+export const actorByType: Record<ActorType, ActorClass> = {
     [ActorType.Empty]: emptyActor as any,
     [ActorType.House]: HouseActor,
     [ActorType.Human]: HumanActor,

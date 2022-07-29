@@ -8,25 +8,23 @@ import { ActorType } from '+game/types'
 import { isSamePosition, maxValue } from '+helpers'
 
 import {
-    GreaterDepth,
-    GreaterEqualDepth,
-    LessEqualDepth,
     Mesh,
     MeshStandardMaterial,
-    NeverDepth,
     NotEqualDepth,
     Object3D,
     SphereGeometry,
 } from 'three'
 
 import { woodcutterMachine } from './machines/woodcutterMachine'
-import { Profession } from './Profession'
+import { Profession, ProfessionJSON } from './Profession'
+import { ProfessionType } from './types'
 
 export class WoodcutterProfession extends Profession {
-    public name = 'Woodcutter'
+    public type = ProfessionType.Woodcutter
     public selectImportance = 4
 
-    private tree?: TreeActor
+    public treeId?: string
+    public campId?: string
     private collectedTreeHP = 0
 
     protected material = new MeshStandardMaterial({ color: config.woodcutter.color })
@@ -52,8 +50,8 @@ export class WoodcutterProfession extends Profession {
 
     private machine = new MachineInterpreter(woodcutterMachine, this.actions, this.guards)
 
-    constructor(public game: Game, public actor: HumanActor, public camp: WoodCampActor) {
-        super(game)
+    constructor(public game: Game, public actor: HumanActor) {
+        super(game, actor)
     }
 
     public getAttackDamage(): number {
@@ -70,13 +68,17 @@ export class WoodcutterProfession extends Profession {
         this.machine.reset()
     }
 
+    public setCamp(camp: WoodCampActor) {
+        this.campId = camp.id
+    }
+
     public getModel(): Object3D {
         const group = super.getModel()
-        // this.material.depthTest = false;
+
         this.material.depthFunc = NotEqualDepth
+
         const actorModel = new Mesh(this.geometry, this.material)
         actorModel.renderOrder = 1
-
         actorModel.castShadow = true
         actorModel.receiveShadow = true
         actorModel.scale.y = 2
@@ -86,6 +88,37 @@ export class WoodcutterProfession extends Profession {
         group.add(actorModel)
 
         return group
+    }
+
+    public toJSON(): WoodcutterProfessionJSON {
+        const json = super.toJSON()
+        return {
+            ...json,
+            collectedTreeHP: this.collectedTreeHP,
+            machineState: this.machine.currentState,
+            treeId: this.treeId,
+            campId: this.campId,
+        }
+    }
+
+    public fromJSON(json: WoodcutterProfessionJSON) {
+        super.fromJSON(json)
+        this.collectedTreeHP = json.collectedTreeHP
+
+        this.machine.setState(json.machineState)
+
+        this.treeId = json.treeId
+        this.campId = json.campId
+    }
+
+    private getTree() {
+        if (!this.treeId) return
+        return this.game.getActorById(this.treeId) as TreeActor
+    }
+
+    private getCamp() {
+        if (!this.campId) return
+        return this.game.getActorById(this.campId) as WoodCampActor
     }
 
     /*
@@ -101,33 +134,37 @@ export class WoodcutterProfession extends Profession {
 
         if (!tree) return
         this.actor.cancelPath()
-        this.tree = tree as TreeActor
+        this.treeId = tree.id
 
         return this.actor.setPathTo(tree.position)
     }
 
     private chopTree() {
-        if (!this.tree) return
+        const tree = this.getTree()
+        if (!tree) return
 
         const damage = Math.round(config.woodcutter.choppingDamage * Math.random())
-        this.collectedTreeHP += this.tree.hit(damage)
+        this.collectedTreeHP += tree.hit(damage)
     }
 
     private putWood() {
+        const camp = this.getCamp()
+        if (!camp) return
         const value = maxValue(this.collectedTreeHP, config.woodcutter.gatheringSpeed)
         this.collectedTreeHP -= value
-        this.camp.collectTree(value)
+        camp.collectTree(value)
     }
 
     private findCamp() {
-        this.actor.setPathTo(this.camp.getDeliveryPoint())
+        const camp = this.getCamp()
+        if (!camp) return
+        this.actor.setPathTo(camp.getDeliveryPoint())
     }
 
     private gatherWood() {
         const speed = config.woodcutter.gatheringSpeed
         const amount = this.collectedTreeHP < speed ? this.collectedTreeHP : speed
         this.collectedTreeHP -= amount
-        this.camp.collectTree(amount)
     }
 
     private hasPath() {
@@ -152,10 +189,21 @@ export class WoodcutterProfession extends Profession {
     }
 
     private nearCamp() {
-        return isSamePosition(this.actor.position, this.camp.getDeliveryPoint())
+        const camp = this.getCamp()
+        if (!camp) return false
+        return isSamePosition(this.actor.position, camp.getDeliveryPoint())
     }
 
     private reachedCamp() {
-        return isSamePosition(this.camp.getDeliveryPoint(), this.actor.position)
+        const camp = this.getCamp()
+        if (!camp) return false
+        return isSamePosition(camp.getDeliveryPoint(), this.actor.position)
     }
+}
+
+interface WoodcutterProfessionJSON extends ProfessionJSON {
+    collectedTreeHP: number
+    machineState: string
+    treeId?: string
+    campId?: string
 }

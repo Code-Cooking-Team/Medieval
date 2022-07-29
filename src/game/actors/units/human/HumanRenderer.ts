@@ -12,18 +12,18 @@ import { Mesh, MeshStandardMaterial, NotEqualDepth, SphereGeometry } from 'three
 import { HumanActor } from './HumanActor'
 
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
+    private material = new MeshStandardMaterial({ color: config.human.color })
+    private geometry = new SphereGeometry(0.5, 5, 5)
+
     constructor(game: Game, player: HumanPlayer) {
         super(game, player, ActorType.Human)
     }
-
-    private material = new MeshStandardMaterial({ color: config.human.color })
-    private geometry = new SphereGeometry(0.5, 5, 5)
 
     public createActorModel(actor: HumanActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const actorModel = new Mesh(this.geometry, this.material)
 
-        // this.material.depthFunc = NotEqualDepth
+        this.material.depthFunc = NotEqualDepth
         actorModel.name = ACTOR_MODEL_OBJECT3D_NAME
         actorModel.castShadow = true
         actorModel.receiveShadow = true

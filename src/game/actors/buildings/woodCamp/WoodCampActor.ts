@@ -22,7 +22,7 @@ export class WoodCampActor extends BuildingActor {
 
     private readonly deliveryLocalPosition: Position = [2, 5]
 
-    private collectedTreeHP = 0
+    public collectedTreeHP = 0
 
     public getDeliveryPoint() {
         return addPosition(this.position, this.deliveryLocalPosition)
@@ -36,7 +36,9 @@ export class WoodCampActor extends BuildingActor {
         let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {
-                actor.setProfession(new WoodcutterProfession(this.game, actor, this))
+                const profession = new WoodcutterProfession(this.game, actor)
+                profession.setCamp(this)
+                actor.setProfession(profession)
                 interactionHappened = true
             }
         }

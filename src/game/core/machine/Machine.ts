@@ -48,6 +48,10 @@ export class MachineInterpreter {
         this.locked = false
     }
 
+    public setState(state: string) {
+        this.currentState = state
+    }
+
     private callAction(actionName: string) {
         const action = this.actions[actionName]
         if (!action) throw new Error(`[Machine] Action ${actionName} not found`)

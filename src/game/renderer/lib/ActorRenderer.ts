@@ -36,11 +36,12 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         public actorType: ActorType = ActorType.Empty,
     ) {
         super()
-
         if (this.actorType === ActorType.Empty) {
             throw new Error('[ActorRenderer] actorType is not set')
         }
+    }
 
+    public init() {
         this.game.emitter.on('actorAdded', this.handleActorAdded)
         this.game.emitter.on('actorRemoved', this.handleActorRemoved)
 
@@ -66,7 +67,6 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         const hp = new Mesh(this.hpGeometry, this.hpMaterial)
         hp.name = 'hp'
         hp.position.y = 5
-
         group.add(hp)
 
         const interactionShape = this.createInteractionMesh(actor)
@@ -108,9 +108,8 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     }
 
     private onAddActor(actor: TActor) {
-        console.log('[ActorRenderer] Adding actor', actor)
-
         const tile = this.game.world.getTile(actor.position)
+
         const { group, interactionShape } = this.createActorModel(actor, tile)
 
         this.actorGroupMap.set(actor, group)

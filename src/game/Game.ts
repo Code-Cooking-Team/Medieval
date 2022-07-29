@@ -1,7 +1,6 @@
 import { config } from '+config/config'
 import { Player, PlayerJSON } from '+game/player/types'
-import { distanceBetweenPoints } from '+helpers'
-import { removeArrayItem } from '+helpers'
+import { distanceBetweenPoints, removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
 import { actorFromJSON } from './actors'
@@ -67,6 +66,10 @@ export class Game {
         this.emitter.emit('actorRemoved', actor)
     }
 
+    public getActorById(id: string): Actor | undefined {
+        return this.actors.find((actor) => actor.id === id)
+    }
+
     public findActorByRange(
         position: Position,
         range: number,
@@ -80,7 +83,7 @@ export class Game {
 
     public findActorsByType(type: ActorType, isAlive = true): Actor[] {
         return this.actors.filter((actor) => {
-            if (isAlive && actor.hp <= 0) return false
+            if (isAlive && actor.isDead()) return false
             return actor.type === type
         })
     }

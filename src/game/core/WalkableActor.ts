@@ -36,6 +36,11 @@ export abstract class WalkableActor extends Actor {
             path: this.path,
         }
     }
+
+    public fromJSON(json: WalkableActorJSON) {
+        super.fromJSON(json)
+        this.path = json.path
+    }
 }
 
 export interface WalkableActorJSON extends ActorJSON {

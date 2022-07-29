@@ -18,6 +18,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
 
 import { actorRenderers, basicRenderers } from './actors'
+import { HumanRenderer } from './actors/units/human/HumanRenderer'
 import { Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
 import { Game } from './Game'
@@ -85,7 +86,7 @@ export class Renderer {
 
     public init() {
         if (config.postProcessing.postprocessingEnable) this.addComposerPasses()
-        this.addRenderers()
+        this.loadRenderers()
         this.rtsCamera.init()
         this.ground.init()
         this.animate()
@@ -202,7 +203,7 @@ export class Renderer {
         }
     }
 
-    private addRenderers() {
+    private loadRenderers() {
         this.addBasicRenderer(this.ground, false)
         this.addBasicRenderer(this.environment)
         this.addBasicRenderer(this.water)
@@ -212,7 +213,9 @@ export class Renderer {
         })
 
         actorRenderers.forEach((ActorRenderer) => {
-            this.addActorRenderer(new ActorRenderer(this.game, this.player))
+            const renderer = new ActorRenderer(this.game, this.player)
+            this.addActorRenderer(renderer)
+            renderer.init()
         })
     }
 

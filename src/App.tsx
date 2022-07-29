@@ -39,7 +39,7 @@ function App() {
     const [started, setStarted] = useState(false)
 
     const [savedJson, setSavedJson] = useState<GameJSON>()
-    const [toLoadJSON, setToLoadJSON] = useState<GameJSON>(save as GameJSON)
+    const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>(save as GameJSON)
 
     const { game, humanPlayer } = useMemo(() => {
         if (toLoadJSON) {
@@ -187,6 +187,13 @@ function App() {
                                 Load
                             </Button>
                         )}
+                        <Button
+                            onClick={() => {
+                                setToLoadJSON(undefined)
+                            }}
+                        >
+                            New
+                        </Button>
                     </ButtonGroup>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={2}>
