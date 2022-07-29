@@ -13,6 +13,8 @@ import { Renderer } from '+game/Renderer'
 import { ActorType, allActorTypes } from '+game/types'
 import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
 import { World } from '+game/world/World'
+import { compressedLocalStorageKey } from '+helpers'
+import { useLocalStorage } from '+hooks/useLocalStorage'
 
 import styled from '@emotion/styled'
 import {
@@ -29,8 +31,6 @@ import {
 import { groupBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
-import save from './save.json'
-
 const gameRoot = document.getElementById('game-root') as HTMLElement
 
 function App() {
@@ -38,8 +38,15 @@ function App() {
     const [selectedActors, setSelectedActors] = useState<Actor[]>([])
     const [started, setStarted] = useState(false)
 
-    const [savedJson, setSavedJson] = useState<GameJSON>()
-    const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>(save as any)
+    const [forceReloadCount, setForceReloadCount] = useState(0)
+    const forceReload = () => setForceReloadCount((v) => v + 1)
+
+    const [savedJson, setSavedJson] = useLocalStorage<GameJSON>(
+        'saved-game2',
+        undefined,
+        true,
+    )
+    const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>()
 
     const { game, humanPlayer } = useMemo(() => {
         if (toLoadJSON) {
@@ -58,34 +65,11 @@ function App() {
         const naturePlayer = new NaturePlayer()
         const game = new Game(word, [humanPlayer, naturePlayer])
 
-        // Island
-        // const h1 = game.spawnActor(HumanActor, humanPlayer, [14, 14])
-        // const c1 = game.spawnActor(WoodCampActor, humanPlayer, [15, 15])
-
-        // if (h1) c1?.interact([h1])
-
-        // de_grass
-        // game.spawnActor(HouseActor, humanPlayer, [112, 113])
-        // game.spawnActor(BarracksActor, humanPlayer, [102, 93])
-
-        // const h1 = game.spawnActor(HumanActor, humanPlayer, [112, 120])
-        // const h2 = game.spawnActor(HumanActor, humanPlayer, [68, 120])
-
-        // const c1 = game.spawnActor(WoodCampActor, humanPlayer, [87, 120])
-        // const c2 = game.spawnActor(WoodCampActor, humanPlayer, [100, 114])
-
-        // if (h1) c1?.interact([h1])
-        // if (h2) c2?.interact([h2])
-
-        // game.spawnActor(BoarActor, humanPlayer, [55, 120])
-        // game.spawnActor(BoarActor, humanPlayer, [66, 120])
-        // game.spawnActor(BoarActor, humanPlayer, [67, 120])
-
         const floraSpawner = new FloraSpawner(game, naturePlayer)
         floraSpawner.bulkSpawnTrees()
 
         return { game, humanPlayer }
-    }, [toLoadJSON])
+    }, [toLoadJSON, forceReloadCount])
 
     useEffect(() => {
         const renderer = new Renderer(game, humanPlayer, gameRoot)
@@ -181,7 +165,7 @@ function App() {
                             <Button
                                 onClick={() => {
                                     setToLoadJSON(savedJson)
-                                    setSavedJson(undefined)
+                                    forceReload()
                                 }}
                             >
                                 Load
