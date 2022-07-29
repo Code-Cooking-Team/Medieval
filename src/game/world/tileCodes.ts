@@ -1,3 +1,4 @@
+import { Position } from '+game/types'
 import {
     FootpathTile,
     ForestTile,
@@ -8,8 +9,7 @@ import {
     Tile,
     WallTile,
     WaterTile,
-} from '+game/Tile'
-import { Position } from '+game/types'
+} from '+game/world/Tile'
 
 const tileCodes = {
     ['🌱']: MeadowTile,

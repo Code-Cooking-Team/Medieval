@@ -3,8 +3,8 @@ import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
-import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
+import { Tile } from '+game/world/Tile'
 
 import {
     BoxGeometry,

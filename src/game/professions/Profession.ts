@@ -41,9 +41,7 @@ export abstract class Profession {
     }
 
     public fromJSON(json: ProfessionJSON) {
-        this.type = json.type
-        this.selectImportance = json.selectImportance
-        this.isPristine = json.isPristine
+        Object.assign(this, json)
     }
 }
 

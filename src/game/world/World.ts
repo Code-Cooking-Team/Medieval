@@ -1,8 +1,9 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
-import { Tile, TileGrid, TileJSON } from '../Tile'
 import { Position } from '../types'
+import { getTileByJSON, Tile } from './Tile'
+import { TileGrid, TileJSON } from './types'
 
 export interface WordJSON {
     tiles: TileJSON[][]
@@ -62,7 +63,7 @@ export class World {
     }
 
     static fromJSON(json: WordJSON) {
-        const tiles = json.tiles.map((row) => row.map((data) => Tile.fromJSON(data)))
+        const tiles = json.tiles.map((row) => row.map(getTileByJSON))
         return new World(tiles)
     }
 

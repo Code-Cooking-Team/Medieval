@@ -77,14 +77,7 @@ export abstract class Actor {
     }
 
     public fromJSON(json: ActorJSON): void {
-        this.id = json.id
-        this.type = json.type
-        this.position = json.position
-        this.hp = json.hp
-        this.maxHp = json.maxHp
-        this.hpRegen = json.hpRegen
-        this.selectImportance = json.selectImportance
-        this.seed = json.seed
+        Object.assign(this, json)
     }
 }
 

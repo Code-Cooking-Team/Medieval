@@ -1,8 +1,8 @@
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
-import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
+import { Tile } from '+game/world/Tile'
 import { loadGLTF } from '+helpers'
 
 import { LOD } from 'three'

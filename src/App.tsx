@@ -39,7 +39,7 @@ function App() {
     const [started, setStarted] = useState(false)
 
     const [savedJson, setSavedJson] = useState<GameJSON>()
-    const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>(save as GameJSON)
+    const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>(save as any)
 
     const { game, humanPlayer } = useMemo(() => {
         if (toLoadJSON) {

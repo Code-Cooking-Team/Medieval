@@ -55,8 +55,6 @@ export class HumanPlayer implements Player {
     }
 
     public fromJSON(json: PlayerJSON): void {
-        if (this.type !== json.type) throw new Error('Invalid player type')
-        this.id = json.id
-        this.name = json.name
+        Object.assign(this, json)
     }
 }

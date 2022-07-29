@@ -101,14 +101,22 @@ export class WoodcutterProfession extends Profession {
         }
     }
 
-    public fromJSON(json: WoodcutterProfessionJSON) {
+    public fromJSON({
+        machineState,
+        collectedTreeHP,
+        treeId,
+        campId,
+        ...json
+    }: WoodcutterProfessionJSON) {
         super.fromJSON(json)
-        this.collectedTreeHP = json.collectedTreeHP
 
-        this.machine.setState(json.machineState)
+        this.machine.setState(machineState)
 
-        this.treeId = json.treeId
-        this.campId = json.campId
+        Object.assign(this, {
+            collectedTreeHP,
+            treeId,
+            campId,
+        })
     }
 
     private getTree() {
