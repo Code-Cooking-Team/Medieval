@@ -24,21 +24,16 @@ import {
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
+    public actorType = ActorType.Empty
+
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
 
     protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
-    constructor(
-        public game: Game,
-        public player: HumanPlayer,
-        public actorType: ActorType = ActorType.Empty,
-    ) {
+    constructor(public game: Game, public player: HumanPlayer) {
         super()
-        if (this.actorType === ActorType.Empty) {
-            throw new Error('[ActorRenderer] actorType is not set')
-        }
     }
 
     public init() {

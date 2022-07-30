@@ -15,13 +15,11 @@ const houseModel = loadGLTF(woodCampUrl)
 
 export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp
-    constructor(game: Game, player: HumanPlayer) {
-        super(game, player, ActorType.WoodCamp)
-    }
 
     public createActorModel(actor: WoodCampActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const lod = new LOD()
+
         houseModel.then((model) => {
             model.children.forEach((child, index) => {
                 child.castShadow = true

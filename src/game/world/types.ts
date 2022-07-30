@@ -1,7 +1,5 @@
 import { Tile } from './Tile'
 
-export type types = 'a'
-
 export enum TileType {
     Empty = 'Empty',
     Forest = 'Forest',

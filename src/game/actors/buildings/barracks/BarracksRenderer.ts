@@ -13,9 +13,7 @@ import { BarracksActor } from './BarracksActor'
 const houseModel = loadGLTF(houseUrl)
 
 export class BarracksRenderer extends ActorRenderer<BarracksActor> {
-    constructor(game: Game, player: HumanPlayer) {
-        super(game, player, ActorType.Barracks)
-    }
+    public actorType = ActorType.Barracks
 
     public createActorModel(actor: BarracksActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
@@ -28,8 +26,6 @@ export class BarracksRenderer extends ActorRenderer<BarracksActor> {
                 lod.addLevel(child.clone(), (model.children.length - index - 1) * 80)
             })
         })
-
-        // lod.add(model.clone(), 1)
 
         group.add(lod)
 

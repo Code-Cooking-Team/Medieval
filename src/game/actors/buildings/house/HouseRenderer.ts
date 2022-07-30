@@ -14,9 +14,7 @@ import houseUrl from './models/house3.gltf'
 const houseModel = loadGLTF(houseUrl)
 
 export class HouseRenderer extends ActorRenderer<HouseActor> {
-    constructor(game: Game, player: HumanPlayer) {
-        super(game, player, ActorType.House)
-    }
+    public actorType = ActorType.House
 
     public createActorModel(actor: HouseActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)

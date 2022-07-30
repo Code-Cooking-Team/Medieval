@@ -9,9 +9,7 @@ import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 import { BoarActor } from './BoarActor'
 
 export class BoarRenderer extends WalkableActorRenderer<BoarActor> {
-    constructor(game: Game, player: HumanPlayer) {
-        super(game, player, ActorType.Boar)
-    }
+    public actorType = ActorType.Boar
 
     private material = new MeshStandardMaterial({ color: 0x4a2505 })
     private geometry = new SphereGeometry(0.5, 5, 5)

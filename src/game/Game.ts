@@ -151,18 +151,18 @@ export class Game {
         }
     }
 
-    static fromJSON(data: GameJSON) {
-        const world = World.fromJSON(data.world)
-        const players = data.players.map((player) => playerFromJSON(player))
+    static fromJSON(json: GameJSON) {
+        const world = World.fromJSON(json.world)
+        const players = json.players.map((player) => playerFromJSON(player))
 
         const game = new Game(world, players)
 
-        game.actors = data.actors.map((data) => {
-            const player = players.find((player) => player.id === data.playerId)
+        game.actors = json.actors.map((actorJson) => {
+            const player = players.find((player) => player.id === actorJson.playerId)
             if (!player) {
-                throw new Error(`Player not found [ID: ${data.playerId}]`)
+                throw new Error(`Player not found [ID: ${actorJson.playerId}]`)
             }
-            return actorFromJSON(data, game, player)
+            return actorFromJSON(actorJson, game, player)
         })
 
         return game

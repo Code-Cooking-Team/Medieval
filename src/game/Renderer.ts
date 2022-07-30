@@ -70,11 +70,6 @@ export class Renderer {
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
         this.webGLRenderer.xr.enabled = true
 
-        el.append(this.webGLRenderer.domElement)
-
-        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-        el.append(stats.dom)
-
         this.environment = new EnvironmentRenderer(
             this.game,
             this.scene,
@@ -86,6 +81,12 @@ export class Renderer {
 
     public init() {
         if (config.postProcessing.postprocessingEnable) this.addComposerPasses()
+
+        this.el.append(this.webGLRenderer.domElement)
+
+        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+        this.el.append(stats.dom)
+
         this.loadRenderers()
         this.rtsCamera.init()
         this.ground.init()

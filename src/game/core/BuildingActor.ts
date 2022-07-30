@@ -23,6 +23,11 @@ export class BuildingActor extends Actor {
             height: this.height,
         }
     }
+
+    public fromJSON({ grid, height, ...json }: BuildingActorJSON) {
+        super.fromJSON(json)
+        Object.assign(this, { grid, height })
+    }
 }
 
 export interface BuildingActorJSON extends ActorJSON {
