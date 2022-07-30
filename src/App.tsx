@@ -1,19 +1,20 @@
 import { ConfigForm } from '+components/config/ConfigForm'
-import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
-import { HouseActor } from '+game/actors/buildings/house/HouseActor'
-import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { BoarActor } from '+game/actors/units/boars/BoarActor'
-import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
+import { Game, GameJSON } from '+game/Game'
+// Island, TestMap, TestMapBig, de_grass
+import map from '+game/maps/Island'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { NaturePlayer } from '+game/player/NaturePlayer'
+import { PlayerType } from '+game/player/types'
 import '+game/professions/machines/woodcutterMachine'
 import { Renderer } from '+game/Renderer'
 import { ActorType, allActorTypes } from '+game/types'
+import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
 import { World } from '+game/world/World'
+import { compressedLocalStorageKey } from '+helpers'
+import { useLocalStorage } from '+hooks/useLocalStorage'
 
 import styled from '@emotion/styled'
 import {
@@ -37,69 +38,85 @@ function App() {
     const [selectedActors, setSelectedActors] = useState<Actor[]>([])
     const [started, setStarted] = useState(false)
 
+    const [forceReloadCount, setForceReloadCount] = useState(0)
+    const forceReload = () => setForceReloadCount((v) => v + 1)
+
+    const [savedJson, setSavedJson] = useLocalStorage<GameJSON>(
+        'saved-game2',
+        undefined,
+        true,
+    )
+    const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>()
+
     const { game, humanPlayer } = useMemo(() => {
-        const word = new World()
+        if (toLoadJSON) {
+            const game = Game.fromJSON(toLoadJSON)
+
+            const humanPlayer = game.players.find(
+                (player) => player.type === PlayerType.Human,
+            ) as HumanPlayer
+
+            return { game, humanPlayer }
+        }
+
+        const tiles = createTilesFromGrid(map as TileCodeGrid)
+        const word = new World(tiles)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
         const game = new Game(word, [humanPlayer, naturePlayer])
-        const renderer = new Renderer(game, humanPlayer, gameRoot)
-        const interactions = new InteractionsManager(game, renderer, humanPlayer)
-
-        interactions.init()
-        renderer.init()
-
-        // Island
-        // const h1 = game.spawnActor(HumanActor, humanPlayer, [14, 14])
-        // const c1 = game.spawnActor(WoodCampActor, humanPlayer, [15, 15])
-
-        // if (h1) c1?.interact([h1])
-
-        // de_grass
-        game.spawnActor(HouseActor, humanPlayer, [112, 113])
-        game.spawnActor(BarracksActor, humanPlayer, [102, 93])
-
-        const h1 = game.spawnActor(HumanActor, humanPlayer, [112, 120])
-        const h2 = game.spawnActor(HumanActor, humanPlayer, [68, 120])
-
-        const c1 = game.spawnActor(WoodCampActor, humanPlayer, [87, 120])
-        const c2 = game.spawnActor(WoodCampActor, humanPlayer, [100, 114])
-
-        if (h1) c1?.interact([h1])
-        if (h2) c2?.interact([h2])
-
-        game.spawnActor(BoarActor, humanPlayer, [55, 120])
-        game.spawnActor(BoarActor, humanPlayer, [66, 120])
-        game.spawnActor(BoarActor, humanPlayer, [67, 120])
 
         const floraSpawner = new FloraSpawner(game, naturePlayer)
         floraSpawner.bulkSpawnTrees()
 
         return { game, humanPlayer }
-    }, [])
+    }, [toLoadJSON, forceReloadCount])
 
     useEffect(() => {
-        humanPlayer.emitter.on('selectActors', (actor) => setSelectedActors(actor))
-        humanPlayer.emitter.on('unselectActors', () => setSelectedActors([]))
+        const renderer = new Renderer(game, humanPlayer, gameRoot)
+        const interactions = new InteractionsManager(game, renderer, humanPlayer)
 
-        game.emitter.on('started', () => setStarted(true))
-        game.emitter.on('stopped', () => setStarted(false))
+        renderer.init()
+        interactions.init()
 
-        humanPlayer.emitter.on('selectBuilding', (building) =>
-            setSelectedBuilding(building),
-        )
-        humanPlayer.emitter.on('unselectBuilding', () => setSelectedBuilding(undefined))
-    }, [])
+        const started = () => setStarted(true)
+        const stopped = () => setStarted(false)
 
-    useEffect(() => {
-        // game.start()
+        game.emitter.on('started', started)
+        game.emitter.on('stopped', stopped)
+
+        const selectActors = (actor: Actor[]) => setSelectedActors(actor)
+        const unselectActors = () => setSelectedActors([])
+
+        humanPlayer.emitter.on('selectActors', selectActors)
+        humanPlayer.emitter.on('unselectActors', unselectActors)
+
+        const selectBuilding = (building: ActorType) => setSelectedBuilding(building)
+        const unselectBuilding = () => setSelectedBuilding(undefined)
+
+        humanPlayer.emitter.on('selectBuilding', selectBuilding)
+        humanPlayer.emitter.on('unselectBuilding', unselectBuilding)
+
+        game.start()
 
         const anyWindow = window as any
         anyWindow.game = game
 
         return () => {
             game.stop()
+
+            interactions.destroy()
+            renderer.destroy()
+
+            game.emitter.off('started', started)
+            game.emitter.off('stopped', stopped)
+
+            humanPlayer.emitter.off('selectActors', selectActors)
+            humanPlayer.emitter.off('unselectActors', unselectActors)
+
+            humanPlayer.emitter.off('selectBuilding', selectBuilding)
+            humanPlayer.emitter.off('unselectBuilding', unselectBuilding)
         }
-    }, [])
+    }, [game, humanPlayer])
 
     const selected = Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [
         ActorType,
@@ -141,6 +158,27 @@ function App() {
                             ))}
                         </Select>
                     </FormControl>
+
+                    <ButtonGroup>
+                        <Button onClick={() => setSavedJson(game.toJSON())}>Save</Button>
+                        {savedJson && (
+                            <Button
+                                onClick={() => {
+                                    setToLoadJSON(savedJson)
+                                    forceReload()
+                                }}
+                            >
+                                Load
+                            </Button>
+                        )}
+                        <Button
+                            onClick={() => {
+                                setToLoadJSON(undefined)
+                            }}
+                        >
+                            New
+                        </Button>
+                    </ButtonGroup>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={2}>
                     {selected.map(([type, actor]) => (

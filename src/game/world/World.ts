@@ -1,21 +1,18 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
-// Island, TestMap, TestMapBig, de_grass
-import map from '../maps/de_grass'
-import { Tile, TileGrid } from '../Tile'
 import { Position } from '../types'
-import { createTilesFromGrid, TileCodeGrid } from './tileCodes'
+import { getTileByJSON, Tile } from './Tile'
+import { TileGrid, TileJSON } from './types'
 
-interface WordEmitterEvents {
-    tailUpdate: undefined
+export interface WordJSON {
+    tiles: TileJSON[][]
 }
 
 export class World {
-    public tiles: TileGrid = createTilesFromGrid(map as TileCodeGrid)
-    public emitter = new Emitter<WordEmitterEvents>('Word')
+    public emitter = new Emitter<{ tailUpdate: undefined }>('Word')
 
-    public tick() {}
+    constructor(public tiles: TileGrid) {}
 
     public hasTile([x, y]: Position) {
         return this.tiles?.[y]?.[x]!!
@@ -57,6 +54,17 @@ export class World {
                 callback(tile, [x, y])
             })
         })
+    }
+
+    public toJSON(): WordJSON {
+        return {
+            tiles: this.tiles.map((row) => row.map((tile) => tile.toJSON())),
+        }
+    }
+
+    static fromJSON(json: WordJSON) {
+        const tiles = json.tiles.map((row) => row.map(getTileByJSON))
+        return new World(tiles)
     }
 
     private setTileAt([x, y]: Position, tile: Tile) {

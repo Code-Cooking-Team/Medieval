@@ -3,9 +3,10 @@ import { config } from '+config'
 import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 
 import { Profession } from './Profession'
+import { ProfessionType } from './types'
 
 export class GuardianProfession extends Profession {
-    public name = 'Guardian'
+    public type = ProfessionType.Guardian
     public selectImportance = 5
 
     protected material = new MeshStandardMaterial({ color: config.guardian.color })

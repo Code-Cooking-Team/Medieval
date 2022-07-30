@@ -1,54 +1,53 @@
 import { config } from '+config/config'
-import { Player } from '+game/player/Player'
-import { distanceBetweenPoints } from '+helpers'
-import { removeArrayItem } from '+helpers'
+import { Player, PlayerJSON } from '+game/player/types'
+import { distanceBetweenPoints, removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
+import { actorFromJSON } from './actors'
 import { isBuildingActor, isWalkableActor } from './actors/helpers'
-import { Actor, ActorClass } from './core/Actor'
+import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
+import { playerFromJSON } from './player'
 import { ActorType, Position } from './types'
 import { applyTileGrid } from './world/tileCodes'
-import { World } from './world/World'
-
-interface GameEmitterEvents {
-    tick: undefined
-    actorAdded: Actor
-    actorRemoved: Actor
-    started: undefined
-    stopped: undefined
-}
+import { WordJSON, World } from './world/World'
 
 export class Game {
     public pf: Pathfinding
     public actors: Actor[] = []
     loop: any
 
-    public emitter = new Emitter<GameEmitterEvents>('Game')
+    public emitter = new Emitter<{
+        tick: undefined
+        actorAdded: Actor
+        actorRemoved: Actor
+        started: undefined
+        stopped: undefined
+    }>('Game')
 
     constructor(public world: World, public players: Player[]) {
         this.pf = new Pathfinding(world)
-
-        this.world.emitter.on('tailUpdate', () => {
-            this.pf.update()
-        })
     }
 
     public start(): void {
         this.emitter.emit('started')
+
         this.loop = setInterval(() => {
             this.tick()
         }, config.core.tickTime)
+
+        this.world.emitter.on('tailUpdate', this.handleTailUpdate)
     }
 
     public stop(): void {
         this.emitter.emit('stopped')
         clearInterval(this.loop)
         this.loop = undefined
+
+        this.world.emitter.off('tailUpdate', this.handleTailUpdate)
     }
 
     public tick(): void {
-        this.world.tick()
         this.pf.tick()
         this.actors.forEach((actor) => {
             actor.tick()
@@ -58,7 +57,6 @@ export class Game {
 
     public addActor(actor: Actor): void {
         this.actors.push(actor)
-        this.pf.update()
         this.emitter.emit('actorAdded', actor)
     }
 
@@ -66,6 +64,10 @@ export class Game {
         removeArrayItem(this.actors, actor)
         this.pf.update()
         this.emitter.emit('actorRemoved', actor)
+    }
+
+    public getActorById(id: string): Actor | undefined {
+        return this.actors.find((actor) => actor.id === id)
     }
 
     public findActorByRange(
@@ -81,7 +83,7 @@ export class Game {
 
     public findActorsByType(type: ActorType, isAlive = true): Actor[] {
         return this.actors.filter((actor) => {
-            if (isAlive && actor.hp <= 0) return false
+            if (isAlive && actor.isDead()) return false
             return actor.type === type
         })
     }
@@ -140,4 +142,39 @@ export class Game {
 
         return actor
     }
+
+    public toJSON(): GameJSON {
+        return {
+            world: this.world.toJSON(),
+            players: this.players.map((player) => player.toJSON()),
+            actors: this.actors.map((actor) => actor.toJSON()),
+        }
+    }
+
+    static fromJSON(json: GameJSON) {
+        const world = World.fromJSON(json.world)
+        const players = json.players.map((player) => playerFromJSON(player))
+
+        const game = new Game(world, players)
+
+        game.actors = json.actors.map((actorJson) => {
+            const player = players.find((player) => player.id === actorJson.playerId)
+            if (!player) {
+                throw new Error(`Player not found [ID: ${actorJson.playerId}]`)
+            }
+            return actorFromJSON(actorJson, game, player)
+        })
+
+        return game
+    }
+
+    private handleTailUpdate = () => {
+        this.pf.update()
+    }
+}
+
+export interface GameJSON {
+    world: WordJSON
+    players: PlayerJSON[]
+    actors: ActorJSON[]
 }

@@ -3,16 +3,14 @@ import { config } from '+config'
 import Stats from 'stats.js'
 import {
     Clock,
-    NoToneMapping,
     PCFSoftShadowMap,
     ReinhardToneMapping,
     Scene,
-    sRGBEncoding,
     Vector2,
     WebGLRenderer,
 } from 'three'
 // Post processing
-import { EffectComposer, Pass } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
@@ -20,6 +18,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
 
 import { actorRenderers, basicRenderers } from './actors'
+import { HumanRenderer } from './actors/units/human/HumanRenderer'
 import { Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
 import { Game } from './Game'
@@ -29,7 +28,7 @@ import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { ActorType, ClockInfo } from './types'
+import { ClockInfo } from './types'
 
 const stats = new Stats()
 
@@ -71,11 +70,6 @@ export class Renderer {
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
         this.webGLRenderer.xr.enabled = true
 
-        el.append(this.webGLRenderer.domElement)
-
-        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-        el.append(stats.dom)
-
         this.environment = new EnvironmentRenderer(
             this.game,
             this.scene,
@@ -87,7 +81,13 @@ export class Renderer {
 
     public init() {
         if (config.postProcessing.postprocessingEnable) this.addComposerPasses()
-        this.addRenderers()
+
+        this.el.append(this.webGLRenderer.domElement)
+
+        stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+        this.el.append(stats.dom)
+
+        this.loadRenderers()
         this.rtsCamera.init()
         this.ground.init()
         this.animate()
@@ -95,11 +95,10 @@ export class Renderer {
         this.resize()
         window.addEventListener('resize', this.resize)
 
-        this.player.emitter.on(['selectActors', 'unselectActors'], (actor) => {
-            if (this.outlinePass) {
-                this.outlinePass.selectedObjects = this.getSelectedGroupList()
-            }
-        })
+        this.player.emitter.on(
+            ['selectActors', 'unselectActors'],
+            this.handleSelectChange,
+        )
 
         const anyWindow = window as any
 
@@ -112,6 +111,25 @@ export class Renderer {
         }
     }
 
+    public destroy() {
+        this.player.emitter.off(
+            ['selectActors', 'unselectActors'],
+            this.handleSelectChange,
+        )
+
+        this.actorRendererList.forEach((renderer) => {
+            renderer.destroy()
+        })
+
+        // TODO fix "WARNING: Too many active WebGL contexts three"
+        this.webGLRenderer.dispose() // TODO needed?
+
+        this.el.removeChild(this.webGLRenderer.domElement)
+        this.el.removeChild(stats.dom)
+
+        cancelAnimationFrame(this.loop)
+    }
+
     public getGroundChildren() {
         return this.ground!.group.children
     }
@@ -120,6 +138,12 @@ export class Renderer {
         return this.actorRendererList.flatMap((renderer) =>
             renderer.getInteractionShapes(),
         )
+    }
+
+    private handleSelectChange = () => {
+        if (this.outlinePass) {
+            this.outlinePass.selectedObjects = this.getSelectedGroupList()
+        }
     }
 
     private getSelectedGroupList() {
@@ -180,7 +204,7 @@ export class Renderer {
         }
     }
 
-    private addRenderers() {
+    private loadRenderers() {
         this.addBasicRenderer(this.ground, false)
         this.addBasicRenderer(this.environment)
         this.addBasicRenderer(this.water)
@@ -190,7 +214,9 @@ export class Renderer {
         })
 
         actorRenderers.forEach((ActorRenderer) => {
-            this.addActorRenderer(new ActorRenderer(this.game, this.player))
+            const renderer = new ActorRenderer(this.game, this.player)
+            this.addActorRenderer(renderer)
+            renderer.init()
         })
     }
 
@@ -236,11 +262,13 @@ export class Renderer {
         }
     }
 
+    private loop: any
+
     private animate = () => {
         stats.begin()
         this.render()
         stats.end()
-        requestAnimationFrame(this.animate)
+        this.loop = requestAnimationFrame(this.animate)
     }
 
     private render() {

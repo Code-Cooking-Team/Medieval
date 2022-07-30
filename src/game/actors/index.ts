@@ -1,4 +1,6 @@
-import { Actor, ActorClass } from '+game/core/Actor'
+import { Actor, ActorClass, ActorJSON } from '+game/core/Actor'
+import { Game } from '+game/Game'
+import { Player } from '+game/player/types'
 import { ActorType } from '+game/types'
 
 import { BarracksActor } from './buildings/barracks/BarracksActor'
@@ -28,7 +30,7 @@ const emptyActor = () => {
     throw new Error(`[actorByType] Don't use empty actor`)
 }
 
-export const actorByType: Record<ActorType, ActorClass<Actor>> = {
+export const actorByType: Record<ActorType, ActorClass> = {
     [ActorType.Empty]: emptyActor as any,
     [ActorType.House]: HouseActor,
     [ActorType.Human]: HumanActor,
@@ -36,4 +38,11 @@ export const actorByType: Record<ActorType, ActorClass<Actor>> = {
     [ActorType.WoodCamp]: WoodCampActor,
     [ActorType.Barracks]: BarracksActor,
     [ActorType.Boar]: BoarActor,
+}
+
+export const actorFromJSON = (json: ActorJSON, game: Game, player: Player): Actor => {
+    const ActorClass = actorByType[json.type]
+    const actor = new ActorClass(game, player)
+    actor.fromJSON(json)
+    return actor
 }

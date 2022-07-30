@@ -3,8 +3,8 @@ import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
-import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
+import { Tile } from '+game/world/Tile'
 
 import {
     BoxGeometry,
@@ -24,7 +24,7 @@ import {
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
-    public actorType: ActorType = ActorType.Empty
+    public actorType = ActorType.Empty
 
     private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
     private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
@@ -34,20 +34,22 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
     constructor(public game: Game, public player: HumanPlayer) {
         super()
+    }
 
-        this.game.emitter.on('actorAdded', (actor) => {
-            if (actor.type === this.actorType) this.onAddActor(actor as TActor)
-        })
+    public init() {
+        this.game.emitter.on('actorAdded', this.handleActorAdded)
+        this.game.emitter.on('actorRemoved', this.handleActorRemoved)
 
-        this.game.emitter.on('actorRemoved', (actor) => {
-            if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
-        })
+        const currentActors = this.game.findActorsByType(this.actorType) as TActor[]
 
-        const treeActors = this.game.findActorsByType(this.actorType) as TActor[]
-
-        treeActors.forEach((actor) => {
+        currentActors.forEach((actor) => {
             this.onAddActor(actor)
         })
+    }
+
+    public destroy() {
+        this.game.emitter.off('actorAdded', this.handleActorAdded)
+        this.game.emitter.off('actorRemoved', this.handleActorRemoved)
     }
 
     public createActorModel(
@@ -60,7 +62,6 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         const hp = new Mesh(this.hpGeometry, this.hpMaterial)
         hp.name = 'hp'
         hp.position.y = 5
-
         group.add(hp)
 
         const interactionShape = this.createInteractionMesh(actor)
@@ -93,8 +94,17 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return Array.from(this.actorInteractionShapeMap.keys())
     }
 
+    private handleActorAdded = (actor: Actor) => {
+        if (actor.type === this.actorType) this.onAddActor(actor as TActor)
+    }
+
+    private handleActorRemoved = (actor: Actor) => {
+        if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
+    }
+
     private onAddActor(actor: TActor) {
         const tile = this.game.world.getTile(actor.position)
+
         const { group, interactionShape } = this.createActorModel(actor, tile)
 
         this.actorGroupMap.set(actor, group)

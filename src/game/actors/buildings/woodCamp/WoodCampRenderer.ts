@@ -1,17 +1,12 @@
 import { config } from '+config'
+import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
-import { Tile } from '+game/Tile'
 import { ActorType } from '+game/types'
+import { Tile } from '+game/world/Tile'
 import { loadGLTF } from '+helpers'
 
-import {
-    BoxGeometry,
-    LOD,
-    Mesh,
-    MeshStandardMaterial,
-    OctahedronGeometry,
-    PointLight,
-} from 'three'
+import { LOD, PointLight } from 'three'
 
 import woodCampUrl from './models/woodCamp.gltf'
 import { WoodCampActor } from './WoodCampActor'
@@ -24,6 +19,7 @@ export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
     public createActorModel(actor: WoodCampActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const lod = new LOD()
+
         houseModel.then((model) => {
             model.children.forEach((child, index) => {
                 child.castShadow = true

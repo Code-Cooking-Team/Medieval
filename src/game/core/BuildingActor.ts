@@ -1,6 +1,6 @@
 import { TileCodeGrid } from '+game/world/tileCodes'
 
-import { Actor } from './Actor'
+import { Actor, ActorJSON } from './Actor'
 
 export class BuildingActor extends Actor {
     public selectImportance = 1
@@ -15,4 +15,22 @@ export class BuildingActor extends Actor {
             number,
         ]
     }
+
+    public toJSON(): BuildingActorJSON {
+        return {
+            ...super.toJSON(),
+            grid: this.grid,
+            height: this.height,
+        }
+    }
+
+    public fromJSON({ grid, height, ...json }: BuildingActorJSON) {
+        super.fromJSON(json)
+        Object.assign(this, { grid, height })
+    }
+}
+
+export interface BuildingActorJSON extends ActorJSON {
+    grid: TileCodeGrid
+    height: number
 }

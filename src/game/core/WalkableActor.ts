@@ -1,6 +1,6 @@
 import { Path, Position } from '+game/types'
 
-import { Actor } from './Actor'
+import { Actor, ActorJSON } from './Actor'
 
 export abstract class WalkableActor extends Actor {
     public selectImportance = 4
@@ -29,4 +29,20 @@ export abstract class WalkableActor extends Actor {
             this.position = [next.x, next.y]
         }
     }
+
+    public toJSON(): WalkableActorJSON {
+        return {
+            ...super.toJSON(),
+            path: this.path,
+        }
+    }
+
+    public fromJSON({ path, ...json }: WalkableActorJSON) {
+        super.fromJSON(json)
+        this.path = path
+    }
+}
+
+export interface WalkableActorJSON extends ActorJSON {
+    path: Path
 }

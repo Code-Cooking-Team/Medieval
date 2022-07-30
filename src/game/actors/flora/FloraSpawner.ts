@@ -1,8 +1,8 @@
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { Game } from '+game/Game'
 import { NaturePlayer } from '+game/player/NaturePlayer'
-import { OvergrownTile, Tile } from '+game/Tile'
 import { Position } from '+game/types'
+import { OvergrownTile, Tile } from '+game/world/Tile'
 import { seededRandom } from '+helpers'
 
 export class FloraSpawner {

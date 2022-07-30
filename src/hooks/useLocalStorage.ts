@@ -1,10 +1,11 @@
-import { localStorageKey } from '+helpers'
+import { compressedLocalStorageKey, localStorageKey } from '+helpers'
 
 import { useState } from 'react'
 
-export const useLocalStorage = <T>(key: string, initial: T) => {
-    const openStorage = localStorageKey<T>(key, initial)
-    const [items, setItems] = useState<T>(openStorage.get())
+export const useLocalStorage = <T>(key: string, initial?: T, compressed = false) => {
+    const lib = compressed ? compressedLocalStorageKey : localStorageKey
+    const openStorage = lib<T>(key, initial)
+    const [items, setItems] = useState<T>(() => openStorage.get())
 
     return [
         items,
@@ -14,7 +15,7 @@ export const useLocalStorage = <T>(key: string, initial: T) => {
         },
         () => {
             openStorage.remove()
-            setItems(initial)
+            setItems(initial!)
         },
     ] as const
 }

@@ -1,5 +1,5 @@
 import { Game } from '+game/Game'
-import { Player } from '+game/player/Player'
+import { Player } from '+game/player/types'
 import { ActorType, Position } from '+game/types'
 import { ClassType, maxValue, randomSeed, uuid } from '+helpers'
 
@@ -19,7 +19,11 @@ export abstract class Actor {
     public hpRegen = 1
     public seed = randomSeed()
 
-    constructor(public game: Game, public player: Player, public position: Position) {}
+    constructor(
+        public game: Game,
+        public player: Player,
+        public position: Position = [0, 0],
+    ) {}
 
     public tick(): void {
         if (this.hp < this.maxHp) {
@@ -58,12 +62,38 @@ export abstract class Actor {
         return this.selectImportance
     }
 
-    public debug(): string {
-        return `[${this.type}]\nhp: ${this.hp}/${this.maxHp}`
+    public toJSON(): ActorJSON {
+        return {
+            id: this.id,
+            type: this.type,
+            playerId: this.player.id,
+            position: this.position,
+            hp: this.hp,
+            maxHp: this.maxHp,
+            hpRegen: this.hpRegen,
+            selectImportance: this.selectImportance,
+            seed: this.seed,
+        }
+    }
+
+    public fromJSON(json: ActorJSON): void {
+        Object.assign(this, json)
     }
 }
 
-export type ActorClass<T extends Actor> = ClassType<
+export interface ActorJSON {
+    id: string
+    type: ActorType
+    playerId: string
+    position: Position
+    hp: number
+    maxHp: number
+    hpRegen: number
+    selectImportance: number
+    seed: number
+}
+
+export type ActorClass<T extends Actor = Actor> = ClassType<
     T,
     ConstructorParameters<typeof Actor>
 >

@@ -30,7 +30,8 @@ export class BarracksActor extends BuildingActor {
         let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {
-                actor.setProfession(new GuardianProfession(this.game))
+                const profession = new GuardianProfession(this.game, actor)
+                actor.setProfession(profession)
                 interactionHappened = true
             }
         }

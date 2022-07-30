@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
-import { BuildingActor } from '+game/core/BuildingActor'
+import { BuildingActor, BuildingActorJSON } from '+game/core/BuildingActor'
 import { ActorType } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
 import { random } from '+helpers'

@@ -1,7 +1,9 @@
 import { config } from '+config/config'
 import { Actor } from '+game/core/Actor'
-import { WalkableActor } from '+game/core/WalkableActor'
-import { Profession } from '+game/professions/Profession'
+import { WalkableActor, WalkableActorJSON } from '+game/core/WalkableActor'
+import { professionByType } from '+game/professions'
+import { Profession, ProfessionJSON } from '+game/professions/Profession'
+import { ProfessionType } from '+game/professions/types'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
@@ -70,6 +72,28 @@ export class HumanActor extends WalkableActor {
         return super.getSelectedImportance()
     }
 
+    public toJSON(): HumanActorJSON {
+        const json = super.toJSON()
+
+        return {
+            ...json,
+            profession: this.profession?.toJSON(),
+        }
+    }
+
+    public fromJSON(json: HumanActorJSON) {
+        super.fromJSON(json)
+
+        if (json.profession) {
+            const Profession = professionByType[json.profession.type]
+
+            const instance = new Profession(this.game, this)
+            instance.fromJSON(json.profession)
+
+            this.setProfession(instance)
+        }
+    }
+
     private cancelProfession() {
         if (!this.profession || this.profession.isPristine) return
         this.profession.reset()
@@ -108,4 +132,8 @@ export class HumanActor extends WalkableActor {
             this.setPathTo(this.target.position)
         }
     }
+}
+
+export interface HumanActorJSON extends WalkableActorJSON {
+    profession?: ProfessionJSON
 }

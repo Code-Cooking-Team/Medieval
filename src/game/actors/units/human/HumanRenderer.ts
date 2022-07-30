@@ -1,9 +1,11 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
+import { Game } from '+game/Game'
+import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Profession } from '+game/professions/Profession'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
-import { Tile } from '+game/Tile'
 import { ActorType, ClockInfo } from '+game/types'
+import { Tile } from '+game/world/Tile'
 
 import { Mesh, MeshStandardMaterial, NotEqualDepth, SphereGeometry } from 'three'
 
