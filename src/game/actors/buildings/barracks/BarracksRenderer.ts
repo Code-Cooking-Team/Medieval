@@ -7,8 +7,8 @@ import { loadGLTF } from '+helpers'
 
 import { LOD } from 'three'
 
-import houseUrl from '../house/models/house3.gltf'
 import { BarracksActor } from './BarracksActor'
+import houseUrl from './models/barracks.gltf'
 
 const houseModel = loadGLTF(houseUrl)
 
