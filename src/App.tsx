@@ -1,4 +1,3 @@
-import { ConfigForm } from '+components/config/ConfigForm'
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { Actor } from '+game/core/Actor'
 import { Game, GameJSON } from '+game/Game'
@@ -13,21 +12,14 @@ import { Renderer } from '+game/Renderer'
 import { ActorType, allActorTypes } from '+game/types'
 import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
 import { World } from '+game/world/World'
-import { compressedLocalStorageKey } from '+helpers'
-import { useLocalStorage } from '+hooks/useLocalStorage'
+import { Box } from '+ui/components/base/Box'
+import { Button } from '+ui/components/base/Button'
+import { ConfigForm } from '+ui/components/config/ConfigForm'
+import { Tab } from '+ui/components/tabs/Tab'
+import { Tabs } from '+ui/components/tabs/Tabs'
+import { useLocalStorage } from '+ui/hooks/useLocalStorage'
 
 import styled from '@emotion/styled'
-import {
-    Button,
-    ButtonGroup,
-    createTheme,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    Stack,
-    ThemeProvider,
-} from '@mui/material'
 import { groupBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -128,95 +120,93 @@ function App() {
     }
 
     return (
-        <ThemeProvider theme={darkTheme}>
-            <Bottom>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                    <ButtonGroup>
-                        <Button
-                            onClick={() => {
-                                started ? game.stop() : game.start()
-                            }}
-                        >
-                            {started ? 'Stop' : 'Start'}
-                        </Button>
-                        {!started && <Button onClick={() => game.tick()}>Tick</Button>}
-                    </ButtonGroup>
-
-                    <FormControl style={{ minWidth: 200 }}>
-                        <InputLabel>Building</InputLabel>
-                        <Select
-                            value={selectedBuilding || ''}
-                            onChange={({ target }) => {
-                                humanPlayer.selectBuilding(target.value as ActorType)
-                            }}
-                        >
-                            <MenuItem value="">-</MenuItem>
-                            {allActorTypes.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                    {option}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-
-                    <ButtonGroup>
-                        <Button onClick={() => setSavedJson(game.toJSON())}>Save</Button>
-                        {savedJson && (
-                            <Button
-                                onClick={() => {
-                                    setToLoadJSON(savedJson)
-                                    forceReload()
-                                }}
-                            >
-                                Load
-                            </Button>
-                        )}
-                        <Button
-                            onClick={() => {
-                                setToLoadJSON(undefined)
-                            }}
-                        >
-                            New
-                        </Button>
-                    </ButtonGroup>
-                </Stack>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                    {selected.map(([type, actor]) => (
-                        <Button key={type} onClick={() => selectActorsByType(type)}>
-                            {type} ({actor.length})
-                        </Button>
-                    ))}
-                </Stack>
-            </Bottom>
-
+        <>
             <Right>
-                <ConfigForm />
+                <Box
+                    p={3}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    columnGap={2}
+                >
+                    <Button
+                        label={started ? 'Stop' : 'Start'}
+                        onClick={() => {
+                            started ? game.stop() : game.start()
+                        }}
+                    />
+                    {!started && <Button label="Tick" onClick={() => game.tick()} />}
+                </Box>
+
+                <Tabs>
+                    <Tab label="Game">
+                        <Box
+                            p={3}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            columnGap={2}
+                        >
+                            <Button
+                                label="Save"
+                                onClick={() => setSavedJson(game.toJSON())}
+                            />
+                            {savedJson && (
+                                <Button
+                                    label="Load"
+                                    onClick={() => {
+                                        setToLoadJSON(savedJson)
+                                        forceReload()
+                                    }}
+                                />
+                            )}
+                            <Button
+                                label="New"
+                                onClick={() => {
+                                    setToLoadJSON(undefined)
+                                }}
+                            />
+                        </Box>
+
+                        <Box p={3} display="flex" flexDirection="column" rowGap={3}>
+                            {selected.map(([type, actor]) => (
+                                <Button
+                                    key={type}
+                                    label={`${type} (${actor.length})`}
+                                    onClick={() => selectActorsByType(type)}
+                                />
+                            ))}
+                        </Box>
+                    </Tab>
+
+                    <Tab label="Spawn">
+                        <Box p={3} display="flex" flexDirection="column" rowGap={3}>
+                            {allActorTypes.map((option) => (
+                                <Button
+                                    key={option}
+                                    label={
+                                        selectedBuilding === option
+                                            ? `✓ ${option}`
+                                            : option
+                                    }
+                                    onClick={() => {
+                                        humanPlayer.selectBuilding(option)
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    </Tab>
+
+                    <Tab label="Config">
+                        <ConfigForm />
+                    </Tab>
+                </Tabs>
             </Right>
-        </ThemeProvider>
+        </>
     )
 }
 
-const darkTheme = createTheme({
-    palette: { mode: 'dark' },
-})
-
-const Bottom = styled.div({
-    position: 'absolute',
-    zIndex: 10,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: '10px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
-    backdropFilter: 'blur(15px)',
-    boxShadow: '0 0 40px -10px rgba(0, 0, 0, 0.3)',
-})
-
-const Right = styled.div({
+const Right = styled(Box)({
     position: 'absolute',
     zIndex: 10,
     top: 0,
@@ -224,29 +214,9 @@ const Right = styled.div({
     bottom: 0,
     overflow: 'auto',
     backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: '20px',
     backdropFilter: 'blur(15px)',
-    maxWidth: '250px',
+    maxWidth: 280,
     width: '90%',
-    transform: 'translateX(100%) translateX(-20px)',
-    transition: 'transform 1s ease 0.8s',
-    boxShadow: '0 0 40px -10px rgba(0, 0, 0, 0.3)',
-    ':hover': {
-        transform: 'translateX(0%)',
-        transition: 'transform 0.35s ease',
-    },
-    ':after': {
-        content: '""',
-        position: 'absolute',
-        left: '8px',
-        top: 0,
-        bottom: 0,
-        height: '15px',
-        width: '4px',
-        border: '1px solid rgba(255, 255, 255, 0.596)',
-        borderWidth: '0 1px 0 1px',
-        margin: 'auto',
-    },
 })
 
 export default App
