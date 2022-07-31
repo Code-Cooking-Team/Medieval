@@ -1,5 +1,6 @@
 import { ConfigType } from '+config/lib/definitions'
 import { color0xToHex, colorHexTo0x } from '+helpers'
+import { Switch } from '+ui/components/form/Switch'
 
 import { FC } from 'react'
 
@@ -26,7 +27,7 @@ export const ConfigItem = <T,>({ value, definition, onChange }: ConfigItemProps<
 
 const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     [ConfigType.BooleanCheckbox]: ({ value, onChange }) => {
-        return <Checkbox checked={value} onChange={onChange} />
+        return <Switch checked={value} onChange={onChange} />
     },
     [ConfigType.StringInput]: ({ value, onChange }) => {
         return <Input type="text" value={value} onChange={onChange} />
