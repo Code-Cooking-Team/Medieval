@@ -14,20 +14,21 @@ import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
 import { World } from '+game/world/World'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
-import { ConfigForm } from '+ui/components/config/ConfigForm'
 import { Tab } from '+ui/components/tabs/Tab'
 import { Tabs } from '+ui/components/tabs/Tabs'
 import { useLocalStorage } from '+ui/hooks/useLocalStorage'
+import { ConfigForm } from '+ui/modules/config/ConfigForm'
+import { SelectedList } from '+ui/modules/selected/SelectedList'
+import { SpawnList } from '+ui/modules/spawn/SpawnList'
 
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
-const gameRoot = document.getElementById('game-root') as HTMLElement
+const gameRootEl = document.getElementById('game-root') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
-    const [selectedActors, setSelectedActors] = useState<Actor[]>([])
     const [started, setStarted] = useState(false)
 
     const [forceReloadCount, setForceReloadCount] = useState(0)
@@ -64,7 +65,7 @@ function App() {
     }, [toLoadJSON, forceReloadCount])
 
     useEffect(() => {
-        const renderer = new Renderer(game, humanPlayer, gameRoot)
+        const renderer = new Renderer(game, humanPlayer, gameRootEl)
         const interactions = new InteractionsManager(game, renderer, humanPlayer)
 
         renderer.init()
@@ -75,12 +76,6 @@ function App() {
 
         game.emitter.on('started', started)
         game.emitter.on('stopped', stopped)
-
-        const selectActors = (actor: Actor[]) => setSelectedActors(actor)
-        const unselectActors = () => setSelectedActors([])
-
-        humanPlayer.emitter.on('selectActors', selectActors)
-        humanPlayer.emitter.on('unselectActors', unselectActors)
 
         const selectBuilding = (building: ActorType) => setSelectedBuilding(building)
         const unselectBuilding = () => setSelectedBuilding(undefined)
@@ -102,22 +97,10 @@ function App() {
             game.emitter.off('started', started)
             game.emitter.off('stopped', stopped)
 
-            humanPlayer.emitter.off('selectActors', selectActors)
-            humanPlayer.emitter.off('unselectActors', unselectActors)
-
             humanPlayer.emitter.off('selectBuilding', selectBuilding)
             humanPlayer.emitter.off('unselectBuilding', unselectBuilding)
         }
     }, [game, humanPlayer])
-
-    const selected = Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [
-        ActorType,
-        Actor[],
-    ][]
-
-    const selectActorsByType = (type: ActorType) => {
-        humanPlayer.selectActors(selectedActors.filter((actor) => actor.type === type))
-    }
 
     return (
         <>
@@ -169,32 +152,12 @@ function App() {
                         </Box>
 
                         <Box p={3} display="flex" flexDirection="column" rowGap={3}>
-                            {selected.map(([type, actor]) => (
-                                <Button
-                                    key={type}
-                                    label={`${type} (${actor.length})`}
-                                    onClick={() => selectActorsByType(type)}
-                                />
-                            ))}
+                            <SelectedList humanPlayer={humanPlayer} />
                         </Box>
                     </Tab>
 
                     <Tab label="Spawn">
-                        <Box p={3} display="flex" flexDirection="column" rowGap={3}>
-                            {allActorTypes.map((option) => (
-                                <Button
-                                    key={option}
-                                    label={
-                                        selectedBuilding === option
-                                            ? `✓ ${option}`
-                                            : option
-                                    }
-                                    onClick={() => {
-                                        humanPlayer.selectBuilding(option)
-                                    }}
-                                />
-                            ))}
-                        </Box>
+                        <SpawnList humanPlayer={humanPlayer} />
                     </Tab>
 
                     <Tab label="Config">

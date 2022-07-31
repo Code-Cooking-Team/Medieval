@@ -9,13 +9,10 @@ import {
     DirectionalLight,
     EquirectangularReflectionMapping,
     Fog,
-    HalfFloatType,
     Object3D,
     Scene,
     TextureLoader,
-    UnsignedByteType,
 } from 'three'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 
 import { BasicRenderer } from './lib/BasicRenderer'
 // royal_esplanade_1k.hdr
@@ -26,12 +23,9 @@ export class EnvironmentRenderer extends BasicRenderer {
     private sun = new DirectionalLight(0xfff2c7, 3.0)
     private sunTarget = new Object3D()
     private ambient = new AmbientLight(0xdae6e8, 8.0)
-    private camera: Camera
 
-    constructor(public game: Game, private scene: Scene, camera: Camera) {
+    constructor(public game: Game, private scene: Scene, private camera: Camera) {
         super()
-
-        this.camera = camera
 
         if (config.renderer.fog) {
             const fog = new Fog(new Color(0xa2d3e8), 0, 150)

@@ -52,7 +52,11 @@ export class Renderer {
     private basicRendererList: BasicRenderer[] = []
     private actorRendererList: ActorRenderer<Actor>[] = []
 
-    constructor(public game: Game, public player: HumanPlayer, public el: HTMLElement) {
+    constructor(
+        public game: Game,
+        public player: HumanPlayer,
+        public rootEl: HTMLElement,
+    ) {
         // Better visual but don't work with composer
         // this.webGLRenderer.outputEncoding = sRGBEncoding
         // this.webGLRenderer.toneMapping = NoToneMapping
@@ -80,10 +84,10 @@ export class Renderer {
     public init() {
         if (config.postProcessing.postprocessingEnable) this.addComposerPasses()
 
-        this.el.append(this.webGLRenderer.domElement)
+        this.rootEl.append(this.webGLRenderer.domElement)
 
         stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-        this.el.append(stats.dom)
+        this.rootEl.append(stats.dom)
 
         this.loadRenderers()
         this.rtsCamera.init()
@@ -122,8 +126,8 @@ export class Renderer {
         // TODO fix "WARNING: Too many active WebGL contexts three"
         this.webGLRenderer.dispose() // TODO needed?
 
-        this.el.removeChild(this.webGLRenderer.domElement)
-        this.el.removeChild(stats.dom)
+        this.rootEl.removeChild(this.webGLRenderer.domElement)
+        this.rootEl.removeChild(stats.dom)
 
         window.removeEventListener('resize', this.resize)
 

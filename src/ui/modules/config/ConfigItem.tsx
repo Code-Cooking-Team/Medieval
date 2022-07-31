@@ -3,11 +3,11 @@ import { color0xToHex, colorHexTo0x } from '+helpers'
 
 import { FC } from 'react'
 
-import { Box } from '../base/Box'
-import { Checkbox } from '../form/Checkbox'
-import { Input } from '../form/Input'
-import { Select } from '../form/Select'
-import { Slider } from '../form/Slider'
+import { Box } from '../../components/base/Box'
+import { Checkbox } from '../../components/form/Checkbox'
+import { Input } from '../../components/form/Input'
+import { Select } from '../../components/form/Select'
+import { Slider } from '../../components/form/Slider'
 
 interface ConfigItemProps<T> {
     value: T

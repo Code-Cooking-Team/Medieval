@@ -6,8 +6,8 @@ import { useTimeoutState } from '+ui/hooks/useTimeoutState'
 import { entries, toPairs } from 'lodash'
 import { useState } from 'react'
 
-import { Box } from '../base/Box'
-import { Button } from '../base/Button'
+import { Box } from '../../components/base/Box'
+import { Button } from '../../components/base/Button'
 import { ConfigItem } from './ConfigItem'
 
 export const ConfigForm = () => {

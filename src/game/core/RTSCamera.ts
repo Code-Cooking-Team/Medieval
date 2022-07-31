@@ -24,9 +24,9 @@ export class RTSCamera implements Renderable {
 
     public init() {
         if (config.core.orbitalControls) this.orbitalControls()
-        window.addEventListener('keydown', this.handleKeyDown)
-        window.addEventListener('keyup', this.handleKeyUp)
-        window.addEventListener('wheel', this.handleWheel)
+        window.document.addEventListener('keydown', this.handleKeyDown)
+        window.document.addEventListener('keyup', this.handleKeyUp)
+        this.domElement.addEventListener('wheel', this.handleWheel)
     }
 
     public render({ deltaTime }: ClockInfo) {

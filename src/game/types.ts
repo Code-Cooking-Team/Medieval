@@ -14,6 +14,12 @@ export enum ActorType {
     Boar = 'Boar',
 }
 
+export const actorTypesByCategory = {
+    Unit: [ActorType.Human, ActorType.Boar],
+    Building: [ActorType.House, ActorType.WoodCamp, ActorType.Barracks],
+    Other: [ActorType.Tree],
+}
+
 export const allActorTypes = Object.values(ActorType).filter(
     (type) => type !== ActorType.Empty,
 )
