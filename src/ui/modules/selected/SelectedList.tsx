@@ -1,5 +1,4 @@
 import { isHumanActor } from '+game/actors/helpers'
-import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType } from '+game/types'
@@ -13,6 +12,8 @@ interface SelectedListProps {
     humanPlayer: HumanPlayer
 }
 
+const noProfession = 'No profession'
+
 export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
     const [selectedActors, setSelectedActors] = useState<Actor[]>([])
 
@@ -22,10 +23,6 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
             Actor[],
         ][]
     }, [selectedActors])
-
-    const selectActorsByType = (type: ActorType) => {
-        humanPlayer.selectActors(selectedActors.filter((actor) => actor.type === type))
-    }
 
     useEffect(() => {
         const selectActors = (actor: Actor[]) => setSelectedActors(actor)
@@ -40,9 +37,63 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         }
     }, [humanPlayer])
 
-    const noProfession = 'No profession'
+    const singeActor = selectedActors.length === 1 ? selectedActors[0] : undefined
 
-    const countProfessions = (humanActors: Actor[]) => {
+    return (
+        <>
+            {singeActor ? (
+                <Box>
+                    <h3>{singeActor.type}</h3>
+                    <p>
+                        {isHumanActor(singeActor) && (
+                            <b>
+                                {singeActor.profession?.type || noProfession}
+                                <br />
+                            </b>
+                        )}
+                        {singeActor.hp}/{singeActor.maxHp} HP
+                        <br />
+                    </p>
+                </Box>
+            ) : (
+                selectedTypes.map(([type, actors]) => (
+                    <Box key={type}>
+                        <Button
+                            label={`${type} (${actors.length})`}
+                            onClick={() => selectActorsByType(type)}
+                        />
+
+                        <Box p={2}>
+                            {countProfessions(actors).map(([professionType, count]) => (
+                                <Box
+                                    key={professionType}
+                                    onClick={() =>
+                                        selectActorsByProfession(actors, professionType)
+                                    }
+                                >
+                                    {`${professionType} (${count})`}
+                                </Box>
+                            ))}
+                        </Box>
+                    </Box>
+                ))
+            )}
+        </>
+    )
+
+    function selectActorsByProfession(actors: Actor[], professionType: string): void {
+        return humanPlayer.selectActors(
+            actors
+                .filter(isHumanActor)
+                .filter((actor) =>
+                    professionType === noProfession
+                        ? !actor.profession
+                        : actor.profession?.type === professionType,
+                ),
+        )
+    }
+
+    function countProfessions(humanActors: Actor[]) {
         const count = humanActors.filter(isHumanActor).reduce((acc, humanActor) => {
             const prof = humanActor.profession?.type || noProfession
             acc[prof] = (acc[prof] || 0) + 1
@@ -52,38 +103,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         return Object.entries(count)
     }
 
-    return (
-        <>
-            {selectedTypes.map(([type, actors]) => (
-                <Box key={type}>
-                    <Button
-                        label={`${type} (${actors.length})`}
-                        onClick={() => selectActorsByType(type)}
-                    />
-
-                    <Box p={2}>
-                        {countProfessions(actors).map(([professionType, count]) => (
-                            <Box
-                                key={professionType}
-                                onClick={() =>
-                                    humanPlayer.selectActors(
-                                        actors
-                                            .filter(isHumanActor)
-                                            .filter((actor) =>
-                                                professionType === noProfession
-                                                    ? !actor.profession
-                                                    : actor.profession?.type ===
-                                                      professionType,
-                                            ),
-                                    )
-                                }
-                            >
-                                {`${professionType} (${count})`}
-                            </Box>
-                        ))}
-                    </Box>
-                </Box>
-            ))}
-        </>
-    )
+    function selectActorsByType(type: ActorType) {
+        humanPlayer.selectActors(selectedActors.filter((actor) => actor.type === type))
+    }
 }
