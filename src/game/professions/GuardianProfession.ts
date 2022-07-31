@@ -12,6 +12,11 @@ export class GuardianProfession extends Profession {
     protected material = new MeshStandardMaterial({ color: config.guardian.color })
     protected geometry = new SphereGeometry(0.5, 5, 5)
 
+    public async tick() {
+        super.tick()
+        this.actor.move()
+    }
+
     public getAttackDamage(): number {
         return config.guardian.attackDamage
     }
