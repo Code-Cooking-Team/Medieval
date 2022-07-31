@@ -3,9 +3,11 @@ import { color0xToHex, colorHexTo0x } from '+helpers'
 
 import { FC } from 'react'
 
+import { Box } from '../base/Box'
 import { Checkbox } from '../form/Checkbox'
 import { Input } from '../form/Input'
 import { Select } from '../form/Select'
+import { Slider } from '../form/Slider'
 
 interface ConfigItemProps<T> {
     value: T
@@ -52,14 +54,16 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     },
     [ConfigType.MinMax]: ({ value, definition, onChange }) => {
         return (
-            // TODO use Slider
-            <Input
-                type="number"
-                value={value}
-                onChange={(val) => {
-                    onChange(+val)
-                }}
-            />
+            <Box display="flex" alignItems="center" columnGap={2}>
+                <Slider
+                    value={value}
+                    min={definition.min}
+                    max={definition.max}
+                    step={definition.step}
+                    onChange={onChange}
+                />
+                <b>{value}</b>
+            </Box>
         )
     },
     [ConfigType.Color]: ({ value, onChange }) => {

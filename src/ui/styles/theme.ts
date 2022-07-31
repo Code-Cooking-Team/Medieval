@@ -1,10 +1,13 @@
 export const colors = {
     primary: '#C8A13C',
 
-    text: '#FFF',
+    text: '#EEE',
     textMuted: '#CCC',
 
     border: '#444',
+
+    white: '#FFF',
+    lightGray: '#CCC',
 
     black: '#0c0c0c',
     black70: 'rgba(0,0,0,.7)',

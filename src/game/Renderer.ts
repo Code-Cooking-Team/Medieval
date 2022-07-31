@@ -9,7 +9,6 @@ import {
     Vector2,
     WebGLRenderer,
 } from 'three'
-// Post processing
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -18,7 +17,6 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
 
 import { actorRenderers, basicRenderers } from './actors'
-import { HumanRenderer } from './actors/units/human/HumanRenderer'
 import { Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
 import { Game } from './Game'
@@ -127,7 +125,9 @@ export class Renderer {
         this.el.removeChild(this.webGLRenderer.domElement)
         this.el.removeChild(stats.dom)
 
-        cancelAnimationFrame(this.loop)
+        window.removeEventListener('resize', this.resize)
+
+        cancelAnimationFrame(this.raf)
     }
 
     public getGroundChildren() {
@@ -262,13 +262,13 @@ export class Renderer {
         }
     }
 
-    private loop: any
+    private raf: any
 
     private animate = () => {
         stats.begin()
         this.render()
         stats.end()
-        this.loop = requestAnimationFrame(this.animate)
+        this.raf = requestAnimationFrame(this.animate)
     }
 
     private render() {
