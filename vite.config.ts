@@ -9,7 +9,7 @@ export default defineConfig({
     plugins: [
         tsconfigPaths(),
         react({
-            fastRefresh: false,
+            fastRefresh: true,
         }),
     ],
     server: {
