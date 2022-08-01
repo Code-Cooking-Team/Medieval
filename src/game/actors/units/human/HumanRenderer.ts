@@ -25,10 +25,10 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
     private animationList?: AnimationClip[]
 
     public createActorModel(actor: HumanActor, tile: Tile) {
+        const actorModel = loadAnimationGLTF(humanModelUrl)
         const { group, interactionShape } = super.createActorModel(actor, tile)
         // const actorModel = new Mesh(this.geometry, this.material)
 
-        const actorModel = loadAnimationGLTF(humanModelUrl)
         actorModel.then((gltf) => {
             this.animationList = gltf.animations
             actor.animationMixer = new AnimationMixer(gltf.scene)
@@ -39,6 +39,8 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
 
             if (gltf.scene) {
                 gltf.scene.name = ACTOR_MODEL_OBJECT3D_NAME
+                console.log(gltf.scene)
+                console.log(gltf.scene.children[0]!.clone())
                 group.add(gltf.scene)
             }
         })
