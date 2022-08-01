@@ -20,6 +20,11 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)
         humanPlayer.emitter.on('unselectBuilding', unselectBuilding)
+
+        return () => {
+            humanPlayer.emitter.off('selectBuilding', selectBuilding)
+            humanPlayer.emitter.off('unselectBuilding', unselectBuilding)
+        }
     }, [])
 
     return (
