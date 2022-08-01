@@ -18,6 +18,7 @@ export class HumanActor extends WalkableActor {
     public target?: Actor
     public home?: HouseActor
     public animationMixer?: AnimationMixer
+    public actorState: 'idle' | 'walking' = 'idle'
 
     public tick(): void {
         super.tick()

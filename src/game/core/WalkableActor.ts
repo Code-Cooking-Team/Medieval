@@ -1,4 +1,5 @@
 import { Path, Position } from '+game/types'
+import { distanceBetweenPoints } from '+helpers'
 
 import { Actor, ActorJSON } from './Actor'
 
@@ -16,6 +17,10 @@ export abstract class WalkableActor extends Actor {
 
     public cancelPath() {
         this.path = []
+    }
+
+    public clipPath() {
+        this.path.pop()
     }
 
     public hasPath() {

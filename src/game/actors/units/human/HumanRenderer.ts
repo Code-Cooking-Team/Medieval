@@ -33,15 +33,12 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
             this.animationList = gltf.animations
             actor.animationMixer = new AnimationMixer(gltf.scene)
             console.log(gltf.scene)
-            if (this.animationList && this.animationList[1]) {
-                const action = actor.animationMixer.clipAction(this.animationList[1])
-                action.play()
+            if (this.animationList) {
+                actor.animationMixer.clipAction(this.animationList[0]!).play()
             }
 
             if (gltf.scene) {
                 gltf.scene.name = ACTOR_MODEL_OBJECT3D_NAME
-                gltf.scene.castShadow = true
-                gltf.scene.receiveShadow = true
                 group.add(gltf.scene)
             }
         })
@@ -72,12 +69,15 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         super.render(clockInfo)
         this.actorGroupMap.forEach((group, actor) => {
             if (actor.animationMixer && this.animationList) {
-                if (actor.hasPath()) {
-                    actor.animationMixer.clipAction(this.animationList[0]!).stop()
+                if (actor.hasPath() && actor.actorState != 'walking') {
+                    actor.animationMixer.stopAllAction()
                     actor.animationMixer.clipAction(this.animationList[1]!).play()
-                } else {
+                    actor.actorState = 'walking'
+                }
+                if (!actor.hasPath() && actor.actorState != 'idle') {
+                    actor.animationMixer.stopAllAction()
                     actor.animationMixer.clipAction(this.animationList[0]!).play()
-                    actor.animationMixer.clipAction(this.animationList[1]!).stop()
+                    actor.actorState = 'idle'
                 }
                 actor.animationMixer.update(clockInfo.deltaTime)
             }
