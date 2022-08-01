@@ -1,7 +1,7 @@
 import { DiagonalsPlaneGeometry } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 
-import { Group } from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { AnimationAction, AnimationMixer, Group } from 'three'
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const loader = new GLTFLoader()
 
@@ -10,7 +10,45 @@ export const loadGLTF = (url: string) =>
         loader.load(
             url,
             (gltf) => {
+                gltf.scene.children?.forEach((child) => {
+                    child.castShadow = true
+                    // child.receiveShadow = true
+                    child.children?.forEach((child) => {
+                        child.castShadow = true
+                        // child.receiveShadow = true
+                        child.children?.forEach((child) => {
+                            child.castShadow = true
+                            // child.receiveShadow = true
+                        })
+                    })
+                })
                 resolve(gltf.scene)
+            },
+            () => {},
+            (error) => {
+                reject(error)
+            },
+        )
+    })
+
+export const loadAnimationGLTF = (url: string) =>
+    new Promise<GLTF>((resolve, reject) => {
+        loader.load(
+            url,
+            (gltf) => {
+                gltf.scene.children?.forEach((child) => {
+                    child.castShadow = true
+                    child.receiveShadow = true
+                    child.children?.forEach((child) => {
+                        child.castShadow = true
+                        child.receiveShadow = true
+                        child.children?.forEach((child) => {
+                            child.castShadow = true
+                            child.receiveShadow = true
+                        })
+                    })
+                })
+                resolve(gltf)
             },
             () => {},
             (error) => {

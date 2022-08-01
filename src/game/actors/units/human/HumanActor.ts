@@ -7,6 +7,8 @@ import { ProfessionType } from '+game/professions/types'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
+import { AnimationMixer } from 'three'
+
 import { HouseActor } from '../../buildings/house/HouseActor'
 
 export class HumanActor extends WalkableActor {
@@ -15,6 +17,7 @@ export class HumanActor extends WalkableActor {
     public profession?: Profession
     public target?: Actor
     public home?: HouseActor
+    public animationMixer?: AnimationMixer
 
     public tick(): void {
         super.tick()

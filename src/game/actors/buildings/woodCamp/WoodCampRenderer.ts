@@ -11,7 +11,7 @@ import { LOD, PointLight } from 'three'
 import woodCampUrl from './models/woodCamp.gltf'
 import { WoodCampActor } from './WoodCampActor'
 
-const houseModel = loadGLTF(woodCampUrl)
+const woodCampModel = loadGLTF(woodCampUrl)
 
 export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp
@@ -20,7 +20,7 @@ export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const lod = new LOD()
 
-        houseModel.then((model) => {
+        woodCampModel.then((model) => {
             model.children.forEach((child, index) => {
                 child.castShadow = true
                 child.receiveShadow = true
