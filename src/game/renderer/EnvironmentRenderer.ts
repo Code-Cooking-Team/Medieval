@@ -62,7 +62,7 @@ export class EnvironmentRenderer extends BasicRenderer {
             const background = (texture.clone().mapping =
                 EquirectangularReflectionMapping)
             this.scene.environment = texture
-            // this.scene.background = texture
+            this.scene.background = texture
         })
 
         this.scene.add(this.sun)
@@ -78,8 +78,8 @@ export class EnvironmentRenderer extends BasicRenderer {
             config.renderer.dayAndNightTimeScale
 
         this.sun.position.x = this.camera.position.x + Math.sin(time * 1) * 50
-        this.sun.position.y = 100 + Math.cos(time * 1) * 50
-        this.sun.position.z = this.camera.position.z + Math.cos(time * 1) * 50
+        this.sun.position.y = 20 + Math.cos(time * 1) * 50
+        this.sun.position.z = this.camera.position.z + Math.cos(time * 1) * 50 * -1
 
         this.sunTarget.position.copy(this.camera.position)
         this.sunTarget.position.y = 0

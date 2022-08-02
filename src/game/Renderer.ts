@@ -107,7 +107,7 @@ export class Renderer {
         anyWindow.logStats = () => {
             console.log('Device pixel ratio', window.devicePixelRatio)
             console.log('Scene polycount:', this.webGLRenderer.info.render.triangles)
-            console.log('Active Drawcalls:', this.webGLRenderer.info.render.calls)
+            console.log('Active drawcalls:', this.webGLRenderer.info.render.calls)
             console.log('Textures in Memory', this.webGLRenderer.info.memory.textures)
             console.log('Geometries in Memory', this.webGLRenderer.info.memory.geometries)
         }

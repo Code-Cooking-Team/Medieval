@@ -3,10 +3,16 @@ import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Profession } from '+game/professions/Profession'
+import { ProfessionType } from '+game/professions/types'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { ActorType, ClockInfo } from '+game/types'
 import { Tile } from '+game/world/Tile'
-import { loadAnimationGLTF, loadGLTF } from '+helpers'
+import {
+    changeColorLightnessSaturation,
+    generateSimilarColor,
+    loadAnimationGLTF,
+    loadGLTF,
+} from '+helpers'
 
 import {
     AnimationClip,
@@ -14,6 +20,7 @@ import {
     Mesh,
     MeshStandardMaterial,
     NotEqualDepth,
+    SkinnedMesh,
     SphereGeometry,
 } from 'three'
 
@@ -32,15 +39,26 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         actorModel.then((gltf) => {
             this.animationList = gltf.animations
             actor.animationMixer = new AnimationMixer(gltf.scene)
-            console.log(gltf.scene)
             if (this.animationList) {
                 actor.animationMixer.clipAction(this.animationList[0]!).play()
             }
 
             if (gltf.scene) {
                 gltf.scene.name = ACTOR_MODEL_OBJECT3D_NAME
-                console.log(gltf.scene)
-                console.log(gltf.scene.children[0]!.clone())
+                const shirtModel = gltf.scene.getObjectByName('Cube001_1') as SkinnedMesh
+                if (shirtModel && shirtModel.material) {
+                    shirtModel.material = new MeshStandardMaterial({
+                        color: changeColorLightnessSaturation(
+                            generateSimilarColor(0x273021, 20),
+                            false,
+                            0.25,
+                        ),
+                        roughness: 1,
+                        metalness: 0,
+                    })
+                }
+
+                gltf.scene.position.y = 0.1
                 group.add(gltf.scene)
             }
         })
@@ -51,7 +69,6 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         // actorModel.receiveShadow = true
         // actorModel.scale.y = 2
         // actorModel.scale.z = 0.5
-        // actorModel.position.y = 0.5
 
         return { group, interactionShape }
     }
@@ -60,11 +77,33 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         const group = this.actorGroupMap.get(actor)!
         if (!actor.profession) return
 
-        group.remove(group.getObjectByName(ACTOR_MODEL_OBJECT3D_NAME) as Mesh)
+        const shirtModel = group.getObjectByName('Cube001_1') as SkinnedMesh
+        if (shirtModel && shirtModel.material) {
+            if (actor.profession.type === ProfessionType.Woodcutter) {
+                shirtModel.material = new MeshStandardMaterial({
+                    color: changeColorLightnessSaturation(
+                        generateSimilarColor(config.woodcutter.color, 2),
+                        false,
+                        0.25,
+                    ),
+                    roughness: 1,
+                    metalness: 0,
+                })
+            }
+            if (actor.profession.type === ProfessionType.Guardian) {
+                shirtModel.material = new MeshStandardMaterial({
+                    color: generateSimilarColor(0x999999, 10, true),
+                    roughness: 0.1,
+                    metalness: 0.9,
+                })
+            }
+        }
 
-        const actorModel = actor.profession.getModel()
+        // group.remove(group.getObjectByName(ACTOR_MODEL_OBJECT3D_NAME) as Mesh)
 
-        group.add(actorModel)
+        // const actorModel = actor.profession.getModel()
+
+        // group.add(actorModel)
     }
 
     public render(clockInfo: ClockInfo): void {
@@ -94,7 +133,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
             if (!actor.profession) return
             if (this.actorPreviousProfession.get(actor) === actor.profession) return
             this.actorPreviousProfession.set(actor, actor.profession)
-            // this.swapToProfessionActorModel(actor)
+            this.swapToProfessionActorModel(actor)
         })
     }
 }

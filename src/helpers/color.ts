@@ -1,4 +1,4 @@
-import { Color } from 'three'
+import { Color, HSL } from 'three'
 
 export const color0xToHex = (color: number) => {
     return `#${color.toString(16)}`
@@ -41,6 +41,28 @@ export const generateSimilarColor = (
     threeColor.r = nr / 255
     threeColor.g = ng / 255
     threeColor.b = nb / 255
+
+    return threeColor.getHex()
+}
+
+export const changeColorLightnessSaturation = (
+    color: number,
+    lightness: number | false,
+    saturation: number | false,
+) => {
+    const threeColor = new Color(color)
+
+    const r = threeColor.r * 255
+    const g = threeColor.g * 255
+    const b = threeColor.b * 255
+
+    let hsl: HSL = { h: 0, s: 0, l: 0 }
+    threeColor.getHSL(hsl)
+
+    if (lightness) hsl.l = lightness
+    if (saturation) hsl.s = saturation
+
+    threeColor.setHSL(hsl.h, hsl.s, hsl.l)
 
     return threeColor.getHex()
 }

@@ -37,6 +37,11 @@ label,
 select,
 input[type='checkbox'],
 input[type='radio'] {
+    cursor: url('./Cursor.svg') 3 0, pointer !important;
+    /* cursor: url('./CursorPointer.svg') 3 0, pointer !important; */
+}
+
+body:active {
     cursor: url('./CursorPointer.svg') 3 0, pointer !important;
 }
 

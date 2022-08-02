@@ -3,7 +3,7 @@ import { colorInput } from './lib/definitions'
 
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
-        tickTime: 200,
+        tickTime: 250,
         devTilesSize: 60,
         orbitalControls: false,
         cameraFov: 60,
@@ -86,7 +86,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     woodcutter: {
         hp: 100,
         choppingDamage: 20,
-        gatheringSpeed: 5,
+        gatheringSpeed: 30,
         capacity: 50,
         attackDamage: 15,
         color: colorInput(0x134714),

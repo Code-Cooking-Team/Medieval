@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "drawcalls",
     "easystarjs",
     "Emittery",
     "flexbox",
@@ -8,6 +9,7 @@
     "linewidth",
     "metalness",
     "Pathfinding",
+    "polycount",
     "Raycast",
     "Raycaster",
     "Regen",
