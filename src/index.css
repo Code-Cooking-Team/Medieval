@@ -41,7 +41,9 @@ input[type='radio'] {
     /* cursor: url('./CursorPointer.svg') 3 0, pointer !important; */
 }
 
-body:active {
+body:active,
+button:active,
+a:active {
     cursor: url('./CursorPointer.svg') 3 0, pointer !important;
 }
 

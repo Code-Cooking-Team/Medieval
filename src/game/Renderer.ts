@@ -3,9 +3,11 @@ import { config } from '+config'
 import Stats from 'stats.js'
 import {
     Clock,
+    NoToneMapping,
     PCFSoftShadowMap,
     ReinhardToneMapping,
     Scene,
+    sRGBEncoding,
     Vector2,
     WebGLRenderer,
 } from 'three'
@@ -15,6 +17,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js'
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
@@ -37,9 +40,10 @@ export class Renderer {
         logarithmicDepthBuffer: true,
     })
 
-    public composer = new EffectComposer(this.webGLRenderer)
-    public outlinePass?: OutlinePass
-    public FXAAPass?: any
+    private composer = new EffectComposer(this.webGLRenderer)
+    private outlinePass?: OutlinePass
+    private FXAAPass?: any
+    private GammaCorrectionPass?: any
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
@@ -58,9 +62,9 @@ export class Renderer {
         public rootEl: HTMLElement,
     ) {
         // Better visual but don't work with composer
-        // this.webGLRenderer.outputEncoding = sRGBEncoding
-        // this.webGLRenderer.toneMapping = NoToneMapping
-        // this.webGLRenderer.toneMappingExposure = 1
+        this.webGLRenderer.outputEncoding = sRGBEncoding
+        this.webGLRenderer.toneMapping = NoToneMapping
+        this.webGLRenderer.toneMappingExposure = 10
 
         this.webGLRenderer.toneMapping = ReinhardToneMapping
         this.webGLRenderer.toneMappingExposure = Math.pow(
@@ -205,6 +209,12 @@ export class Renderer {
         if (config.postProcessing.FXAAEnable) {
             this.FXAAPass = new ShaderPass(FXAAShader)
             this.composer.addPass(this.FXAAPass)
+        }
+
+        // FXAA
+        if (config.postProcessing.GammaCorrectionShader) {
+            this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
+            this.composer.addPass(this.GammaCorrectionPass)
         }
     }
 

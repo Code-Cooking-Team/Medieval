@@ -7,11 +7,12 @@ export abstract class WalkableActor extends Actor {
     public selectImportance = 4
     public path: Path = []
 
-    public async setPathTo(position: Position) {
+    public async setPathTo(position: Position, clip = false) {
         const pathSearch = await this.game.pf.findPath(this.position, position)
         if (pathSearch) {
             this.path = pathSearch
         }
+        if (clip) this.clipPath()
         return pathSearch
     }
 
@@ -20,7 +21,16 @@ export abstract class WalkableActor extends Actor {
     }
 
     public clipPath() {
-        this.path.pop()
+        return this.path.pop()
+    }
+
+    public getDistanceToTarget() {
+        const target = this.path[this.path.length - 1]
+        console.log('getDistanceToTarget', this.path)
+        if (target) {
+            return distanceBetweenPoints(this.position, [target.x, target.y])
+        }
+        return 0
     }
 
     public hasPath() {

@@ -58,7 +58,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                     })
                 }
 
-                gltf.scene.position.y = 0.1
+                gltf.scene.position.y = 0.025
                 group.add(gltf.scene)
             }
         })
@@ -82,7 +82,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
             if (actor.profession.type === ProfessionType.Woodcutter) {
                 shirtModel.material = new MeshStandardMaterial({
                     color: changeColorLightnessSaturation(
-                        generateSimilarColor(config.woodcutter.color, 2),
+                        generateSimilarColor(config.woodcutter.color, 6),
                         false,
                         0.25,
                     ),

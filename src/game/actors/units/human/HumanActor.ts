@@ -62,11 +62,11 @@ export class HumanActor extends WalkableActor {
         return damage
     }
 
-    public setPathTo(position: Position, cancelTarget = true) {
+    public setPathTo(position: Position, cancelTarget = true, clip = false) {
         if (cancelTarget) {
             this.target = undefined
         }
-        return super.setPathTo(position)
+        return super.setPathTo(position, clip)
     }
 
     public getSelectedImportance(): number {
@@ -133,7 +133,7 @@ export class HumanActor extends WalkableActor {
             }
         } else {
             if (this.hasPath()) return
-            this.setPathTo(this.target.position)
+            this.setPathTo(this.target.position, false, true)
         }
     }
 }

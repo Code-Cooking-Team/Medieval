@@ -10,17 +10,9 @@ export const loadGLTF = (url: string) =>
         loader.load(
             url,
             (gltf) => {
-                gltf.scene.children?.forEach((child) => {
+                gltf.scene.traverse((child) => {
                     child.castShadow = true
-                    // child.receiveShadow = true
-                    child.children?.forEach((child) => {
-                        child.castShadow = true
-                        // child.receiveShadow = true
-                        child.children?.forEach((child) => {
-                            child.castShadow = true
-                            // child.receiveShadow = true
-                        })
-                    })
+                    child.receiveShadow = true
                 })
                 resolve(gltf.scene)
             },
@@ -36,18 +28,11 @@ export const loadAnimationGLTF = (url: string) =>
         loader.load(
             url,
             (gltf) => {
-                gltf.scene.children?.forEach((child) => {
+                gltf.scene.traverse((child) => {
                     child.castShadow = true
                     child.receiveShadow = true
-                    child.children?.forEach((child) => {
-                        child.castShadow = true
-                        child.receiveShadow = true
-                        child.children?.forEach((child) => {
-                            child.castShadow = true
-                            child.receiveShadow = true
-                        })
-                    })
                 })
+
                 resolve(gltf)
             },
             () => {},
