@@ -144,8 +144,7 @@ export class WoodcutterProfession extends Profession {
         this.actor.cancelPath()
         this.treeId = tree.id
 
-        this.actor.setPathTo(tree.position, false, true)
-        return
+        return this.actor.setPathTo(tree.position, false, true)
     }
 
     private chopTree() {

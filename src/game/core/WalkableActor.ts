@@ -26,7 +26,6 @@ export abstract class WalkableActor extends Actor {
 
     public getDistanceToTarget() {
         const target = this.path[this.path.length - 1]
-        console.log('getDistanceToTarget', this.path)
         if (target) {
             return distanceBetweenPoints(this.position, [target.x, target.y])
         }

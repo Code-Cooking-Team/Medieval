@@ -38,8 +38,7 @@ export class RTSCamera implements Renderable {
             const zoomOutBust = this.camera.position.y / 100
             const momentumTranslate = momentum + zoomOutBust
             const cameraRotation = this.camera.rotation.x
-            console.log(key)
-            key = key.length == 1 ? key.toLowerCase() : key
+            key = key.length === 1 ? key.toLowerCase() : key
             switch (key) {
                 case 'w':
                 case 'ArrowUp':
