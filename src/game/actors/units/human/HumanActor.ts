@@ -7,6 +7,8 @@ import { ProfessionType } from '+game/professions/types'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
+import { AnimationMixer } from 'three'
+
 import { HouseActor } from '../../buildings/house/HouseActor'
 
 export class HumanActor extends WalkableActor {
@@ -15,6 +17,8 @@ export class HumanActor extends WalkableActor {
     public profession?: Profession
     public target?: Actor
     public home?: HouseActor
+    public animationMixer?: AnimationMixer
+    public actorState: 'idle' | 'walking' = 'idle'
 
     public tick(): void {
         super.tick()
@@ -58,11 +62,11 @@ export class HumanActor extends WalkableActor {
         return damage
     }
 
-    public setPathTo(position: Position, cancelTarget = true) {
+    public setPathTo(position: Position, cancelTarget = true, clip = false) {
         if (cancelTarget) {
             this.target = undefined
         }
-        return super.setPathTo(position)
+        return super.setPathTo(position, clip)
     }
 
     public getSelectedImportance(): number {
@@ -129,7 +133,7 @@ export class HumanActor extends WalkableActor {
             }
         } else {
             if (this.hasPath()) return
-            this.setPathTo(this.target.position)
+            this.setPathTo(this.target.position, false, true)
         }
     }
 }

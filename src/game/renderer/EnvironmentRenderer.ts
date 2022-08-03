@@ -20,9 +20,9 @@ import { BasicRenderer } from './lib/BasicRenderer'
 import hdrUrl from './textures/bg.jpg'
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xfff2c7, 3.0)
+    private sun = new DirectionalLight(0xfff2c7, 3.2)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0xdae6e8, 8.0)
+    private ambient = new AmbientLight(0xdae6e8, 0.1)
 
     constructor(public game: Game, private scene: Scene, private camera: Camera) {
         super()
@@ -44,6 +44,8 @@ export class EnvironmentRenderer extends BasicRenderer {
             this.sun.shadow.camera.right = 100
             this.sun.shadow.camera.top = 100
             this.sun.shadow.camera.bottom = -100
+            this.sun.shadow.bias = -0.0001
+            this.sun.shadow.normalBias = 0.27
         }
 
         this.sun.position.set(4, 10, 1)
@@ -62,7 +64,7 @@ export class EnvironmentRenderer extends BasicRenderer {
             const background = (texture.clone().mapping =
                 EquirectangularReflectionMapping)
             this.scene.environment = texture
-            // this.scene.background = texture
+            this.scene.background = texture
         })
 
         this.scene.add(this.sun)
@@ -78,8 +80,8 @@ export class EnvironmentRenderer extends BasicRenderer {
             config.renderer.dayAndNightTimeScale
 
         this.sun.position.x = this.camera.position.x + Math.sin(time * 1) * 50
-        this.sun.position.y = 100 + Math.cos(time * 1) * 50
-        this.sun.position.z = this.camera.position.z + Math.cos(time * 1) * 50
+        this.sun.position.y = 20 + Math.cos(time * 1) * 50
+        this.sun.position.z = this.camera.position.z + Math.cos(time * 1) * 50 * -1
 
         this.sunTarget.position.copy(this.camera.position)
         this.sunTarget.position.y = 0

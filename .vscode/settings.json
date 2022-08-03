@@ -1,13 +1,16 @@
 {
   "cSpell.words": [
+    "drawcalls",
     "easystarjs",
     "Emittery",
+    "Equirectangular",
     "flexbox",
     "FXAA",
     "GLTF",
     "linewidth",
     "metalness",
     "Pathfinding",
+    "polycount",
     "Raycast",
     "Raycaster",
     "Regen",

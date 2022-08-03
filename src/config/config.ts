@@ -3,7 +3,7 @@ import { colorInput } from './lib/definitions'
 
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
-        tickTime: 200,
+        tickTime: 250,
         devTilesSize: 60,
         orbitalControls: false,
         cameraFov: 60,
@@ -22,25 +22,26 @@ export const { config, resetConfig, saveConfig } = createConfig({
         fogTransparency: 3,
         dayAndNightMode: true,
         dayAndNightTimeScale: 500,
-        dayAndNightTimeStart: -500,
+        dayAndNightTimeStart: 500,
         shadow: true,
         treeWaving: true,
         light: false,
     },
 
     postProcessing: {
-        exposure: 1.25,
+        exposure: 1,
         postprocessingEnable: true,
         bloom: true,
-        bloomStrength: 0.25,
-        bloomThreshold: 0.5,
-        bloomRadius: 0.25,
+        bloomStrength: 1.25,
+        bloomThreshold: 0.4,
+        bloomRadius: 0.45,
         outlineEnable: true,
         outlineEdgeStrength: 2.0,
         outlineEdgeGlow: 0.0,
         outlineEdgeThickness: 0.2,
-        outlinePulsePeriod: 5,
+        outlinePulsePeriod: 0,
         FXAAEnable: true,
+        GammaCorrectionShader: true,
     },
 
     walkableRenderer: {
@@ -86,7 +87,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     woodcutter: {
         hp: 100,
         choppingDamage: 20,
-        gatheringSpeed: 5,
+        gatheringSpeed: 30,
         capacity: 50,
         attackDamage: 15,
         color: colorInput(0x134714),

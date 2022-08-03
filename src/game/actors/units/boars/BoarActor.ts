@@ -69,7 +69,7 @@ export class BoarActor extends WalkableActor {
                 this.target = undefined
             }
         } else {
-            this.setPathTo(this.target.position)
+            this.setPathTo(this.target.position, true)
         }
     }
 
