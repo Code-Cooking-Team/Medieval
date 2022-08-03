@@ -20,6 +20,7 @@ export class RTSCamera implements Renderable {
         this.camera.position.z = 25
 
         this.camera.rotation.x = -Math.PI / 3
+        this.camera.rotation.order = 'YXZ'
     }
 
     public init() {
@@ -36,27 +37,44 @@ export class RTSCamera implements Renderable {
             const momentum = this.getMomentum(now, start, deltaTime)
             const zoomOutBust = this.camera.position.y / 100
             const momentumTranslate = momentum + zoomOutBust
-
+            const cameraRotation = this.camera.rotation.x
+            console.log(key)
+            key = key.length == 1 ? key.toLowerCase() : key
             switch (key) {
                 case 'w':
-                    this.camera.translateY(momentumTranslate / 1.5)
-                    this.camera.translateZ(-momentumTranslate / 3)
+                case 'ArrowUp':
+                    this.camera.translateY(momentumTranslate * -cameraRotation)
+                    this.camera.translateZ(
+                        momentumTranslate * (-cameraRotation - Math.PI / 2),
+                    )
+
                     break
                 case 's':
-                    this.camera.translateY(-momentumTranslate / 1.5)
-                    this.camera.translateZ(momentumTranslate / 3)
+                case 'ArrowDown':
+                    this.camera.translateY(-momentumTranslate * -cameraRotation)
+                    this.camera.translateZ(
+                        -momentumTranslate * (-cameraRotation - Math.PI / 2),
+                    )
                     break
                 case 'd':
+                case 'ArrowRight':
                     this.camera.translateX(momentumTranslate)
                     break
                 case 'a':
+                case 'ArrowLeft':
                     this.camera.translateX(-momentumTranslate)
                     break
                 case 'q':
-                    this.rotateCamera(-momentum)
+                    this.rotateCameraY(-momentum)
                     break
                 case 'e':
-                    this.rotateCamera(momentum)
+                    this.rotateCameraY(momentum)
+                    break
+                case 'z':
+                    this.rotateCameraX(momentum)
+                    break
+                case 'x':
+                    this.rotateCameraX(-momentum)
                     break
                 default:
             }
@@ -71,24 +89,32 @@ export class RTSCamera implements Renderable {
         return (momentum * deltaTime) / 0.016
     }
 
-    private rotateCamera(momentum: number) {
+    private rotateCameraY(momentum: number) {
         const quat = new Quaternion()
         const v3 = new Vector3(0, 1, 0)
 
         quat.setFromAxisAngle(v3, momentum * 0.1)
         this.camera.applyQuaternion(quat)
-        this.camera.translateX(momentum)
+        this.camera.translateX(
+            ((momentum * this.camera.position.y) / 8) *
+                (this.camera.rotation.x + Math.PI / 2),
+        )
+    }
+    private rotateCameraX(momentum: number) {
+        this.camera.rotateX(momentum * 0.1)
+        this.camera.translateY((-momentum * this.camera.position.y) / 8)
     }
 
     private orbitalControls() {
         const controls = new OrbitControls(this.camera, this.domElement)
 
-        controls.enableZoom = true
+        controls.enableZoom = false
         controls.mouseButtons = {
             LEFT: undefined as any,
             MIDDLE: MOUSE.ROTATE,
             RIGHT: MOUSE.PAN,
         }
+        controls.center
     }
 
     private handleKeyDown = (event: KeyboardEvent) => {

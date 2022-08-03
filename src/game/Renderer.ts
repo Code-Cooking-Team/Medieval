@@ -205,16 +205,15 @@ export class Renderer {
             this.composer.addPass(bloomPass)
         }
 
+        // GammaCorrection
+        if (config.postProcessing.GammaCorrectionShader) {
+            this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
+            this.composer.addPass(this.GammaCorrectionPass)
+        }
         // FXAA
         if (config.postProcessing.FXAAEnable) {
             this.FXAAPass = new ShaderPass(FXAAShader)
             this.composer.addPass(this.FXAAPass)
-        }
-
-        // FXAA
-        if (config.postProcessing.GammaCorrectionShader) {
-            this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
-            this.composer.addPass(this.GammaCorrectionPass)
         }
     }
 

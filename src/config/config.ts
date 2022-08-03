@@ -33,7 +33,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         postprocessingEnable: true,
         bloom: true,
         bloomStrength: 1.25,
-        bloomThreshold: 0.4,
+        bloomThreshold: 0.45,
         bloomRadius: 0.45,
         outlineEnable: true,
         outlineEdgeStrength: 2.0,

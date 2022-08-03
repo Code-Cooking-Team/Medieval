@@ -52,7 +52,21 @@ function App() {
             return { game, humanPlayer }
         }
 
-        const tiles = createTilesFromGrid(map as TileCodeGrid)
+        // increse resolution map by duplicate in x
+        const resolutionMap = map
+            .map((row) => [...row.reverse(), ...row.reverse()])
+            .reverse()
+        const resolutionMap3 = map
+            .map((row) => [...row.reverse(), ...row.reverse()])
+            .reverse()
+        // and in y
+        const resolutionMap2 = [
+            ...resolutionMap3.map((row) => [...row]).reverse(),
+            ...resolutionMap3.map((row) => [...row]).reverse(),
+            ...resolutionMap.map((row) => [...row.reverse()]).reverse(),
+        ]
+
+        const tiles = createTilesFromGrid(resolutionMap2 as TileCodeGrid)
         const word = new World(tiles)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
