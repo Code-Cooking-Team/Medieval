@@ -30,8 +30,8 @@ export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
         })
 
         if (config.renderer.light) {
-            const light = new PointLight(0xfa840e, 1, 15)
-            light.position.set(0, 3, 0)
+            const light = new PointLight(0xfa840e, 2, 15)
+            light.position.set(3, 2, 3)
             group.add(light)
         }
 

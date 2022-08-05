@@ -107,7 +107,8 @@ export class EnvironmentRenderer extends BasicRenderer {
         this.scene.background = new Color().setHSL(
             10 + Math.sin(time * 1) * 0.1,
             Math.sin(time * 1),
-            Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
+            // Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
+            0.3, // for bloom to keep the eyes from burning
         )
 
         if (config.renderer.fog) {

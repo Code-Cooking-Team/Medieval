@@ -9,7 +9,7 @@ import { NaturePlayer } from '+game/player/NaturePlayer'
 import { PlayerType } from '+game/player/types'
 import '+game/professions/machines/woodcutterMachine'
 import { Renderer } from '+game/Renderer'
-import { ActorType, allActorTypes } from '+game/types'
+import { ActorType } from '+game/types'
 import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
 import { World } from '+game/world/World'
 import { Box } from '+ui/components/base/Box'
@@ -22,7 +22,6 @@ import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 
 import styled from '@emotion/styled'
-import { groupBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 
 const gameRootEl = document.getElementById('game-root') as HTMLElement
@@ -54,19 +53,19 @@ function App() {
 
         // increse resolution map by duplicate in x
         const resolutionMap = map
-            .map((row) => [...row.reverse(), ...row.reverse()])
-            .reverse()
-        const resolutionMap3 = map
-            .map((row) => [...row.reverse(), ...row.reverse()])
-            .reverse()
-        // and in y
-        const resolutionMap2 = [
-            ...resolutionMap3.map((row) => [...row]).reverse(),
-            ...resolutionMap3.map((row) => [...row]).reverse(),
-            ...resolutionMap.map((row) => [...row.reverse()]).reverse(),
-        ]
+        //     .map((row) => [...row.reverse(), ...row.reverse()])
+        //     .reverse()
+        // const resolutionMap3 = map
+        //     .map((row) => [...row.reverse(), ...row.reverse()])
+        //     .reverse()
+        // // and in y
+        // const resolutionMap2 = [
+        //     ...resolutionMap3.map((row) => [...row]).reverse(),
+        //     ...resolutionMap3.map((row) => [...row]).reverse(),
+        //     ...resolutionMap.map((row) => [...row.reverse()]).reverse(),
+        // ]
 
-        const tiles = createTilesFromGrid(resolutionMap2 as TileCodeGrid)
+        const tiles = createTilesFromGrid(map as TileCodeGrid)
         const word = new World(tiles)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
