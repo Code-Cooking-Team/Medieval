@@ -15,7 +15,9 @@ interface SelectedListProps {
 const noProfession = 'No profession'
 
 export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
-    const [selectedActors, setSelectedActors] = useState<Actor[]>([])
+    const [selectedActors, setSelectedActors] = useState<Actor[]>(
+        humanPlayer.selectedActors,
+    )
 
     const selectedTypes = useMemo(() => {
         return Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [

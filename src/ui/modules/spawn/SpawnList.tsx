@@ -12,7 +12,9 @@ interface SpawnListProps {
 const categories = Object.entries(actorTypesByCategory)
 
 export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
-    const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
+    const [selectedBuilding, setSelectedBuilding] = useState<ActorType | undefined>(
+        humanPlayer.selectedBuilding,
+    )
 
     useEffect(() => {
         const selectBuilding = (building: ActorType) => setSelectedBuilding(building)
