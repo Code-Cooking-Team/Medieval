@@ -1,3 +1,5 @@
+import { Group, LOD } from 'three'
+
 export type Position = [number, number]
 
 export type Path = { x: number; y: number }[]
@@ -9,6 +11,7 @@ export enum ActorType {
     House = 'House',
     WoodCamp = 'WoodCamp',
     Barracks = 'Barracks',
+    Stakewall = 'Stakewall',
 
     Tree = 'Tree',
     Boar = 'Boar',
@@ -16,7 +19,12 @@ export enum ActorType {
 
 export const actorTypesByCategory = {
     Unit: [ActorType.Human, ActorType.Boar],
-    Building: [ActorType.House, ActorType.WoodCamp, ActorType.Barracks],
+    Building: [
+        ActorType.House,
+        ActorType.WoodCamp,
+        ActorType.Barracks,
+        ActorType.Stakewall,
+    ],
     Other: [ActorType.Tree],
 }
 
@@ -27,6 +35,10 @@ export const allActorTypes = Object.values(ActorType).filter(
 export interface ClockInfo {
     elapsedTime: number
     deltaTime: number
+}
+
+export interface ActorModel {
+    getModel(): Group | LOD
 }
 
 export interface Renderable {

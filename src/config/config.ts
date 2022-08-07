@@ -52,6 +52,9 @@ export const { config, resetConfig, saveConfig } = createConfig({
     barracks: {
         hp: 1000,
     },
+    wall: {
+        hp: 1000,
+    },
 
     house: {
         hp: 1000,

@@ -9,9 +9,7 @@ import { loadGLTF } from '+helpers'
 import { LOD, PointLight } from 'three'
 
 import { HouseActor } from './HouseActor'
-import houseUrl from './models/house3.gltf'
-
-const houseModel = loadGLTF(houseUrl)
+import { HouseModel } from './HouseModel'
 
 export class HouseRenderer extends ActorRenderer<HouseActor> {
     public actorType = ActorType.House
@@ -19,20 +17,12 @@ export class HouseRenderer extends ActorRenderer<HouseActor> {
     public createActorModel(actor: HouseActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
 
-        const lod = new LOD()
-        houseModel.then((model) => {
-            model.children.forEach((child, index) => {
-                child.castShadow = true
-                child.receiveShadow = true
-                lod.addLevel(child.clone(), (model.children.length - index - 1) * 80)
-            })
-        })
-
-        group.add(lod)
+        const model = new HouseModel()
+        group.add(model.getModel())
 
         if (config.renderer.light) {
-            const light = new PointLight(0xfa840e, 1, 15)
-            light.position.set(0, 3, 0)
+            const light = new PointLight(0xfa840e, 2, 15)
+            light.position.set(3, 2, 3)
             group.add(light)
         }
 

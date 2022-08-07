@@ -52,9 +52,10 @@ export const ConfigForm = () => {
             <Box
                 display="flex"
                 flexDirection="row"
-                marginTop={2}
+                paddingY={2}
                 justifyContent="center"
                 columnGap={2}
+                style={{ position: 'sticky', bottom: 0 }}
             >
                 {showReload ? (
                     <Button label="Reload" onClick={reload} />

@@ -31,6 +31,7 @@ export class RaycastFinder {
     }
 
     public findActorsByMouseEvent = (event: MouseEvent): Actor[] => {
+        // TODO: Optimize intersectObjects execution
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,

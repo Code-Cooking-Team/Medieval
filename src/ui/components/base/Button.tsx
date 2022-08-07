@@ -24,4 +24,8 @@ const Container = styled.button<MarginProps>(margin, ({ theme }) => ({
     padding: theme.space[2],
     paddingLeft: theme.space[3],
     paddingRight: theme.space[3],
+    ':hover, :focus-visible': {
+        backgroundColor: theme.colors.primary,
+        color: theme.colors.black,
+    },
 }))
