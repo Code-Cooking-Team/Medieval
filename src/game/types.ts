@@ -11,7 +11,7 @@ export enum ActorType {
     House = 'House',
     WoodCamp = 'WoodCamp',
     Barracks = 'Barracks',
-    Wall = 'Wall',
+    Stakewall = 'Stakewall',
 
     Tree = 'Tree',
     Boar = 'Boar',
@@ -19,7 +19,12 @@ export enum ActorType {
 
 export const actorTypesByCategory = {
     Unit: [ActorType.Human, ActorType.Boar],
-    Building: [ActorType.House, ActorType.WoodCamp, ActorType.Barracks, ActorType.Wall],
+    Building: [
+        ActorType.House,
+        ActorType.WoodCamp,
+        ActorType.Barracks,
+        ActorType.Stakewall,
+    ],
     Other: [ActorType.Tree],
 }
 

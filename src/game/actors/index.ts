@@ -9,9 +9,9 @@ import { BarracksRenderer } from './buildings/barracks/BarracksRenderer'
 import { HouseActor } from './buildings/house/HouseActor'
 import { HouseModel } from './buildings/house/HouseModel'
 import { HouseRenderer } from './buildings/house/HouseRenderer'
-import { WallActor } from './buildings/wall/WallActor'
-import { WallModel } from './buildings/wall/WallModel'
-import { WallRenderer } from './buildings/wall/WallRenderer'
+import { StakewallActor } from './buildings/stakewall/StakewallActor'
+import { StakewallModel } from './buildings/stakewall/StakewallModel'
+import { StakewallRenderer } from './buildings/stakewall/StakewallRenderer'
 import { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
 import { WoodCampModel } from './buildings/woodCamp/WoodCampModel'
 import { WoodCampRenderer } from './buildings/woodCamp/WoodCampRenderer'
@@ -27,7 +27,7 @@ export const actorRenderers = [
     HumanRenderer,
     WoodCampRenderer,
     BarracksRenderer,
-    WallRenderer,
+    StakewallRenderer,
     BoarRenderer,
 ]
 
@@ -48,7 +48,7 @@ export const actorByType: Record<
     [ActorType.WoodCamp]: { actorClass: WoodCampActor, model: new WoodCampModel() },
     [ActorType.Barracks]: { actorClass: BarracksActor, model: new BarracksModel() },
     [ActorType.Boar]: { actorClass: BoarActor },
-    [ActorType.Wall]: { actorClass: WallActor, model: new WallModel() },
+    [ActorType.Stakewall]: { actorClass: StakewallActor, model: new StakewallModel() },
 }
 
 export const actorFromJSON = (json: ActorJSON, game: Game, player: Player): Actor => {
