@@ -1,11 +1,8 @@
 import { config } from '+config'
-import { houseModel } from '+game/actors/buildings/house/HouseRenderer'
 import { Actor } from '+game/core/Actor'
 import { ActorType } from '+game/types'
 import { uuid } from '+helpers'
 import { Emitter } from '+lib/Emitter'
-
-import { Mesh, Object3D } from 'three'
 
 import { Player, PlayerJSON, PlayerType } from './types'
 
@@ -16,7 +13,6 @@ export class HumanPlayer implements Player {
 
     public selectedActors: Actor[] = []
     public selectedBuilding?: ActorType
-    public selectedBuildingModel?: Mesh
 
     public emitter = new Emitter<{
         selectBuilding: ActorType
@@ -42,11 +38,6 @@ export class HumanPlayer implements Player {
     public selectBuilding(actorType: ActorType) {
         this.emitter.emit('selectBuilding', actorType)
         this.selectedBuilding = actorType
-        if (actorType === 'House' && houseModel) {
-            houseModel.then((model) => {
-                this.selectedBuildingModel = model.clone()
-            })
-        }
     }
 
     public unselectBuilding() {
