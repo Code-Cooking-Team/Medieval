@@ -143,8 +143,8 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
             new MeshBasicMaterial({ color: 0xffffff, wireframe: true, visible: false }),
         )
 
-        interactionShape.position.x = width / 2 - ts / 2
-        interactionShape.position.z = depth / 2 - ts / 2
+        // interactionShape.position.x = width / 2 - ts / 2
+        // interactionShape.position.z = depth / 2 - ts / 2
         interactionShape.position.y = height / 2
 
         interactionShape.userData = { actor }

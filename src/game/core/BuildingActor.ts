@@ -1,3 +1,4 @@
+import { Position } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
 
 import { Actor, ActorJSON } from './Actor'
