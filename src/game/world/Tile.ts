@@ -1,4 +1,9 @@
-import { ClassType, generateSimilarColor, random } from '+helpers'
+import {
+    changeColorLightnessSaturation,
+    ClassType,
+    generateSimilarColor,
+    random,
+} from '+helpers'
 
 import { omitBy } from 'lodash'
 
@@ -97,9 +102,21 @@ export class InsideTile extends Tile {
     public walkCost = 3
 }
 
+export class ImportantFootpathTile extends Tile {
+    public type = TileType.ImportantFootpath
+    public color = 0x474738
+}
+
 export class FootpathTile extends Tile {
     public type = TileType.Footpath
-    public color = 0x474738
+    public color = 0x676068
+
+    public constructor(public previousTile?: Tile) {
+        super(previousTile)
+        if (previousTile) {
+            this.color = changeColorLightnessSaturation(previousTile.color, false, 0.3)
+        }
+    }
 }
 
 export class OvergrownTile extends Tile {
@@ -119,6 +136,7 @@ const tileByType: Record<TileType, TileClass> = {
     [TileType.Wall]: WallTile,
     [TileType.Inside]: InsideTile,
     [TileType.Footpath]: FootpathTile,
+    [TileType.ImportantFootpath]: ImportantFootpathTile,
     [TileType.Overgrown]: OvergrownTile,
 }
 

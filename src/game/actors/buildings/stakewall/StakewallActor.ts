@@ -10,8 +10,8 @@ export class StakewallActor extends BuildingActor {
     public hp = this.maxHp
 
     public readonly grid: TileCodeGrid = [
-        ['🦶🏽', '🦶🏽', '🦶🏽'],
-        ['🦶🏽', '🧱', '🦶🏽'],
-        ['🦶🏽', '🦶🏽', '🦶🏽'],
+        ['🟢', '🟢', '🟢'],
+        ['🟢', '🧱', '🟢'],
+        ['🟢', '🟢', '🟢'],
     ]
 }

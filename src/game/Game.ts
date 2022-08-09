@@ -130,12 +130,19 @@ export class Game {
             if (!currTail.canBuild) return // TODO check entire grid
             const [x, y] = position
 
-            this.world.setMultipleTiles((set) => {
+            this.world.setMultipleTiles((set, get) => {
                 applyTileGrid(
                     actor.grid,
-                    ([localX, localY], tile, [centerY, centerX]) => {
+                    ([localX, localY], TileClass, [centerY, centerX]) => {
+                        const position: Position = [
+                            x + localX - centerX,
+                            y + localY - centerY,
+                        ]
+
+                        const tile = new TileClass(get(position))
                         tile.height = currTail.height
-                        set([x + localX - centerX, y + localY - centerY], tile)
+
+                        set(position, tile)
                     },
                 )
             })

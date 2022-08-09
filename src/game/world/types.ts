@@ -9,6 +9,7 @@ export enum TileType {
     Wall = 'Wall',
     Inside = 'Inside',
     Footpath = 'Footpath',
+    ImportantFootpath = 'ImportantFootpath',
     Overgrown = 'Overgrown',
 }
 
