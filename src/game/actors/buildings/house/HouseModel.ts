@@ -3,7 +3,7 @@ import { loadGLTF } from '+helpers/three'
 
 import { Group, LOD } from 'three'
 
-import houseUrl from './models/house3.gltf'
+import houseUrl from './models/house.gltf'
 
 const houseModel = loadGLTF(houseUrl)
 

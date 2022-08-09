@@ -9,5 +9,9 @@ export class StakewallActor extends BuildingActor {
     public maxHp = config.wall.hp
     public hp = this.maxHp
 
-    public readonly grid: TileCodeGrid = [['🧱']]
+    public readonly grid: TileCodeGrid = [
+        ['🦶🏽', '🦶🏽', '🦶🏽'],
+        ['🦶🏽', '🧱', '🦶🏽'],
+        ['🦶🏽', '🦶🏽', '🦶🏽'],
+    ]
 }

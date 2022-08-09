@@ -131,10 +131,13 @@ export class Game {
             const [x, y] = position
 
             this.world.setMultipleTiles((set) => {
-                applyTileGrid(actor.grid, ([localX, localY], tile) => {
-                    tile.height = currTail.height
-                    set([x + localX, y + localY], tile)
-                })
+                applyTileGrid(
+                    actor.grid,
+                    ([localX, localY], tile, [centerY, centerX]) => {
+                        tile.height = currTail.height
+                        set([x + localX - centerX, y + localY - centerY], tile)
+                    },
+                )
             })
         }
 

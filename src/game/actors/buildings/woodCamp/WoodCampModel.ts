@@ -19,8 +19,8 @@ export class WoodCampModel implements ActorModel {
             })
         })
 
-        lod.position.z = (8 / 2) * config.renderer.tileSize
-        lod.position.x = (8 / 2) * config.renderer.tileSize
+        // lod.position.z = (8 / 2) * config.renderer.tileSize
+        // lod.position.x = (8 / 2) * config.renderer.tileSize
 
         this.model = lod
     }
