@@ -8,6 +8,8 @@ export class BuildingActor extends Actor {
     public grid: TileCodeGrid = [['.']]
     public height = 3
 
+    // TODO Take into account ROTATION
+    // Watch out for the fact that interaction mesh needs NOT rotated size
     public getSize() {
         if (!this.grid[0]) throw new Error('[BuildingActor] Grid is empty')
         return [this.grid[0].length, this.grid.length, this.height] as [

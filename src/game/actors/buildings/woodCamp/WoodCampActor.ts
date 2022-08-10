@@ -24,6 +24,7 @@ export class WoodCampActor extends BuildingActor {
 
     public collectedTreeHP = 0
 
+    // TODO Take into account ROTATION
     public getDeliveryPoint() {
         return addPosition(this.getGlobalPosition(), this.deliveryLocalPosition)
     }
