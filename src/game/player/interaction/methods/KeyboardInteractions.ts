@@ -1,6 +1,7 @@
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
+import { normalizeEventKeyName } from '+helpers'
 
 export class KeyboardInteractions {
     // TODO move selection when holding space bar
@@ -29,17 +30,18 @@ export class KeyboardInteractions {
     }
 
     private handleKeyUp = (event: KeyboardEvent) => {
-        const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+        const key = normalizeEventKeyName(event.key)
 
         switch (key) {
             case ' ':
                 this.isHoldingSpaceBar = false
                 break
+
             case 'Escape':
                 this.player.unselectActor()
                 this.player.unselectBuilding()
                 break
-            case 'R':
+
             case 'r':
                 this.player.rotateBuilding()
                 break

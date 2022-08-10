@@ -6,6 +6,7 @@ import { Renderer } from '+game/Renderer'
 import { ActorType } from '+game/types'
 import { rotationIndexToDeg } from '+helpers'
 
+import { UnsubscribeFn } from 'emittery'
 import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -28,13 +29,37 @@ export class BuildInteractions {
     ) {
         this.el = this.renderer.webGLRenderer.domElement
         this.finder = new RaycastFinder(game, renderer)
-
-        this.player.emitter.on('selectBuilding', this.setPlaceholder)
-        this.player.emitter.on('unselectBuilding', this.removePlaceholder)
-        this.player.emitter.on('rotateBuilding', this.rotatePlaceholder)
     }
 
-    public setPlaceholder = (type: ActorType) => {
+    public rotatePlaceholder = (rotateNumber: number) => {
+        this.placeholder.rotation.y = rotationIndexToDeg(rotateNumber)
+    }
+
+    private subscriptions: UnsubscribeFn[] = []
+
+    public addEventListeners() {
+        this.subscriptions = [
+            this.player.emitter.on('selectBuilding', this.setPlaceholder),
+            this.player.emitter.on('unselectBuilding', this.removePlaceholder),
+            this.player.emitter.on('rotateBuilding', this.rotatePlaceholder),
+        ]
+
+        this.el.addEventListener('click', this.handleClick)
+        this.el.addEventListener('pointermove', this.handleMove)
+        this.el.addEventListener('contextmenu', this.handleContextmenu)
+        this.renderer.scene.add(this.placeholder)
+    }
+
+    public removeEventListeners() {
+        this.subscriptions.forEach((unsubscribe) => unsubscribe())
+
+        this.el.removeEventListener('click', this.handleClick)
+        this.el.removeEventListener('pointermove', this.handleMove)
+        this.el.removeEventListener('contextmenu', this.handleContextmenu)
+        this.renderer.scene.remove(this.placeholder)
+    }
+
+    private setPlaceholder = (type: ActorType) => {
         this.removePlaceholder()
         const actorModel = actorByType[type].model
         if (!actorModel) return
@@ -49,28 +74,10 @@ export class BuildInteractions {
         this.placeholder.add(this.placeholderModel)
     }
 
-    public removePlaceholder = () => {
+    private removePlaceholder = () => {
         if (!this.placeholderModel) return
         this.placeholder.remove(this.placeholderModel)
         this.placeholderModel = undefined
-    }
-
-    public rotatePlaceholder = (rotateNumber: number) => {
-        this.placeholder.rotation.y = rotationIndexToDeg(rotateNumber)
-    }
-
-    public addEventListeners() {
-        this.el.addEventListener('click', this.handleClick)
-        this.el.addEventListener('pointermove', this.handleMove)
-        this.el.addEventListener('contextmenu', this.handleContextmenu)
-        this.renderer.scene.add(this.placeholder)
-    }
-
-    public removeEventListeners() {
-        this.el.removeEventListener('click', this.handleClick)
-        this.el.removeEventListener('pointermove', this.handleMove)
-        this.el.removeEventListener('contextmenu', this.handleContextmenu)
-        this.renderer.scene.remove(this.placeholder)
     }
 
     private handleClick = (event: MouseEvent) => {
@@ -88,7 +95,7 @@ export class BuildInteractions {
             ActorClass,
             this.player,
             position,
-            this.player.getBuildingRotation(),
+            this.player.selectedBuildingRotation,
         )
     }
 
@@ -96,7 +103,7 @@ export class BuildInteractions {
         if (!this.placeholderModel) return
 
         const position = this.finder.findPositionByMouseEvent(event)
-        // const position = [0, 0]
+
         if (!position) return
 
         const currTail = this.game.world.getTile(position)

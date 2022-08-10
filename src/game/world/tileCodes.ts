@@ -12,6 +12,7 @@ import {
     WallTile,
     WaterTile,
 } from '+game/world/Tile'
+import { getPointPositionOnRotatedGrid } from '+helpers'
 
 const tileCodes = {
     ['🌱']: MeadowTile,
@@ -51,51 +52,49 @@ export const tileCodeToClass = (code: TileCode) => {
     return TileClass
 }
 
-export const rotateGrid = (grid: TileCode[][]) => {
-    const rotated: TileCode[][] = []
+export const rotateGrid = <T>(grid: T[][], rotation = 0): T[][] => {
+    if (rotation === 0) return grid
+
+    const rotated: T[][] = []
+
     for (let y = 0; y < grid[0]!.length; y++) {
         rotated.push([])
         for (let x = 0; x < grid.length; x++) {
             rotated[y]!.push(grid[grid.length - 1 - x]![y]!)
         }
     }
+
+    if (rotation > 0) {
+        // TODO I don't think that resurrection is needed here…
+        return rotateGrid(rotated, rotation - 1)
+    }
+
     return rotated
 }
 
 export const applyTileGrid = (
     structure: TileCode[][],
     callback: (pos: Position, tileClass: TileClass, center: Position) => void,
-    rotation?: number,
+    rotation = 0,
 ) => {
-    if (rotation) {
-        for (let i = 0; i < rotation; i++) {
-            structure = rotateGrid(structure) as TileCode[][]
-        }
-    }
+    const rotatedStructure = rotateGrid(structure, rotation)
 
-    let centerX = Math.floor(structure.length / 2)
-    let centerY = Math.floor(structure[0]!.length / 2)
+    const xLength = rotatedStructure.length
+    const yLength = rotatedStructure[0]!.length
 
-    // Fix center point after rotation TODO fix this better
-    // (I don't know what I doing here but it works)
-    if (rotation) {
-        const structureDifferent = structure.length - structure[0]!.length
+    let xCenter = Math.floor(xLength / 2)
+    let yCenter = Math.floor(yLength / 2)
 
-        if (rotation === 1) {
-            centerX = Math.ceil(structure.length / 2) - 1 - structureDifferent
-        }
-        if (rotation === 2) {
-            centerX = Math.ceil(structure.length / 2) - 1 - structureDifferent
-            centerY = Math.ceil(structure[0]!.length / 2) - 1 + structureDifferent
-        }
-        if (rotation === 3) {
-            centerY = Math.ceil(structure[0]!.length / 2) - 1 + structureDifferent
-        }
-    }
+    const [xRotated, yRotated] = getPointPositionOnRotatedGrid(
+        xLength,
+        yLength,
+        [xCenter, yCenter],
+        rotation,
+    )
 
-    structure.forEach((row, localY) => {
+    rotatedStructure.forEach((row, localY) => {
         row.forEach((tileCode, localX) => {
-            callback([localX, localY], tileCodeToClass(tileCode), [centerY, centerX])
+            callback([localX, localY], tileCodeToClass(tileCode), [xRotated, yRotated])
         })
     })
 }

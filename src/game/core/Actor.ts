@@ -63,6 +63,10 @@ export abstract class Actor {
         return this.selectImportance
     }
 
+    public setRotation(rotation: number): void {
+        this.rotation = rotation
+    }
+
     public toJSON(): ActorJSON {
         return {
             id: this.id,

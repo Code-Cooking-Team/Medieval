@@ -1,5 +1,6 @@
 import { config } from '+config'
 import { ClockInfo, Renderable } from '+game/types'
+import { normalizeEventKeyName } from '+helpers'
 
 import { MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -33,12 +34,14 @@ export class RTSCamera implements Renderable {
     public render({ deltaTime }: ClockInfo) {
         const now = new Date().getTime()
 
-        Object.entries(this.keyPressed).forEach(([key, start]) => {
+        Object.entries(this.keyPressed).forEach(([keyName, start]) => {
             const momentum = this.getMomentum(now, start, deltaTime)
             const zoomOutBust = this.camera.position.y / 100
             const momentumTranslate = momentum + zoomOutBust
             const cameraRotation = this.camera.rotation.x
-            key = key.length === 1 ? key.toLowerCase() : key
+
+            const key = normalizeEventKeyName(keyName)
+
             switch (key) {
                 case 'w':
                 case 'ArrowUp':

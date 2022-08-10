@@ -58,7 +58,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         tile: Tile,
     ): { group: Group; interactionShape: Mesh } {
         let [x, y] = actor.position
-        const rotation = actor.rotation
+
         const group = new Group()
 
         const hp = new Mesh(this.hpGeometry, this.hpMaterial)

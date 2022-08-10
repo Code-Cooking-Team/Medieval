@@ -128,15 +128,16 @@ export class Game {
         if (isWalkableActor(actor) && !currTail.canWalk) return
 
         if (isBuildingActor(actor)) {
-            actor.rotation = rotation
+            actor.setRotation(rotation)
 
             if (!currTail.canBuild) return // TODO check entire grid
+
             const [x, y] = position
 
             this.world.setMultipleTiles((set, get) => {
                 applyTileGrid(
                     actor.grid,
-                    ([localX, localY], TileClass, [centerY, centerX]) => {
+                    ([localX, localY], TileClass, [centerX, centerY]) => {
                         const position: Position = [
                             x + localX - centerX,
                             y + localY - centerY,

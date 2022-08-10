@@ -50,13 +50,8 @@ export class HumanPlayer implements Player {
 
     public rotateBuilding() {
         if (!this.selectedBuilding) return
-        ++this.selectedBuildingRotation
-        if (this.selectedBuildingRotation > 3) this.selectedBuildingRotation = 0
-        this.emitter.emit('rotateBuilding', this.getBuildingRotation())
-    }
-
-    public getBuildingRotation(): number {
-        return this.selectedBuildingRotation
+        this.selectedBuildingRotation = (this.selectedBuildingRotation + 1) % 4
+        this.emitter.emit('rotateBuilding', this.selectedBuildingRotation)
     }
 
     public toJSON(): PlayerJSON {
