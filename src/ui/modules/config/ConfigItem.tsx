@@ -30,7 +30,7 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
         return <Switch checked={value} onChange={onChange} />
     },
     [ConfigType.StringInput]: ({ value, onChange }) => {
-        return <Input type="text" value={value} onChange={onChange} />
+        return <Input type="text" value={value} onChange={onChange} fullWidth={true} />
     },
     [ConfigType.NumberInput]: ({ value, onChange }) => {
         return (
@@ -38,8 +38,9 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
                 type="number"
                 value={value}
                 onChange={(val) => {
-                    onChange(+val)
+                    onChange(val)
                 }}
+                fullWidth={true}
             />
         )
     },

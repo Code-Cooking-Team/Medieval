@@ -64,7 +64,6 @@ export class Renderer {
         // Better visual but don't work with composer
         this.webGLRenderer.outputEncoding = sRGBEncoding
         this.webGLRenderer.toneMapping = NoToneMapping
-        this.webGLRenderer.toneMappingExposure = 10
 
         this.webGLRenderer.toneMapping = ReinhardToneMapping
         this.webGLRenderer.toneMappingExposure = Math.pow(

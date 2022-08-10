@@ -47,10 +47,12 @@ export class BuildInteractions {
         this.placeholder.add(this.placeholderModel)
     }
 
-    public removePlaceholder() {
-        if (!this.placeholderModel) return
-        this.placeholder.remove(this.placeholderModel)
-        this.placeholderModel = undefined
+    public removePlaceholder = () => {
+        console.log('removePlaceholder', this)
+        if (this.placeholderModel) {
+            this.placeholder.remove(this.placeholderModel)
+            this.placeholderModel = undefined
+        }
     }
 
     public addEventListeners() {

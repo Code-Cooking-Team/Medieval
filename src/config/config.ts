@@ -13,6 +13,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     debug: {
         logSelected: true,
+        wireModel: false,
         groundWireframe: false,
     },
 

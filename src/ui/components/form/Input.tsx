@@ -22,18 +22,34 @@ export const Input = ({
     autoFocus,
     ...props
 }: InputProps) => {
-    return (
-        <StyledInput
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            onBlur={onBlur}
-            name={name}
-            type={type}
-            placeholder={placeholder}
-            autoFocus={autoFocus}
-            {...props}
-        />
-    )
+    if (type === 'number') {
+        return (
+            <StyledInput
+                value={value}
+                onChange={(event) => onChange(event.target.valueAsNumber.toString())}
+                onBlur={onBlur}
+                name={name}
+                step={0.01}
+                type={type}
+                placeholder={placeholder}
+                autoFocus={autoFocus}
+                {...props}
+            />
+        )
+    } else {
+        return (
+            <StyledInput
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                onBlur={onBlur}
+                name={name}
+                type={type}
+                placeholder={placeholder}
+                autoFocus={autoFocus}
+                {...props}
+            />
+        )
+    }
 }
 
 interface InputStyleProps extends MarginProps {
@@ -50,6 +66,7 @@ export const StyledInput = styled.input<InputStyleProps>(
         fontSize: theme.fontSizes[2],
         padding: theme.space[2],
         width: fullWidth ? '100%' : '280px',
+        maxWidth: '100%',
         color: theme.colors.text,
     }),
 )

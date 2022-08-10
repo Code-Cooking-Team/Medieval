@@ -25,12 +25,7 @@ export class WoodCampActor extends BuildingActor {
     public collectedTreeHP = 0
 
     public getDeliveryPoint() {
-        const [x, y] = this.getSize()
-        const [dx, dy] = this.deliveryLocalPosition
-        return addPosition(this.position, [
-            Math.floor(dx - x / 2),
-            Math.floor(dy - y / 2),
-        ])
+        return addPosition(this.getGlobalPosition(), this.deliveryLocalPosition)
     }
 
     public collectTree(hp: number) {

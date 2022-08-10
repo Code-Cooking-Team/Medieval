@@ -17,6 +17,13 @@ export class BuildingActor extends Actor {
         ]
     }
 
+    public getGlobalPosition() {
+        const [sizeX, sizeY] = this.getSize()
+        const [x, y] = this.position
+
+        return [x - Math.floor(sizeX / 2), y - Math.floor(sizeY / 2)] as Position
+    }
+
     public toJSON(): BuildingActorJSON {
         return {
             ...super.toJSON(),
