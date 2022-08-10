@@ -18,6 +18,7 @@ export abstract class Actor {
     public hp = this.maxHp
     public hpRegen = 1
     public seed = randomSeed()
+    public rotation = 0
 
     constructor(
         public game: Game,
@@ -73,6 +74,7 @@ export abstract class Actor {
             hpRegen: this.hpRegen,
             selectImportance: this.selectImportance,
             seed: this.seed,
+            rotation: this.rotation,
         }
     }
 
@@ -91,6 +93,7 @@ export interface ActorJSON {
     hpRegen: number
     selectImportance: number
     seed: number
+    rotation: number
 }
 
 export type ActorClass<T extends Actor = Actor> = ClassType<

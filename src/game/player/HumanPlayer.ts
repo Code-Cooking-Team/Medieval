@@ -13,12 +13,14 @@ export class HumanPlayer implements Player {
 
     public selectedActors: Actor[] = []
     public selectedBuilding?: ActorType
+    public selectedBuildingRotation = 0
 
     public emitter = new Emitter<{
         selectBuilding: ActorType
         unselectBuilding: ActorType
         selectActors: Actor[]
         unselectActors: Actor[]
+        rotateBuilding: number
     }>('Player')
 
     public selectActors(actors: Actor[]) {
@@ -44,6 +46,17 @@ export class HumanPlayer implements Player {
         if (!this.selectedBuilding) return
         this.emitter.emit('unselectBuilding', this.selectedBuilding)
         this.selectedBuilding = undefined
+    }
+
+    public rotateBuilding() {
+        if (!this.selectedBuilding) return
+        ++this.selectedBuildingRotation
+        if (this.selectedBuildingRotation > 3) this.selectedBuildingRotation = 0
+        this.emitter.emit('rotateBuilding', this.getBuildingRotation())
+    }
+
+    public getBuildingRotation(): number {
+        return this.selectedBuildingRotation
     }
 
     public toJSON(): PlayerJSON {

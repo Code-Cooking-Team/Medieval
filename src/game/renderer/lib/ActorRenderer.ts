@@ -5,6 +5,7 @@ import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType, ClockInfo } from '+game/types'
 import { Tile } from '+game/world/Tile'
+import { rotationIndexToDeg } from '+helpers'
 
 import {
     BoxGeometry,
@@ -56,7 +57,8 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         actor: TActor,
         tile: Tile,
     ): { group: Group; interactionShape: Mesh } {
-        const [x, y] = actor.position
+        let [x, y] = actor.position
+        const rotation = actor.rotation
         const group = new Group()
 
         const hp = new Mesh(this.hpGeometry, this.hpMaterial)
@@ -67,9 +69,11 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         const interactionShape = this.createInteractionMesh(actor)
         group.add(interactionShape)
 
-        group.position.x = x * config.renderer.tileSize
+        group.position.x = 0
         group.position.y = tile.height
         group.position.z = y * config.renderer.tileSize
+
+        group.rotation.y = rotationIndexToDeg(actor.rotation)
 
         return { group, interactionShape }
     }

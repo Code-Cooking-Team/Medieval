@@ -4,6 +4,7 @@ import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
 import { ActorType } from '+game/types'
+import { rotationIndexToDeg } from '+helpers'
 
 import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
 
@@ -30,6 +31,7 @@ export class BuildInteractions {
 
         this.player.emitter.on('selectBuilding', this.setPlaceholder)
         this.player.emitter.on('unselectBuilding', this.removePlaceholder)
+        this.player.emitter.on('rotateBuilding', this.rotatePlaceholder)
     }
 
     public setPlaceholder = (type: ActorType) => {
@@ -48,11 +50,13 @@ export class BuildInteractions {
     }
 
     public removePlaceholder = () => {
-        console.log('removePlaceholder', this)
-        if (this.placeholderModel) {
-            this.placeholder.remove(this.placeholderModel)
-            this.placeholderModel = undefined
-        }
+        if (!this.placeholderModel) return
+        this.placeholder.remove(this.placeholderModel)
+        this.placeholderModel = undefined
+    }
+
+    public rotatePlaceholder = (rotateNumber: number) => {
+        this.placeholder.rotation.y = rotationIndexToDeg(rotateNumber)
     }
 
     public addEventListeners() {
@@ -80,7 +84,12 @@ export class BuildInteractions {
 
         const ActorClass = actorByType[selectedBuilding].actorClass
 
-        this.game.spawnActor(ActorClass, this.player, position)
+        this.game.spawnActor(
+            ActorClass,
+            this.player,
+            position,
+            this.player.getBuildingRotation(),
+        )
     }
 
     private handleMove = (event: PointerEvent) => {

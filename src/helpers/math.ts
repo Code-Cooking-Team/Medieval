@@ -13,3 +13,5 @@ export const addPosition = (a: Position, b: Position): Position => [
 
 export const isSamePosition = (a: Position, b: Position): boolean =>
     a[0] === b[0] && a[1] === b[1]
+
+export const rotationIndexToDeg = (ri: number): number => ri * -(Math.PI / 2)

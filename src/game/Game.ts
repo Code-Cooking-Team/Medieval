@@ -119,6 +119,7 @@ export class Game {
         ActorClass: ActorClass<T>,
         player: Player,
         position: Position,
+        rotation: number = 0,
     ): T | undefined {
         const actor = new ActorClass(this, player, position)
 
@@ -127,6 +128,8 @@ export class Game {
         if (isWalkableActor(actor) && !currTail.canWalk) return
 
         if (isBuildingActor(actor)) {
+            actor.rotation = rotation
+
             if (!currTail.canBuild) return // TODO check entire grid
             const [x, y] = position
 
@@ -144,6 +147,7 @@ export class Game {
 
                         set(position, tile)
                     },
+                    rotation,
                 )
             })
         }

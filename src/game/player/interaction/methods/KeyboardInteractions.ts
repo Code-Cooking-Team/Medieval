@@ -29,12 +29,20 @@ export class KeyboardInteractions {
     }
 
     private handleKeyUp = (event: KeyboardEvent) => {
-        if (event.key === ' ') {
-            this.isHoldingSpaceBar = false
-        }
-        if (event.key === 'Escape') {
-            this.player.unselectActor()
-            this.player.unselectBuilding()
+        const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+
+        switch (key) {
+            case ' ':
+                this.isHoldingSpaceBar = false
+                break
+            case 'Escape':
+                this.player.unselectActor()
+                this.player.unselectBuilding()
+                break
+            case 'R':
+            case 'r':
+                this.player.rotateBuilding()
+                break
         }
     }
 }
