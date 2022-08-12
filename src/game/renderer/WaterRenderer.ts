@@ -11,7 +11,7 @@ export class WaterRenderer extends BasicRenderer {
 
     constructor(public game: Game) {
         super()
-        const geometry = createWordPlane(this.game.world, 'random', 1.8)
+        const geometry = createWordPlane(this.game.world, 'random', 0.8)
 
         const material = new MeshStandardMaterial({
             color: 0xa2d3e8,
@@ -36,7 +36,9 @@ export class WaterRenderer extends BasicRenderer {
         if (!this.mesh) return
         const position = this.mesh.geometry.attributes.position!
         for (let i = 0; i < position.count; i++) {
-            const y = 0.1 * Math.sin(i / 2 + (time + i) / 8)
+            let y =
+                0.15 * Math.sin(i / 2 + (time + i) / 8) +
+                0.15 * Math.sin(i / 1.2 + (time / 10 + i) / 8)
             position.setY(i, y)
         }
         position.needsUpdate = true

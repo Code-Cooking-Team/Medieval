@@ -16,10 +16,15 @@ import { BasicRenderer } from './lib/BasicRenderer'
 import { createWordPlane } from './lib/createWordPlane'
 // import hdrUrl from './textures/sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_roughness.tif'
 // tif not working
-import hdrUrl from './textures/grass.jpg'
+import colorUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_albedo.jpg'
+import aoUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_ao.jpg'
+import heightUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_height.jpg'
+import normalUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_normal.jpg'
+import roughnessUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_roughness.jpg'
 
 export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
+    private groundMaterial: MeshStandardMaterial
     private geometry?: HorizontalPlaneGeometry
 
     constructor(public game: Game) {
@@ -33,26 +38,63 @@ export class GroundRenderer extends BasicRenderer {
             new BufferAttribute(new Float32Array(count * 3), 3),
         )
 
-        const groundMaterial = new MeshStandardMaterial({
+        this.groundMaterial = new MeshStandardMaterial({
             side: DoubleSide,
-            metalness: 0.8,
-            roughness: 1,
+            metalness: 0.1,
+            roughness: 0.9,
             vertexColors: true,
         })
 
         const loader = new TextureLoader()
 
-        loader.load(hdrUrl, (texture) => {
-            const [sizeX, sizeY] = this.game.world.getSize()
+        const scale = 10
+
+        const [sizeX, sizeY] = this.game.world.getSize()
+
+        loader.load(colorUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / 10, sizeY / 10)
-            groundMaterial.map = texture
-            groundMaterial.metalnessMap = texture
-            groundMaterial.bumpMap = texture
-            groundMaterial.bumpScale = 0.05
+            texture.repeat.set(sizeX / scale, sizeY / scale)
+            this.groundMaterial.map = texture
         })
-        this.groundMesh = new Mesh(this.geometry, groundMaterial)
+        loader.load(normalUrl, (texture) => {
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            texture.repeat.set(sizeX / scale, sizeY / scale)
+            this.groundMaterial.normalMap = texture
+        })
+        loader.load(heightUrl, (texture) => {
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            texture.repeat.set(sizeX / scale, sizeY / scale)
+            this.groundMaterial.bumpMap = texture
+            this.groundMaterial.bumpScale = 0.01
+        })
+        loader.load(aoUrl, (texture) => {
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            texture.repeat.set(sizeX / scale, sizeY / scale)
+            this.groundMaterial.aoMap = texture
+            this.groundMaterial.aoMapIntensity = 0.2
+        })
+        loader.load(roughnessUrl, (texture) => {
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            texture.repeat.set(sizeX / scale, sizeY / scale)
+
+            this.groundMaterial.roughnessMap = texture
+            this.groundMaterial.metalnessMap = texture
+
+            // rain
+            // groundMaterial.roughness = 0.2
+            // groundMaterial.metalness = 0.1
+
+            // normal
+            this.groundMaterial.roughness = 1.1
+            // groundMaterial.metalness = 0.1
+        })
+
+        this.groundMesh = new Mesh(this.geometry, this.groundMaterial)
         this.groundMesh.receiveShadow = true
         this.group.add(this.groundMesh)
 
