@@ -2,10 +2,21 @@ import { config } from '+config'
 import { Game } from '+game/Game'
 import { getPositionByIndex, HorizontalPlaneGeometry } from '+helpers'
 
-import { BufferAttribute, Color, DoubleSide, Mesh, MeshStandardMaterial } from 'three'
+import {
+    BufferAttribute,
+    Color,
+    DoubleSide,
+    Mesh,
+    MeshStandardMaterial,
+    RepeatWrapping,
+    TextureLoader,
+} from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
 import { createWordPlane } from './lib/createWordPlane'
+// import hdrUrl from './textures/sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_roughness.tif'
+// tif not working
+import hdrUrl from './textures/grass.jpg'
 
 export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
@@ -14,7 +25,7 @@ export class GroundRenderer extends BasicRenderer {
     constructor(public game: Game) {
         super()
 
-        this.geometry = createWordPlane(this.game.world, 'both')
+        this.geometry = createWordPlane(this.game.world, config.renderer.diagonals)
 
         const count = this.geometry.attributes.position!.count
         this.geometry.setAttribute(
@@ -29,6 +40,18 @@ export class GroundRenderer extends BasicRenderer {
             vertexColors: true,
         })
 
+        const loader = new TextureLoader()
+
+        loader.load(hdrUrl, (texture) => {
+            const [sizeX, sizeY] = this.game.world.getSize()
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            texture.repeat.set(sizeX / 10, sizeY / 10)
+            groundMaterial.map = texture
+            groundMaterial.metalnessMap = texture
+            groundMaterial.bumpMap = texture
+            groundMaterial.bumpScale = 0.05
+        })
         this.groundMesh = new Mesh(this.geometry, groundMaterial)
         this.groundMesh.receiveShadow = true
         this.group.add(this.groundMesh)

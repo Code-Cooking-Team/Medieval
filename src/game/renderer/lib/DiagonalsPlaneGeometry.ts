@@ -1,6 +1,6 @@
 import { BufferGeometry, Float32BufferAttribute } from 'three'
 
-type Diagonals = 'left' | 'right' | 'both' | 'random'
+export type Diagonals = 'left' | 'right' | 'both' | 'random'
 
 class DiagonalsPlaneGeometry extends BufferGeometry {
     private parameters: {

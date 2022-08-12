@@ -19,6 +19,30 @@ export const isSamePosition = (a: Position, b: Position): boolean =>
  */
 export const rotationIndexToDeg = (ri: number): number => ri * -(Math.PI / 2)
 
+export const rotatePositionOnGrind = (
+    position: Position,
+    gridSize: [number, number, number?],
+    rotationIndex: number,
+) => {
+    const [sizeX, sizeY] = gridSize
+    const [x, y] = position
+
+    let transposedPosition = position
+
+    if (rotationIndex === 1) {
+        transposedPosition = [sizeY - y, x]
+    }
+    if (rotationIndex === 2) {
+        transposedPosition = [sizeX - x, sizeY - y]
+    }
+    if (rotationIndex === 3) {
+        transposedPosition = [y, sizeX - x]
+    }
+
+    return transposedPosition
+}
+
+// Has offsets that are needed for applyTileGrid
 export const getPointPositionOnRotatedGrid = (
     xLength: number,
     yLength: number,

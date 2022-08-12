@@ -12,7 +12,7 @@ import {
     WallTile,
     WaterTile,
 } from '+game/world/Tile'
-import { getPointPositionOnRotatedGrid } from '+helpers'
+import { getPointPositionOnRotatedGrid, rotatePositionOnGrind } from '+helpers'
 
 const tileCodes = {
     ['🌱']: MeadowTile,
@@ -91,6 +91,10 @@ export const applyTileGrid = (
         [xCenter, yCenter],
         rotation,
     )
+
+    // I don't work why is different from the original code
+    // const [xRotated, yRotated] = rotatePositionOnGrind([xCenter, yCenter], [xLength,
+    //     yLength], rotation)
 
     rotatedStructure.forEach((row, localY) => {
         row.forEach((tileCode, localX) => {

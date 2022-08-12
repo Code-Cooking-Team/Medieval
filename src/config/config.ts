@@ -1,3 +1,5 @@
+import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
+
 import { createConfig } from './lib/createConfig'
 import { colorInput } from './lib/definitions'
 
@@ -27,6 +29,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         shadow: true,
         treeWaving: true,
         light: false,
+        diagonals: 'random' as Diagonals,
     },
 
     postProcessing: {

@@ -4,7 +4,7 @@ import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType, Position } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
-import { addPosition } from '+helpers'
+import { addPosition, rotatePositionOnGrind } from '+helpers'
 
 export class WoodCampActor extends BuildingActor {
     public type = ActorType.WoodCamp
@@ -24,9 +24,13 @@ export class WoodCampActor extends BuildingActor {
 
     public collectedTreeHP = 0
 
-    // TODO Take into account ROTATION
     public getDeliveryPoint() {
-        return addPosition(this.getGlobalPosition(), this.deliveryLocalPosition)
+        const transposedDeliveryPosition = rotatePositionOnGrind(
+            this.deliveryLocalPosition,
+            this.getSize(),
+            this.rotation,
+        )
+        return addPosition(this.getGlobalPosition(), transposedDeliveryPosition)
     }
 
     public collectTree(hp: number) {
