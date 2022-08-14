@@ -37,7 +37,7 @@ export class Renderer {
     public webGLRenderer = new WebGLRenderer({
         antialias: true,
         powerPreference: 'high-performance',
-        logarithmicDepthBuffer: true,
+        // logarithmicDepthBuffer: true, // TODO needed? (-20 fps)
     })
 
     private composer = new EffectComposer(this.webGLRenderer)
@@ -257,20 +257,21 @@ export class Renderer {
         this.rtsCamera.camera.updateProjectionMatrix()
 
         const pixelRatio = window.devicePixelRatio
-        this.webGLRenderer.setPixelRatio(window.devicePixelRatio * pixelRatio)
+
+        this.webGLRenderer.setPixelRatio(pixelRatio)
         this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
 
         if (config.postProcessing.postprocessingEnable) {
             this.composer.setSize(window.innerWidth, window.innerHeight)
-            this.composer.setPixelRatio(window.devicePixelRatio)
+            this.composer.setPixelRatio(pixelRatio)
         }
 
         if (this.FXAAPass) {
             this.FXAAPass.material.uniforms.resolution.value.x =
-                1 / (window.innerWidth * window.devicePixelRatio)
+                1 / (window.innerWidth * pixelRatio)
 
             this.FXAAPass.material.uniforms.resolution.value.y =
-                1 / (window.innerHeight * window.devicePixelRatio)
+                1 / (window.innerHeight * pixelRatio)
         }
     }
 
