@@ -61,7 +61,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
         const hp = new Mesh(this.hpGeometry, this.hpMaterial)
         hp.name = 'hp'
-        hp.position.y = 5
+        hp.position.y = 5 * config.renderer.tileSize
         group.add(hp)
 
         const interactionShape = this.createInteractionMesh(actor)
@@ -147,29 +147,29 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
             }),
         )
 
-        // interactionShape.position.x = width / 2 - ts / 2
-        // interactionShape.position.z = depth / 2 - ts / 2
         interactionShape.position.y = height / 2
 
         interactionShape.userData = { actor }
 
-        const edges = new EdgesGeometry(
+        const ring = new EdgesGeometry(
             new CircleGeometry((width + height / 2.2) / 2.2, 64),
         )
-        edges.rotateX(Math.PI / 2)
+        ring.rotateX(Math.PI / 2)
 
         const interactionSelect = new LineSegments(
-            edges,
+            ring,
             new LineBasicMaterial({
                 color: 0x5eff64,
-                linewidth: 2,
+                linewidth: 2 * window.devicePixelRatio,
                 depthFunc: NotEqualDepth,
             }),
         )
 
+        const offset = 0.2 * ts
+
         interactionSelect.position.x = 0
         interactionSelect.position.z = 0
-        interactionSelect.position.y = 0.3 - height / 2
+        interactionSelect.position.y = offset - height / 2
 
         interactionShape.add(interactionSelect)
 
