@@ -15,9 +15,9 @@ import {
 } from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
-// royal_esplanade_1k.hdr
-// kloetzle_blei_1k.hdr
 import hdrUrl from './textures/bg.jpg'
+
+const SHADOW_SCALE = 3
 
 export class EnvironmentRenderer extends BasicRenderer {
     private sun = new DirectionalLight(0xfff2c7, 3.2)
@@ -44,8 +44,8 @@ export class EnvironmentRenderer extends BasicRenderer {
             this.sun.shadow.camera.right = 100
             this.sun.shadow.camera.top = 100
             this.sun.shadow.camera.bottom = -100
-            this.sun.shadow.bias = -0.0001
-            this.sun.shadow.normalBias = 0.27
+            this.sun.shadow.bias = -0.0001 * config.renderer.tileSize
+            this.sun.shadow.normalBias = 0.27 * config.renderer.tileSize
         }
 
         this.sun.position.set(4, 10, 1)
@@ -58,7 +58,6 @@ export class EnvironmentRenderer extends BasicRenderer {
 
         const loader = new TextureLoader()
 
-        // new RGBELoader().setDataType(HalfFloatType).load(hdrUrl, (texture) => {
         loader.load(hdrUrl, (texture) => {
             texture.mapping = EquirectangularReflectionMapping
             this.scene.environment = texture
@@ -85,10 +84,10 @@ export class EnvironmentRenderer extends BasicRenderer {
         this.sunTarget.position.y = 0
         this.sun.target = this.sunTarget
 
-        this.sun.shadow.camera.left = -5 * this.camera.position.y
-        this.sun.shadow.camera.right = 5 * this.camera.position.y
-        this.sun.shadow.camera.top = 5 * this.camera.position.y
-        this.sun.shadow.camera.bottom = -5 * this.camera.position.y
+        this.sun.shadow.camera.left = -SHADOW_SCALE * this.camera.position.y
+        this.sun.shadow.camera.right = SHADOW_SCALE * this.camera.position.y
+        this.sun.shadow.camera.top = SHADOW_SCALE * this.camera.position.y
+        this.sun.shadow.camera.bottom = -SHADOW_SCALE * this.camera.position.y
 
         this.sun.color.setHSL(
             10 + Math.sin(time * 1) * 0.1,
@@ -119,7 +118,8 @@ export class EnvironmentRenderer extends BasicRenderer {
             this.scene.fog = new Fog(
                 fogColor,
                 config.renderer.fogTransparency,
-                Math.sin(time * 1) + config.renderer.fogTransparency * 1.5 * 50 + 200,
+                (Math.sin(time * 1) + config.renderer.fogTransparency * 1.5 * 50 + 200) *
+                    config.renderer.tileSize,
             )
         }
     }

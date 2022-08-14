@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { Game } from '+game/Game'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
-import { seededRandom } from '+helpers'
+import { multiplyPosition, seededRandom, updateObjectPosition } from '+helpers'
 
 import {
     CylinderGeometry,
@@ -57,10 +57,10 @@ export class TreeRenderer implements Renderable {
         this.coronaInstanceMesh.receiveShadow = true
 
         this.group.add(this.boughInstanceMesh)
-        this.boughInstanceMesh.translateY(1.8)
+        this.boughInstanceMesh.translateY(1.8 * config.renderer.tileSize)
 
         this.group.add(this.coronaInstanceMesh)
-        this.coronaInstanceMesh.translateY(4.5)
+        this.coronaInstanceMesh.translateY(4.5 * config.renderer.tileSize)
     }
 
     public render(clockInfo: ClockInfo) {
@@ -77,11 +77,16 @@ export class TreeRenderer implements Renderable {
 
             if (tree) {
                 const rnd = seededRandom(tree.seed)
-                const [x, y] = tree.position
                 const tile = this.game.world.getTile(tree.position)
 
-                dummy.position.set(x, tile.height, y)
-                dummy.scale.set(rnd(0.8, 1.5), rnd(1, 1.5), rnd(0.8, 1.5))
+                updateObjectPosition(dummy, tree.position, tile.height)
+
+                dummy.scale.set(
+                    rnd(0.8, 1.5) * config.renderer.tileSize,
+                    rnd(1, 1.5) * config.renderer.tileSize,
+                    rnd(0.8, 1.5) * config.renderer.tileSize,
+                )
+
                 dummy.rotation.set(
                     rnd(-0.5, 0.5) / Math.PI,
                     rnd(-0.5, 0.5) / Math.PI,
@@ -106,7 +111,7 @@ export class TreeRenderer implements Renderable {
             } else {
                 // TODO better remove
                 dummy.position.set(0, 0, 0)
-                dummy.scale.set(2, 2, 2)
+                dummy.scale.set(0, 0, 0)
             }
 
             dummy.updateMatrix()

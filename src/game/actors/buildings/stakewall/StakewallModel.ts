@@ -1,7 +1,7 @@
 import { ActorModel } from '+game/types'
-import { loadGLTF } from '+helpers/three'
+import { loadGLTF, updateScale } from '+helpers'
 
-import { Group, LOD } from 'three'
+import { Group } from 'three'
 
 import stakewallUrl from './models/wall.gltf'
 
@@ -19,6 +19,8 @@ export class StakewallModel implements ActorModel {
                 }
             })
         })
+
+        updateScale(group)
 
         this.model = group
         this.model.rotateY(Math.random() * Math.PI)

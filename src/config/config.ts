@@ -6,7 +6,6 @@ import { colorInput } from './lib/definitions'
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 250,
-        devTilesSize: 60,
         orbitalControls: false,
         cameraFov: 60,
         cameraFar: 350,
@@ -20,7 +19,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     },
 
     renderer: {
-        tileSize: 1,
+        tileSize: 0.1,
         fog: true,
         fogTransparency: 3,
         dayAndNightMode: true,
@@ -45,6 +44,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         outlineEdgeThickness: 0.2,
         outlinePulsePeriod: 0,
         FXAAEnable: true,
+        bokehEnable: true,
         GammaCorrectionShader: true,
     },
 
@@ -56,6 +56,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     barracks: {
         hp: 1000,
     },
+
     wall: {
         hp: 1000,
     },

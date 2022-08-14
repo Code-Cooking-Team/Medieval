@@ -1,10 +1,9 @@
 import { actorByType } from '+game/actors'
-import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
-import { ActorType } from '+game/types'
-import { rotationIndexToDeg } from '+helpers'
+import { ActorType, Position } from '+game/types'
+import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
 import { UnsubscribeFn } from 'emittery'
 import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
@@ -108,9 +107,13 @@ export class BuildInteractions {
 
         const currTail = this.game.world.getTile(position)
         const worldSize = this.game.world.getSize()
-        this.placeholder.position.x = position[0] - worldSize[0] / 2
-        this.placeholder.position.y = currTail.height
-        this.placeholder.position.z = position[1] - worldSize[1] / 2
+
+        const placeholderPosition: Position = [
+            position[0] - worldSize[0] / 2,
+            position[1] - worldSize[1] / 2,
+        ]
+
+        updateObjectPosition(this.placeholder, placeholderPosition, currTail.height)
 
         this.placeHolderMaterial.color.setHex(!currTail.canBuild ? 0xff0000 : 0x5eff64)
     }

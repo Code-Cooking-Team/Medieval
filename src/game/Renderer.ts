@@ -11,6 +11,7 @@ import {
     Vector2,
     WebGLRenderer,
 } from 'three'
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -44,6 +45,7 @@ export class Renderer {
     private outlinePass?: OutlinePass
     private FXAAPass?: any
     private GammaCorrectionPass?: any
+    private bokehPass?: BokehPass
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
@@ -80,6 +82,7 @@ export class Renderer {
             this.scene,
             this.rtsCamera.camera,
         )
+
         this.ground = new GroundRenderer(this.game)
         this.water = new WaterRenderer(this.game)
     }
@@ -158,6 +161,8 @@ export class Renderer {
     }
 
     private addComposerPasses() {
+        const width = window.innerWidth
+        const height = window.innerHeight
         const camera = this.rtsCamera.camera
 
         const renderPass = new RenderPass(this.scene, camera)
@@ -171,10 +176,11 @@ export class Renderer {
                 pulsePeriod: config.postProcessing.outlinePulsePeriod,
             }
             this.outlinePass = new OutlinePass(
-                new Vector2(window.innerWidth, window.innerHeight),
+                new Vector2(width, height),
                 this.scene,
                 camera,
             )
+
             this.outlinePass.edgeStrength = outlineParams.edgeStrength
             this.outlinePass.edgeGlow = outlineParams.edgeGlow
             this.outlinePass.edgeThickness = outlineParams.edgeThickness
@@ -186,21 +192,16 @@ export class Renderer {
         }
 
         //BLOOM
-        const bloomPassParams = {
-            bloomStrength: config.postProcessing.bloomStrength,
-            bloomThreshold: config.postProcessing.bloomThreshold,
-            bloomRadius: config.postProcessing.bloomRadius,
-        }
         if (config.postProcessing.bloom) {
             const bloomPass = new UnrealBloomPass(
-                new Vector2(window.innerWidth, window.innerHeight),
+                new Vector2(width, height),
                 1.5,
                 0.4,
                 0.85,
             )
-            bloomPass.threshold = bloomPassParams.bloomThreshold
-            bloomPass.strength = bloomPassParams.bloomStrength
-            bloomPass.radius = bloomPassParams.bloomRadius
+            bloomPass.strength = config.postProcessing.bloomStrength
+            bloomPass.threshold = config.postProcessing.bloomThreshold
+            bloomPass.radius = config.postProcessing.bloomRadius
             this.composer.addPass(bloomPass)
         }
 
@@ -209,10 +210,23 @@ export class Renderer {
             this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
             this.composer.addPass(this.GammaCorrectionPass)
         }
+
         // FXAA
         if (config.postProcessing.FXAAEnable) {
             this.FXAAPass = new ShaderPass(FXAAShader)
             this.composer.addPass(this.FXAAPass)
+        }
+
+        // Bokeh
+        if (config.postProcessing.bokehEnable) {
+            this.bokehPass = new BokehPass(this.scene, camera, {
+                focus: 5,
+                aperture: 0.0005,
+                maxblur: 0.05,
+                width: width,
+                height: height,
+            })
+            this.composer.addPass(this.bokehPass)
         }
     }
 
@@ -253,25 +267,29 @@ export class Renderer {
     }
 
     private resize = () => {
-        this.rtsCamera.camera.aspect = window.innerWidth / window.innerHeight
-        this.rtsCamera.camera.updateProjectionMatrix()
-
+        const width = window.innerWidth
+        const height = window.innerHeight
+        const aspect = width / height
         const pixelRatio = window.devicePixelRatio
 
+        this.rtsCamera.camera.aspect = aspect
+        this.rtsCamera.camera.updateProjectionMatrix()
+
         this.webGLRenderer.setPixelRatio(pixelRatio)
-        this.webGLRenderer.setSize(window.innerWidth, window.innerHeight)
+        this.webGLRenderer.setSize(width, height)
 
         if (config.postProcessing.postprocessingEnable) {
-            this.composer.setSize(window.innerWidth, window.innerHeight)
+            this.composer.setSize(width, height)
             this.composer.setPixelRatio(pixelRatio)
         }
 
         if (this.FXAAPass) {
-            this.FXAAPass.material.uniforms.resolution.value.x =
-                1 / (window.innerWidth * pixelRatio)
+            this.FXAAPass.material.uniforms.resolution.value.x = 1 / (width * pixelRatio)
+            this.FXAAPass.material.uniforms.resolution.value.y = 1 / (height * pixelRatio)
+        }
 
-            this.FXAAPass.material.uniforms.resolution.value.y =
-                1 / (window.innerHeight * pixelRatio)
+        if (this.bokehPass) {
+            this.bokehPass.setSize(width, height)
         }
     }
 
@@ -296,6 +314,12 @@ export class Renderer {
 
         if (config.postProcessing.postprocessingEnable) {
             this.composer.render()
+
+            if (this.bokehPass) {
+                const cameraY = this.rtsCamera.camera.position.y
+                const uniform = this.bokehPass.uniforms as any
+                uniform.focus.value = cameraY * 1.1
+            }
         } else {
             this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
         }

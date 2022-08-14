@@ -47,40 +47,40 @@ export class GroundRenderer extends BasicRenderer {
 
         const loader = new TextureLoader()
 
-        const scale = 10
+        const textureScale = 10
 
         const [sizeX, sizeY] = this.game.world.getSize()
 
         loader.load(colorUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / scale, sizeY / scale)
+            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
             this.groundMaterial.map = texture
         })
         loader.load(normalUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / scale, sizeY / scale)
+            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
             this.groundMaterial.normalMap = texture
         })
         loader.load(heightUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / scale, sizeY / scale)
+            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
             this.groundMaterial.bumpMap = texture
             this.groundMaterial.bumpScale = 0.01
         })
         loader.load(aoUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / scale, sizeY / scale)
+            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
             this.groundMaterial.aoMap = texture
             this.groundMaterial.aoMapIntensity = 0.2
         })
         loader.load(roughnessUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / scale, sizeY / scale)
+            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
 
             this.groundMaterial.roughnessMap = texture
             this.groundMaterial.metalnessMap = texture
@@ -138,7 +138,7 @@ export class GroundRenderer extends BasicRenderer {
 
         for (let i = 0; i < position.count; i++) {
             const tile = this.game.world.getTile(getPositionByIndex(i, wordWidth))
-            position.setY(i, tile.height)
+            position.setY(i, tile.height * config.renderer.tileSize)
             color.setHex(tile.color)
             colors.setXYZ(i, color.r, color.g, color.b)
             colors.needsUpdate = true

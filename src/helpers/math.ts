@@ -6,10 +6,33 @@ export const distanceBetweenPoints = ([x1, y1]: Position, [x2, y2]: Position): n
 export const maxValue = (curr: number, expected: number): number =>
     curr < expected ? curr : expected
 
-export const addPosition = (a: Position, b: Position): Position => [
-    a[0] + b[0],
-    a[1] + b[1],
-]
+export const addPosition = ([x, y]: Position, b: Position | number): Position => {
+    if (typeof b === 'number') {
+        return [x + b, y + b]
+    }
+    return [x + b[0], y + b[1]]
+}
+
+export const subtractPosition = ([x, y]: Position, b: Position | number): Position => {
+    if (typeof b === 'number') {
+        return [x - b, y - b]
+    }
+    return [x - b[0], y - b[1]]
+}
+
+export const multiplyPosition = ([x, y]: Position, b: Position | number): Position => {
+    if (typeof b === 'number') {
+        return [x * b, y * b]
+    }
+    return [x * b[0], y * b[1]]
+}
+
+export const dividePosition = ([x, y]: Position, b: Position | number): Position => {
+    if (typeof b === 'number') {
+        return [x / b, y / b]
+    }
+    return [x / b[0], y / b[1]]
+}
 
 export const isSamePosition = (a: Position, b: Position): boolean =>
     a[0] === b[0] && a[1] === b[1]

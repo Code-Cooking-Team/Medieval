@@ -5,6 +5,8 @@ import { normalizeEventKeyName } from '+helpers'
 import { MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
+const CAMERA_SPEED = config.renderer.tileSize * 3
+
 export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
         config.core.cameraFov,
@@ -17,8 +19,8 @@ export class RTSCamera implements Renderable {
 
     constructor(private domElement: HTMLElement) {
         this.camera.position.x = 0
-        this.camera.position.y = 25
-        this.camera.position.z = 25
+        this.camera.position.y = 5
+        this.camera.position.z = 5
 
         this.camera.rotation.x = -Math.PI / 3
         this.camera.rotation.order = 'YXZ'
@@ -37,7 +39,7 @@ export class RTSCamera implements Renderable {
         Object.entries(this.keyPressed).forEach(([keyName, start]) => {
             const momentum = this.getMomentum(now, start, deltaTime)
             const zoomOutBust = this.camera.position.y / 100
-            const momentumTranslate = momentum + zoomOutBust
+            const momentumTranslate = (momentum + zoomOutBust) * CAMERA_SPEED
             const cameraRotation = this.camera.rotation.x
 
             const key = normalizeEventKeyName(keyName)

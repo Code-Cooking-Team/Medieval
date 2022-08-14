@@ -3,9 +3,9 @@ import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType, ClockInfo } from '+game/types'
+import { ActorType, ClockInfo, Position } from '+game/types'
 import { Tile } from '+game/world/Tile'
-import { rotationIndexToDeg } from '+helpers'
+import { multiplyPosition, rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
 import {
     BoxGeometry,
@@ -57,8 +57,6 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         actor: TActor,
         tile: Tile,
     ): { group: Group; interactionShape: Mesh } {
-        let [x, y] = actor.position
-
         const group = new Group()
 
         const hp = new Mesh(this.hpGeometry, this.hpMaterial)
@@ -69,9 +67,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         const interactionShape = this.createInteractionMesh(actor)
         group.add(interactionShape)
 
-        group.position.x = 0
-        group.position.y = tile.height
-        group.position.z = y * config.renderer.tileSize
+        updateObjectPosition(group, actor.position, tile.height)
 
         group.rotation.y = rotationIndexToDeg(actor.rotation)
 
@@ -182,13 +178,8 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
 
     protected updatePosition(clockInfo: ClockInfo) {
         this.actorGroupMap.forEach((group, actor) => {
-            const [x, y] = actor.position
             const tile = this.game.world.getTile(actor.position)
-            const tileX = x * config.renderer.tileSize
-            const tileY = y * config.renderer.tileSize
-            group.position.x = tileX
-            group.position.z = tileY
-            group.position.y = tile.height
+            updateObjectPosition(group, actor.position, tile.height)
         })
     }
 

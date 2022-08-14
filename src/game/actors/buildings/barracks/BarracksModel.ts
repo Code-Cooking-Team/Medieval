@@ -1,7 +1,7 @@
 import { ActorModel } from '+game/types'
-import { loadGLTF } from '+helpers/three'
+import { loadGLTF, updateScale } from '+helpers'
 
-import { Group, LOD } from 'three'
+import { LOD } from 'three'
 
 import houseUrl from './models/barracks.gltf'
 
@@ -17,6 +17,8 @@ export class BarracksModel implements ActorModel {
                 lod.addLevel(child.clone(), (model.children.length - index - 1) * 80)
             })
         })
+
+        updateScale(lod)
 
         this.model = lod
     }

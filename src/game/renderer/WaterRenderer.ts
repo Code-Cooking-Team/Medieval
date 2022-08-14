@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { Game } from '+game/Game'
 import { ClockInfo } from '+game/types'
 
@@ -26,7 +27,7 @@ export class WaterRenderer extends BasicRenderer {
         })
 
         this.mesh = new Mesh(geometry, material)
-        this.mesh.position.y = -0.5
+        this.mesh.position.y = -0.5 * config.renderer.tileSize
         this.mesh.renderOrder = 0
         this.group.add(this.mesh)
     }
@@ -39,7 +40,7 @@ export class WaterRenderer extends BasicRenderer {
             let y =
                 0.15 * Math.sin(i / 2 + (time + i) / 8) +
                 0.15 * Math.sin(i / 1.2 + (time / 10 + i) / 8)
-            position.setY(i, y)
+            position.setY(i, y * config.renderer.tileSize)
         }
         position.needsUpdate = true
     }

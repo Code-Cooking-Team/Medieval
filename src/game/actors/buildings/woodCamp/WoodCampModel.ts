@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { ActorModel } from '+game/types'
-import { loadGLTF } from '+helpers/three'
+import { loadGLTF, updateScale } from '+helpers'
 
 import { LOD } from 'three'
 
@@ -19,8 +19,7 @@ export class WoodCampModel implements ActorModel {
             })
         })
 
-        // lod.position.z = (8 / 2) * config.renderer.tileSize
-        // lod.position.x = (8 / 2) * config.renderer.tileSize
+        updateScale(lod)
 
         this.model = lod
     }
