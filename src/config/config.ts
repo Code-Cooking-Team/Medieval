@@ -19,6 +19,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     },
 
     renderer: {
+        exposure: 1,
         tileSize: 0.1,
         fog: true,
         fogTransparency: 3,
@@ -32,20 +33,25 @@ export const { config, resetConfig, saveConfig } = createConfig({
     },
 
     postProcessing: {
-        exposure: 1,
-        postprocessingEnable: true,
-        bloom: true,
+        postprocessingEnabled: true,
+
+        bloomEnabled: true,
         bloomStrength: 1.25,
         bloomThreshold: 0.45,
         bloomRadius: 0.45,
-        outlineEnable: true,
+
+        outlineEnabled: true,
         outlineEdgeStrength: 2.0,
         outlineEdgeGlow: 0.0,
         outlineEdgeThickness: 0.2,
         outlinePulsePeriod: 0,
-        FXAAEnable: true,
+
+        FXAAEnabled: true,
         bokehEnable: true,
-        GammaCorrectionShader: true,
+        bokehAperture: 0.0005,
+        bokehMaxBlur: 0.05,
+
+        gammaCorrectionShader: true,
     },
 
     walkableRenderer: {

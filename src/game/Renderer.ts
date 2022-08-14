@@ -68,10 +68,7 @@ export class Renderer {
         this.webGLRenderer.toneMapping = NoToneMapping
 
         this.webGLRenderer.toneMapping = ReinhardToneMapping
-        this.webGLRenderer.toneMappingExposure = Math.pow(
-            config.postProcessing.exposure,
-            4.0,
-        )
+        this.webGLRenderer.toneMappingExposure = Math.pow(config.renderer.exposure, 4.0)
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
@@ -88,7 +85,7 @@ export class Renderer {
     }
 
     public init() {
-        if (config.postProcessing.postprocessingEnable) this.addComposerPasses()
+        if (config.postProcessing.postprocessingEnabled) this.addComposerPasses()
 
         this.rootEl.append(this.webGLRenderer.domElement)
 
@@ -167,8 +164,8 @@ export class Renderer {
 
         const renderPass = new RenderPass(this.scene, camera)
 
-        // OUTLINE
-        if (config.postProcessing.outlineEnable) {
+        // Outline
+        if (config.postProcessing.outlineEnabled) {
             const outlineParams = {
                 edgeStrength: config.postProcessing.outlineEdgeStrength,
                 edgeGlow: config.postProcessing.outlineEdgeGlow,
@@ -191,8 +188,8 @@ export class Renderer {
             this.composer.addPass(this.outlinePass)
         }
 
-        //BLOOM
-        if (config.postProcessing.bloom) {
+        // Bloom
+        if (config.postProcessing.bloomEnabled) {
             const bloomPass = new UnrealBloomPass(
                 new Vector2(width, height),
                 1.5,
@@ -206,13 +203,13 @@ export class Renderer {
         }
 
         // GammaCorrection
-        if (config.postProcessing.GammaCorrectionShader) {
+        if (config.postProcessing.gammaCorrectionShader) {
             this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
             this.composer.addPass(this.GammaCorrectionPass)
         }
 
         // FXAA
-        if (config.postProcessing.FXAAEnable) {
+        if (config.postProcessing.FXAAEnabled) {
             this.FXAAPass = new ShaderPass(FXAAShader)
             this.composer.addPass(this.FXAAPass)
         }
@@ -221,8 +218,8 @@ export class Renderer {
         if (config.postProcessing.bokehEnable) {
             this.bokehPass = new BokehPass(this.scene, camera, {
                 focus: 5,
-                aperture: 0.0005,
-                maxblur: 0.05,
+                aperture: config.postProcessing.bokehAperture,
+                maxblur: config.postProcessing.bokehMaxBlur,
                 width: width,
                 height: height,
             })
@@ -278,7 +275,7 @@ export class Renderer {
         this.webGLRenderer.setPixelRatio(pixelRatio)
         this.webGLRenderer.setSize(width, height)
 
-        if (config.postProcessing.postprocessingEnable) {
+        if (config.postProcessing.postprocessingEnabled) {
             this.composer.setSize(width, height)
             this.composer.setPixelRatio(pixelRatio)
         }
@@ -312,7 +309,7 @@ export class Renderer {
 
         this.rtsCamera.render(clockInfo)
 
-        if (config.postProcessing.postprocessingEnable) {
+        if (config.postProcessing.postprocessingEnabled) {
             this.composer.render()
 
             if (this.bokehPass) {
