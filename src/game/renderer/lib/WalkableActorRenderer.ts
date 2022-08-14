@@ -16,7 +16,10 @@ export abstract class WalkableActorRenderer<
 
     protected updatePosition(clockInfo: ClockInfo) {
         this.actorGroupMap.forEach((group, actor) => {
-            const speed = clockInfo.deltaTime * config.walkableRenderer.movementSmoothness
+            const speed = Math.min(
+                clockInfo.deltaTime * config.walkableRenderer.movementSmoothness,
+                1,
+            )
             const [x, y] = actor.position
             const tile = this.game.world.getTile(actor.position)
 
