@@ -25,26 +25,26 @@ export class InteractionsManager {
     }
 
     public init() {
-        this.keyboard.addEventListeners()
+        this.keyboard.enable()
         this.selectMode()
     }
 
     public destroy() {
-        this.keyboard.removeEventListeners()
-        this.build.removeEventListeners()
-        this.select.removeEventListeners()
+        this.keyboard.disable()
+        this.build.disable()
+        this.select.disable()
 
         this.player.emitter.off('selectBuilding', this.buildMode)
         this.player.emitter.off('unselectBuilding', this.selectMode)
     }
 
     public selectMode = () => {
-        this.select.addEventListeners()
-        this.build.removeEventListeners()
+        this.select.enable()
+        this.build.disable()
     }
 
     public buildMode = () => {
-        this.select.removeEventListeners()
-        this.build.addEventListeners()
+        this.select.disable()
+        this.build.enable()
     }
 }

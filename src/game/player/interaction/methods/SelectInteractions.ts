@@ -36,7 +36,7 @@ export class SelectInteractions {
         )
     }
 
-    public addEventListeners() {
+    public enable() {
         this.el.addEventListener('contextmenu', this.handleContextmenu)
         this.el.addEventListener('pointerdown', this.handlePointerDown)
         document.addEventListener('pointermove', this.handlePointerMove)
@@ -44,7 +44,7 @@ export class SelectInteractions {
         this.el.addEventListener('dblclick', this.handleDoubleClick)
     }
 
-    public removeEventListeners() {
+    public disable() {
         this.el.removeEventListener('contextmenu', this.handleContextmenu)
         this.el.removeEventListener('pointerdown', this.handlePointerDown)
         document.removeEventListener('pointermove', this.handlePointerMove)

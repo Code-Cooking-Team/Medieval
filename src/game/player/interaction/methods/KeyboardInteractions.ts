@@ -13,12 +13,12 @@ export class KeyboardInteractions {
         public player: HumanPlayer,
     ) {}
 
-    public addEventListeners() {
+    public enable() {
         window.addEventListener('keyup', this.handleKeyUp)
         window.addEventListener('keydown', this.handleKeyDown)
     }
 
-    public removeEventListeners() {
+    public disable() {
         window.removeEventListener('keyup', this.handleKeyUp)
         window.removeEventListener('keydown', this.handleKeyDown)
     }

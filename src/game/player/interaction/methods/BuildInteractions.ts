@@ -36,7 +36,11 @@ export class BuildInteractions {
 
     private subscriptions: UnsubscribeFn[] = []
 
-    public addEventListeners() {
+    public enable() {
+        if (this.player.selectedBuilding) {
+            this.setPlaceholder(this.player.selectedBuilding)
+        }
+
         this.subscriptions = [
             this.player.emitter.on('selectBuilding', this.setPlaceholder),
             this.player.emitter.on('unselectBuilding', this.removePlaceholder),
@@ -49,7 +53,7 @@ export class BuildInteractions {
         this.renderer.scene.add(this.placeholder)
     }
 
-    public removeEventListeners() {
+    public disable() {
         this.subscriptions.forEach((unsubscribe) => unsubscribe())
 
         this.el.removeEventListener('click', this.handleClick)
