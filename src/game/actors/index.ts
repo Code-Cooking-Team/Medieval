@@ -1,19 +1,19 @@
 import { Actor, ActorClass, ActorJSON } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { Player } from '+game/player/types'
-import { ActorModel, ActorType } from '+game/types'
+import { ActorBlueprint, ActorType } from '+game/types'
 
 import { BarracksActor } from './buildings/barracks/BarracksActor'
-import { BarracksModel } from './buildings/barracks/BarracksModel'
+import { BarracksBlueprint } from './buildings/barracks/BarracksBlueprint'
 import { BarracksRenderer } from './buildings/barracks/BarracksRenderer'
 import { HouseActor } from './buildings/house/HouseActor'
-import { HouseModel } from './buildings/house/HouseModel'
+import { HouseBlueprint } from './buildings/house/HouseBlueprint'
 import { HouseRenderer } from './buildings/house/HouseRenderer'
 import { StakewallActor } from './buildings/stakewall/StakewallActor'
-import { StakewallModel } from './buildings/stakewall/StakewallModel'
+import { StakewallBlueprint } from './buildings/stakewall/StakewallBlueprint'
 import { StakewallRenderer } from './buildings/stakewall/StakewallRenderer'
 import { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
-import { WoodCampModel } from './buildings/woodCamp/WoodCampModel'
+import { WoodCampBlueprint } from './buildings/woodCamp/WoodCampBlueprint'
 import { WoodCampRenderer } from './buildings/woodCamp/WoodCampRenderer'
 import { TreeActor } from './flora/tree/TreeActor'
 import { TreeRenderer } from './flora/tree/TreeRenderer'
@@ -39,16 +39,34 @@ const emptyActor = () => {
 
 export const actorByType: Record<
     ActorType,
-    { actorClass: ActorClass; model?: ActorModel }
+    { actorClass: ActorClass; blueprint?: ActorBlueprint }
 > = {
     [ActorType.Empty]: emptyActor as any,
-    [ActorType.House]: { actorClass: HouseActor, model: new HouseModel() },
-    [ActorType.Human]: { actorClass: HumanActor },
-    [ActorType.Tree]: { actorClass: TreeActor },
-    [ActorType.WoodCamp]: { actorClass: WoodCampActor, model: new WoodCampModel() },
-    [ActorType.Barracks]: { actorClass: BarracksActor, model: new BarracksModel() },
-    [ActorType.Boar]: { actorClass: BoarActor },
-    [ActorType.Stakewall]: { actorClass: StakewallActor, model: new StakewallModel() },
+    [ActorType.House]: {
+        actorClass: HouseActor,
+        blueprint: new HouseBlueprint(),
+    },
+    [ActorType.WoodCamp]: {
+        actorClass: WoodCampActor,
+        blueprint: new WoodCampBlueprint(),
+    },
+    [ActorType.Barracks]: {
+        actorClass: BarracksActor,
+        blueprint: new BarracksBlueprint(),
+    },
+    [ActorType.Stakewall]: {
+        actorClass: StakewallActor,
+        blueprint: new StakewallBlueprint(),
+    },
+    [ActorType.Human]: {
+        actorClass: HumanActor,
+    },
+    [ActorType.Tree]: {
+        actorClass: TreeActor,
+    },
+    [ActorType.Boar]: {
+        actorClass: BoarActor,
+    },
 }
 
 export const actorFromJSON = (json: ActorJSON, game: Game, player: Player): Actor => {

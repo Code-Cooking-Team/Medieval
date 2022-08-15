@@ -1,5 +1,7 @@
 import { Group, LOD } from 'three'
 
+import { TileCodeGrid } from './world/tileCodes'
+
 export type Position = [number, number]
 
 export type Path = { x: number; y: number }[]
@@ -37,8 +39,12 @@ export interface ClockInfo {
     deltaTime: number
 }
 
-export interface ActorModel {
+export interface ActorBlueprint {
     getModel(): Group | LOD
+    getPlaceholder(): { model: Group | LOD; promise: Promise<void> }
+    getGrid(): TileCodeGrid
+    height: number
+    config?: { [key: string]: unknown }
 }
 
 export interface Renderable {

@@ -1,32 +1,23 @@
+import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType, Position } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
+import { ActorType } from '+game/types'
 import { addPosition, rotatePositionOnGrind } from '+helpers'
+
+import { WoodCampBlueprint } from './WoodCampBlueprint'
 
 export class WoodCampActor extends BuildingActor {
     public type = ActorType.WoodCamp
-
-    public readonly grid: TileCodeGrid = [
-        ['🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢'],
-        ['🟢', '🧱', '🧱', '🧱', '🧱', '🧱', '🧱', '🟢'],
-        ['🟢', '🧱', '🧱', '🧱', '🧱', '🧱', '🧱', '🟢'],
-        ['🟢', '🧱', '🧱', '🧱', '🧱', '🛖', '🧱', '🟢'],
-        ['🟢', '🧱', '🧱', '🧱', '🧱', '🛖', '🧱', '🟢'],
-        ['🟢', '🦶🏽', '🦶🏽', '🦶🏽', '🧱', '🛖', '🧱', '🟢'],
-        ['🧱', '🧱', '🧱', '🦶🏽', '🧱', '🛖', '🧱', '🟢'],
-        ['🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢'],
-    ]
-
-    private readonly deliveryLocalPosition: Position = [2, 5]
+    public blueprint = actorByType[this.type].blueprint as WoodCampBlueprint
 
     public collectedTreeHP = 0
 
     public getDeliveryPoint() {
+        const config = this.blueprint.config
         const transposedDeliveryPosition = rotatePositionOnGrind(
-            this.deliveryLocalPosition,
+            config.deliveryLocalPosition,
             this.getSize(),
             this.rotation,
         )

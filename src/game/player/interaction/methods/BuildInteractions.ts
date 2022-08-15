@@ -62,19 +62,26 @@ export class BuildInteractions {
         this.renderer.scene.remove(this.placeholder)
     }
 
-    private setPlaceholder = (type: ActorType) => {
+    private setPlaceholder = async (type: ActorType) => {
         this.removePlaceholder()
-        const actorModel = actorByType[type].model
-        if (!actorModel) return
-        this.placeholderModel = actorModel.getModel()
-        this.placeholderModel.traverse((child) => {
-            if (child instanceof Mesh) {
-                child.castShadow = false
-                child.receiveShadow = false
-                child.material = this.placeHolderMaterial
+        const actorBlueprint = actorByType[type].blueprint
+
+        if (!actorBlueprint) return
+
+        const { model, promise } = actorBlueprint.getPlaceholder()
+
+        this.placeholderModel = model
+        this.placeholder.add(this.placeholderModel)
+
+        await promise
+
+        this.placeholderModel?.traverse((object) => {
+            if (object instanceof Mesh) {
+                object.castShadow = false
+                object.receiveShadow = false
+                object.material = this.placeHolderMaterial
             }
         })
-        this.placeholder.add(this.placeholderModel)
     }
 
     private removePlaceholder = () => {

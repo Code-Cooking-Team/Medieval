@@ -1,22 +1,19 @@
-import { Position } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
+import { ActorBlueprint, Position } from '+game/types'
 
-import { Actor, ActorJSON } from './Actor'
+import { Actor } from './Actor'
 
-export class BuildingActor extends Actor {
+export abstract class BuildingActor extends Actor {
     public selectImportance = 1
-    public grid: TileCodeGrid = [['.']]
-    public height = 3
+    public blueprint = {} as ActorBlueprint
 
     // TODO Take into account ROTATION
     // Watch out for the fact that interaction mesh needs NOT rotated size
     public getSize() {
-        if (!this.grid[0]) throw new Error('[BuildingActor] Grid is empty')
-        return [this.grid[0].length, this.grid.length, this.height] as [
-            number,
-            number,
-            number,
-        ]
+        const grid = this.blueprint.getGrid()
+        const height = this.blueprint.height
+
+        if (!grid[0]) throw new Error('[BuildingActor] Grid is empty')
+        return [grid[0].length, grid.length, height] as [number, number, number]
     }
 
     public getGlobalPosition() {
@@ -25,22 +22,4 @@ export class BuildingActor extends Actor {
 
         return [x - Math.floor(sizeX / 2), y - Math.floor(sizeY / 2)] as Position
     }
-
-    public toJSON(): BuildingActorJSON {
-        return {
-            ...super.toJSON(),
-            grid: this.grid,
-            height: this.height,
-        }
-    }
-
-    public fromJSON({ grid, height, ...json }: BuildingActorJSON) {
-        super.fromJSON(json)
-        Object.assign(this, { grid, height })
-    }
-}
-
-export interface BuildingActorJSON extends ActorJSON {
-    grid: TileCodeGrid
-    height: number
 }

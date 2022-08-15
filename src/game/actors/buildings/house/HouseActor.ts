@@ -1,25 +1,15 @@
 import { config } from '+config'
+import { actorByType } from '+game/actors'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { ActorType } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
 import { random } from '+helpers'
+
+import { HouseBlueprint } from './HouseBlueprint'
 
 export class HouseActor extends BuildingActor {
     public type = ActorType.House
-
-    public grid: TileCodeGrid = [
-        ['🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢'],
-        ['🟢', '🧱', '🧱', '🧱', '🧱', '🧱', '🧱', '🦶🏽', '🧱', '🟢'],
-        ['🟢', '🧱', '🛖', '🛖', '🛖', '🛖', '🧱', '🧱', '🦶🏽', '🟢'],
-        ['🟢', '🧱', '🛖', '🛖', '🛖', '🛖', '🧱', '🧱', '🦶🏽', '🟢'],
-        ['🟢', '🧱', '🛖', '🛖', '🧱', '🧱', '🧱', '🦶🏽', '🧱', '🟢'],
-        ['🟢', '🧱', '🛖', '🛖', '🧱', '🦶🏽', '🦶🏽', '🦶🏽', '🟢', '🟢'],
-        ['🟢', '🧱', '🛖', '🛖', '🦶🏽', '🦶🏽', '🦶🏽', '🟢', '🟢', '🟢'],
-        ['🟢', '🧱', '🛖', '🛖', '🧱', '🦶🏽', '🦶🏽', '🟢', '🟢', '🟢'],
-        ['🟢', '🧱', '🧱', '🧱', '🧱', '🦶🏽', '🟢', '🟢', '🟢', '🟢'],
-        ['🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢'],
-    ]
+    public blueprint = actorByType[this.type].blueprint as HouseBlueprint
 
     public maxHp = config.house.hp
     public hp = this.maxHp

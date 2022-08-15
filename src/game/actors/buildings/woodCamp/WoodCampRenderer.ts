@@ -1,15 +1,11 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
-import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
-import { loadGLTF } from '+helpers'
 
-import { LOD, PointLight } from 'three'
+import { PointLight } from 'three'
 
 import { WoodCampActor } from './WoodCampActor'
-import { WoodCampModel } from './WoodCampModel'
 
 export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp
@@ -23,9 +19,8 @@ export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
             group.add(light)
         }
 
-        const model = new WoodCampModel()
-
-        group.add(model.getModel())
+        const model = actor.blueprint.getModel()
+        group.add(model.clone())
 
         return { group, interactionShape }
     }

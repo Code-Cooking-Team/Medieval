@@ -136,7 +136,7 @@ export class Game {
 
             this.world.setMultipleTiles((set, get) => {
                 applyTileGrid(
-                    actor.grid,
+                    actor.blueprint.getGrid(),
                     ([localX, localY], TileClass, [centerX, centerY]) => {
                         const position: Position = [
                             x + localX - centerX,
