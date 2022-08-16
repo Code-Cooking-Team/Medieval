@@ -18,7 +18,7 @@ export class WaterRenderer extends BasicRenderer {
             color: 0xa2d3e8,
             // side: DoubleSide,
             transparent: true,
-            opacity: 0.4,
+            opacity: 0.6,
             roughness: 0,
             metalness: 1,
             flatShading: true,

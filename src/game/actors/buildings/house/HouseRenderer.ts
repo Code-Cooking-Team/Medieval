@@ -16,9 +16,12 @@ export class HouseRenderer extends ActorRenderer<HouseActor> {
         const model = actor.blueprint.getModel()
         group.add(model.clone())
 
+        const ts = config.renderer.tileSize
+
         if (config.renderer.light) {
-            const light = new PointLight(0xfa840e, 2, 15)
-            light.position.set(3, 2, 3)
+            const light = new PointLight(0xfa840e, 5, 15 * ts)
+            light.position.set(1 * ts, 2 * ts, 1 * ts)
+            light.castShadow = true
             group.add(light)
         }
 

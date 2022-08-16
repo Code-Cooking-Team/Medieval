@@ -30,6 +30,7 @@ export class TreeRenderer implements Renderable {
         color: 0x2c420b,
         metalness: 0.8,
         roughness: 0.9,
+        flatShading: true,
     })
 
     public group = new Group()

@@ -10,17 +10,19 @@ import {
     MeshStandardMaterial,
     RepeatWrapping,
     TextureLoader,
+    Vector2,
 } from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
 import { createWordPlane } from './lib/createWordPlane'
 // import hdrUrl from './textures/sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_roughness.tif'
 // tif not working
-import colorUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_albedo.jpg'
-import aoUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_ao.jpg'
-import heightUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_height.jpg'
-import normalUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_normal.jpg'
-import roughnessUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_roughness.jpg'
+import colorUrl from './textures/test4color.png'
+// import aoUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_ao.jpg'
+import heightUrl from './textures/test4height.png'
+import normalUrl from './textures/test4normal.png'
+
+// import roughnessUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_roughness.jpg'
 
 export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
@@ -43,11 +45,12 @@ export class GroundRenderer extends BasicRenderer {
             metalness: 0.1,
             roughness: 0.9,
             vertexColors: true,
+            flatShading: true,
         })
 
         const loader = new TextureLoader()
 
-        const textureScale = 10
+        const textureScale = 50
 
         const [sizeX, sizeY] = this.game.world.getSize()
 
@@ -57,42 +60,43 @@ export class GroundRenderer extends BasicRenderer {
             texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
             this.groundMaterial.map = texture
         })
-        loader.load(normalUrl, (texture) => {
-            texture.wrapS = RepeatWrapping
-            texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-            this.groundMaterial.normalMap = texture
-        })
+        // loader.load(normalUrl, (texture) => {
+        //     texture.wrapS = RepeatWrapping
+        //     texture.wrapT = RepeatWrapping
+        //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+        //     this.groundMaterial.normalMap = texture
+        //     this.groundMaterial.normalScale = new Vector2(0.12, 0.12)
+        // })
         loader.load(heightUrl, (texture) => {
             texture.wrapS = RepeatWrapping
             texture.wrapT = RepeatWrapping
             texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
             this.groundMaterial.bumpMap = texture
-            this.groundMaterial.bumpScale = 0.01
+            this.groundMaterial.bumpScale = 0.005
         })
-        loader.load(aoUrl, (texture) => {
-            texture.wrapS = RepeatWrapping
-            texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-            this.groundMaterial.aoMap = texture
-            this.groundMaterial.aoMapIntensity = 0.2
-        })
-        loader.load(roughnessUrl, (texture) => {
-            texture.wrapS = RepeatWrapping
-            texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+        // loader.load(aoUrl, (texture) => {
+        //     texture.wrapS = RepeatWrapping
+        //     texture.wrapT = RepeatWrapping
+        //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+        //     this.groundMaterial.aoMap = texture
+        //     this.groundMaterial.aoMapIntensity = 0.2
+        // })
+        // loader.load(roughnessUrl, (texture) => {
+        //     texture.wrapS = RepeatWrapping
+        //     texture.wrapT = RepeatWrapping
+        //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
 
-            this.groundMaterial.roughnessMap = texture
-            this.groundMaterial.metalnessMap = texture
+        //     this.groundMaterial.roughnessMap = texture
+        //     this.groundMaterial.metalnessMap = texture
 
-            // rain
-            // groundMaterial.roughness = 0.2
-            // groundMaterial.metalness = 0.1
+        //     // rain
+        //     // groundMaterial.roughness = 0.2
+        //     // groundMaterial.metalness = 0.1
 
-            // normal
-            this.groundMaterial.roughness = 1.1
-            // groundMaterial.metalness = 0.1
-        })
+        //     // normal
+        //     this.groundMaterial.roughness = 1.1
+        //     // groundMaterial.metalness = 0.1
+        // })
 
         this.groundMesh = new Mesh(this.geometry, this.groundMaterial)
         this.groundMesh.receiveShadow = true

@@ -25,7 +25,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         fogTransparency: 3,
         dayAndNightMode: true,
         dayAndNightTimeScale: 600,
-        dayAndNightTimeStart: -600,
+        dayAndNightTimeStart: 1,
         shadow: true,
         treeWaving: true,
         light: false,
@@ -48,7 +48,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
         FXAAEnabled: true,
         bokehEnable: true,
-        bokehAperture: 0.0025,
+        bokehAperture: 0.002,
         bokehMaxBlur: 0.05,
 
         gammaCorrectionShader: true,
