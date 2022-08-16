@@ -52,7 +52,7 @@ export const Input = ({
     }
 }
 
-interface InputStyleProps extends MarginProps {
+export interface InputStyleProps extends MarginProps {
     fullWidth?: boolean
 }
 

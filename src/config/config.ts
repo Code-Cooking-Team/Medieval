@@ -48,7 +48,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
         FXAAEnabled: true,
         bokehEnable: true,
-        bokehAperture: 0.0005,
+        bokehAperture: 0.0025,
         bokehMaxBlur: 0.05,
 
         gammaCorrectionShader: true,

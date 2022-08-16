@@ -73,8 +73,8 @@ export class EnvironmentRenderer extends BasicRenderer {
         if (!config.renderer.dayAndNightMode) return
 
         const time =
-            (elapsedTime + config.renderer.dayAndNightTimeStart) /
-            config.renderer.dayAndNightTimeScale
+            elapsedTime / config.renderer.dayAndNightTimeScale +
+            config.renderer.dayAndNightTimeStart
 
         this.sun.position.x = this.camera.position.x + Math.sin(time * 1) * 50
         this.sun.position.y = 20 + Math.cos(time * 1) * 50

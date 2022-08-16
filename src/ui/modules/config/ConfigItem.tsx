@@ -1,5 +1,6 @@
 import { ConfigType } from '+config/lib/definitions'
 import { color0xToHex, colorHexTo0x } from '+helpers'
+import { NumberInput } from '+ui/components/form/InputNumber'
 import { Switch } from '+ui/components/form/Switch'
 
 import { FC } from 'react'
@@ -33,16 +34,7 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
         return <Input type="text" value={value} onChange={onChange} fullWidth={true} />
     },
     [ConfigType.NumberInput]: ({ value, onChange }) => {
-        return (
-            <Input
-                type="number"
-                value={value}
-                onChange={(val) => {
-                    onChange(val)
-                }}
-                fullWidth={true}
-            />
-        )
+        return <NumberInput value={value} onChange={onChange} fullWidth={true} />
     },
     [ConfigType.Select]: ({ value, definition, onChange }) => {
         return (

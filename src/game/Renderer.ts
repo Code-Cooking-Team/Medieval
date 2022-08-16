@@ -314,8 +314,10 @@ export class Renderer {
 
             if (this.bokehPass) {
                 const cameraY = this.rtsCamera.camera.position.y
+                const cameraRotation =
+                    (this.rtsCamera.camera.rotation.x + Math.PI / 2) * 2
                 const uniform = this.bokehPass.uniforms as any
-                uniform.focus.value = cameraY * 1.1
+                uniform.focus.value = cameraY + cameraRotation
             }
         } else {
             this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
