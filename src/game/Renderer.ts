@@ -310,14 +310,21 @@ export class Renderer {
         this.rtsCamera.render(clockInfo)
 
         if (config.postProcessing.postprocessingEnabled) {
-            this.composer.render()
-
             if (this.bokehPass) {
                 const cameraY = this.rtsCamera.camera.position.y
                 const cameraRotation =
-                    (this.rtsCamera.camera.rotation.x + Math.PI / 2) * 2
+                    (this.rtsCamera.camera.rotation.x + Math.PI / 2) *
+                    1.5 *
+                    (cameraY * 0.2)
                 const uniform = this.bokehPass.uniforms as any
                 uniform.focus.value = cameraY + cameraRotation
+                uniform.aperture.value =
+                    (10 - cameraY + cameraRotation) *
+                    config.postProcessing.bokehAperture *
+                    0.2
+                console.log(uniform.aperture.value)
+
+                this.composer.render()
             }
         } else {
             this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
