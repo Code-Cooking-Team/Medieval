@@ -2,15 +2,21 @@ import { config } from '+config'
 
 import Stats from 'stats.js'
 import {
+    BoxBufferGeometry,
     Clock,
+    Mesh,
+    MeshBasicMaterial,
+    MeshStandardMaterial,
     NoToneMapping,
     PCFSoftShadowMap,
     ReinhardToneMapping,
     Scene,
     sRGBEncoding,
+    TorusGeometry,
     Vector2,
     WebGLRenderer,
 } from 'three'
+import { ProgressiveLightMap } from 'three/examples/jsm/misc/ProgressiveLightMap.js'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
@@ -58,6 +64,9 @@ export class Renderer {
     private basicRendererList: BasicRenderer[] = []
     private actorRendererList: ActorRenderer<Actor>[] = []
 
+    private progressiveSurfacemap: ProgressiveLightMap
+    public lightmapObjects: any[] = []
+
     constructor(
         public game: Game,
         public player: HumanPlayer,
@@ -74,6 +83,8 @@ export class Renderer {
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
         this.webGLRenderer.xr.enabled = true
 
+        this.progressiveSurfacemap = new ProgressiveLightMap(this.webGLRenderer, 128 * 20)
+
         this.environment = new EnvironmentRenderer(
             this.game,
             this.scene,
@@ -82,6 +93,40 @@ export class Renderer {
 
         this.ground = new GroundRenderer(this.game)
         this.water = new WaterRenderer(this.game)
+
+        this.lightmapObjects.push(this.environment.sun)
+        this.lightmapObjects.push(this.environment.ambient)
+        this.lightmapObjects.push(this.ground.groundMesh)
+
+        // default cube test
+        const cube = new Mesh(
+            new BoxBufferGeometry(5, 5, 5),
+            new MeshStandardMaterial({ color: 0xffffff }),
+        )
+        cube.position.set(0, 2.5, 0)
+        this.scene.add(cube)
+
+        const cube2 = new Mesh(
+            new TorusGeometry(20, 3.5, 32, 32),
+            new MeshStandardMaterial({ color: 0xffffff }),
+        )
+        cube.position.set(15, 2.5, 0)
+        this.scene.add(cube2)
+
+        const cube3 = cube.clone()
+        cube.position.set(0, 5, 15)
+        this.scene.add(cube3)
+
+        const cube4 = cube.clone()
+        cube.position.set(5, 5, 5)
+        this.scene.add(cube4)
+
+        this.lightmapObjects.push(cube)
+        this.lightmapObjects.push(cube2)
+        this.lightmapObjects.push(cube3)
+        this.lightmapObjects.push(cube4)
+
+        this.progressiveSurfacemap.addObjectsToLightMap(this.lightmapObjects)
     }
 
     public init() {
@@ -306,6 +351,12 @@ export class Renderer {
 
         this.basicRendererList.forEach((renderer) => renderer.render(clockInfo))
         this.actorRendererList.forEach((renderer) => renderer.render(clockInfo))
+
+        this.progressiveSurfacemap.update(this.rtsCamera.camera, 200, true)
+
+        if (!this.progressiveSurfacemap.firstUpdate) {
+            this.progressiveSurfacemap.showDebugLightmap(true)
+        }
 
         this.rtsCamera.render(clockInfo)
 

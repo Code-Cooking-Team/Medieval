@@ -25,7 +25,7 @@ import normalUrl from './textures/test4normal.png'
 // import roughnessUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_roughness.jpg'
 
 export class GroundRenderer extends BasicRenderer {
-    private groundMesh?: Mesh
+    public groundMesh?: Mesh
     private groundMaterial: MeshStandardMaterial
     private geometry?: HorizontalPlaneGeometry
 

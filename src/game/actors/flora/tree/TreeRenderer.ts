@@ -94,21 +94,21 @@ export class TreeRenderer implements Renderable {
                     rnd(-0.5, 0.5) / Math.PI,
                 )
 
-                if (config.renderer.treeWaving) {
-                    const sendX = dummy.scale.z * rnd(-0.5, 0.5)
-                    const sendZ = dummy.scale.z * rnd(-0.5, 0.5)
-                    dummy.rotation.z +=
-                        Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / 15
+                // if (config.renderer.treeWaving) {
+                //     const sendX = dummy.scale.z * rnd(-0.5, 0.5)
+                //     const sendZ = dummy.scale.z * rnd(-0.5, 0.5)
+                //     dummy.rotation.z +=
+                //         Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / 15
 
-                    dummy.position.x +=
-                        Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / -8
+                //     dummy.position.x +=
+                //         Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / -8
 
-                    dummy.rotation.x +=
-                        Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 15
+                //     dummy.rotation.x +=
+                //         Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 15
 
-                    dummy.position.z +=
-                        Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 8
-                }
+                //     dummy.position.z +=
+                //         Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 8
+                // }
             } else {
                 // TODO better remove
                 dummy.position.set(0, 0, 0)

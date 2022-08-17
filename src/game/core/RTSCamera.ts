@@ -11,16 +11,16 @@ export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
         config.core.cameraFov,
         window.innerWidth / window.innerHeight,
-        config.core.cameraNear,
-        config.core.cameraFar,
+        config.core.cameraNear * config.renderer.tileSize,
+        config.core.cameraFar * config.renderer.tileSize,
     )
 
     private keyPressed: { [key: string]: number } = {}
 
     constructor(private domElement: HTMLElement) {
         this.camera.position.x = 0
-        this.camera.position.y = 5
-        this.camera.position.z = 5
+        this.camera.position.y = 20 * config.renderer.tileSize
+        this.camera.position.z = 20 * config.renderer.tileSize
 
         this.camera.rotation.x = -Math.PI / 3
         this.camera.rotation.order = 'YXZ'

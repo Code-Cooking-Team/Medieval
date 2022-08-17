@@ -12,6 +12,7 @@ import {
     Object3D,
     Scene,
     TextureLoader,
+    Vector3,
 } from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
@@ -20,9 +21,10 @@ import hdrUrl from './textures/bg.jpg'
 const SHADOW_SCALE = 3
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xfff2c7, 3.2)
+    public sun = new DirectionalLight(0xfff2c7, 133.2)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0xdae6e8, 0.1)
+    // private ambient = new AmbientLight(0xdae6e8, 0.1)
+    public ambient = new DirectionalLight(0xfff2c7, 1.2)
 
     constructor(public game: Game, private scene: Scene, private camera: Camera) {
         super()
@@ -76,13 +78,27 @@ export class EnvironmentRenderer extends BasicRenderer {
             elapsedTime / config.renderer.dayAndNightTimeScale +
             config.renderer.dayAndNightTimeStart
 
-        this.sun.position.x = this.camera.position.x + Math.sin(time * 1) * 50
-        this.sun.position.y = 20 + Math.cos(time * 1) * 50
-        this.sun.position.z = this.camera.position.z + Math.cos(time * 1) * 50 * -1
+        const blur = 3
+        let fx = (Math.random() - 0.5) * blur
+        let fy = (Math.random() - 0.5) * blur
+        let fz = (Math.random() - 0.5) * blur
 
-        this.sunTarget.position.copy(this.camera.position)
-        this.sunTarget.position.y = 0
+        this.sun.position.x = fx + 10
+        this.sun.position.y = 5 + fy
+        this.sun.position.z = fz + 10
+
+        this.sunTarget.position.copy(new Vector3(0, 0, 0))
         this.sun.target = this.sunTarget
+
+        this.ambient.target = this.sunTarget
+
+        fx = (Math.random() - 0.5) * blur * 2
+        fy = (Math.random() - 0.5) * blur * 2
+        fz = (Math.random() - 0.5) * blur * 2
+
+        this.ambient.position.x = fx + 10
+        this.ambient.position.y = 5 + fy
+        this.ambient.position.z = fz + 10
 
         this.sun.shadow.camera.left = -SHADOW_SCALE * this.camera.position.y
         this.sun.shadow.camera.right = SHADOW_SCALE * this.camera.position.y
