@@ -10,6 +10,7 @@ export enum ActorType {
     Empty = 'Empty',
     Human = 'Human',
 
+    Guildhall = 'Guildhall',
     House = 'House',
     WoodCamp = 'WoodCamp',
     Barracks = 'Barracks',
@@ -22,6 +23,7 @@ export enum ActorType {
 export const actorTypesByCategory = {
     Unit: [ActorType.Human, ActorType.Boar],
     Building: [
+        ActorType.Guildhall,
         ActorType.House,
         ActorType.WoodCamp,
         ActorType.Barracks,

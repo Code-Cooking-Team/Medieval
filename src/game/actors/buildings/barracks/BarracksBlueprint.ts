@@ -4,9 +4,9 @@ import { loadGLTF, updateScale } from '+helpers'
 
 import { LOD } from 'three'
 
-import houseUrl from './models/barracks.gltf'
+import url from './models/barracks.gltf'
 
-const barracksModel = loadGLTF(houseUrl)
+const barracksModel = loadGLTF(url)
 
 export class BarracksBlueprint implements ActorBlueprint {
     // prettier-ignore

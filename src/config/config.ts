@@ -67,6 +67,10 @@ export const { config, resetConfig, saveConfig } = createConfig({
         hp: 1000,
     },
 
+    guildhall: {
+        hp: 1000,
+    },
+
     house: {
         hp: 1000,
         newChildCountMin: 10,
