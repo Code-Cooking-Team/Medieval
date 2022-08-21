@@ -54,49 +54,51 @@ export class GroundRenderer extends BasicRenderer {
 
         const [sizeX, sizeY] = this.game.world.getSize()
 
-        loader.load(colorUrl, (texture) => {
-            texture.wrapS = RepeatWrapping
-            texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-            this.groundMaterial.map = texture
-        })
-        // loader.load(normalUrl, (texture) => {
-        //     texture.wrapS = RepeatWrapping
-        //     texture.wrapT = RepeatWrapping
-        //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-        //     this.groundMaterial.normalMap = texture
-        //     this.groundMaterial.normalScale = new Vector2(0.12, 0.12)
-        // })
-        loader.load(heightUrl, (texture) => {
-            texture.wrapS = RepeatWrapping
-            texture.wrapT = RepeatWrapping
-            texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-            this.groundMaterial.bumpMap = texture
-            this.groundMaterial.bumpScale = 0.005
-        })
-        // loader.load(aoUrl, (texture) => {
-        //     texture.wrapS = RepeatWrapping
-        //     texture.wrapT = RepeatWrapping
-        //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-        //     this.groundMaterial.aoMap = texture
-        //     this.groundMaterial.aoMapIntensity = 0.2
-        // })
-        // loader.load(roughnessUrl, (texture) => {
-        //     texture.wrapS = RepeatWrapping
-        //     texture.wrapT = RepeatWrapping
-        //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+        if (config.renderer.texture) {
+            loader.load(colorUrl, (texture) => {
+                texture.wrapS = RepeatWrapping
+                texture.wrapT = RepeatWrapping
+                texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+                this.groundMaterial.map = texture
+            })
+            // loader.load(normalUrl, (texture) => {
+            //     texture.wrapS = RepeatWrapping
+            //     texture.wrapT = RepeatWrapping
+            //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+            //     this.groundMaterial.normalMap = texture
+            //     this.groundMaterial.normalScale = new Vector2(0.12, 0.12)
+            // })
+            loader.load(heightUrl, (texture) => {
+                texture.wrapS = RepeatWrapping
+                texture.wrapT = RepeatWrapping
+                texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+                this.groundMaterial.bumpMap = texture
+                this.groundMaterial.bumpScale = 0.005
+            })
+            // loader.load(aoUrl, (texture) => {
+            //     texture.wrapS = RepeatWrapping
+            //     texture.wrapT = RepeatWrapping
+            //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
+            //     this.groundMaterial.aoMap = texture
+            //     this.groundMaterial.aoMapIntensity = 0.2
+            // })
+            // loader.load(roughnessUrl, (texture) => {
+            //     texture.wrapS = RepeatWrapping
+            //     texture.wrapT = RepeatWrapping
+            //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
 
-        //     this.groundMaterial.roughnessMap = texture
-        //     this.groundMaterial.metalnessMap = texture
+            //     this.groundMaterial.roughnessMap = texture
+            //     this.groundMaterial.metalnessMap = texture
 
-        //     // rain
-        //     // groundMaterial.roughness = 0.2
-        //     // groundMaterial.metalness = 0.1
+            //     // rain
+            //     // groundMaterial.roughness = 0.2
+            //     // groundMaterial.metalness = 0.1
 
-        //     // normal
-        //     this.groundMaterial.roughness = 1.1
-        //     // groundMaterial.metalness = 0.1
-        // })
+            //     // normal
+            //     this.groundMaterial.roughness = 1.1
+            //     // groundMaterial.metalness = 0.1
+            // })
+        }
 
         this.groundMesh = new Mesh(this.geometry, this.groundMaterial)
         this.groundMesh.receiveShadow = true

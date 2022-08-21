@@ -13,6 +13,9 @@ export abstract class BuildingActor extends Actor {
         const height = this.blueprint.height
 
         if (!grid[0]) throw new Error('[BuildingActor] Grid is empty')
+
+        // IMPORTANT:
+        // The grid is rotated so te X length is a grid[0].length, and the Y length is a grid.length
         return [grid[0].length, grid.length, height] as [number, number, number]
     }
 

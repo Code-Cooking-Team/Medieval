@@ -4,7 +4,7 @@ import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
 import { listenerAdded } from 'emittery'
-import { PointLight } from 'three'
+import { AxesHelper, PointLight } from 'three'
 
 import { WoodCampActor } from './WoodCampActor'
 
@@ -21,6 +21,11 @@ export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
             light.position.set(1 * ts, 2 * ts, 1 * ts)
             light.castShadow = true
             group.add(light)
+        }
+
+        if (config.debug.wireModel) {
+            const midlePointHelper = new AxesHelper(ts * 5)
+            group.add(midlePointHelper)
         }
 
         const model = actor.blueprint.getModel()

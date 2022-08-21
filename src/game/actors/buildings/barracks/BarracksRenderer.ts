@@ -3,7 +3,7 @@ import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
-import { PointLight } from 'three'
+import { AxesHelper, PointLight } from 'three'
 
 import { BarracksActor } from './BarracksActor'
 
@@ -24,6 +24,10 @@ export class BarracksRenderer extends ActorRenderer<BarracksActor> {
 
             light.castShadow = true
             group.add(light)
+        }
+        if (config.debug.wireModel) {
+            const midlePointHelper = new AxesHelper(ts * 5)
+            group.add(midlePointHelper)
         }
 
         return { group, interactionShape }

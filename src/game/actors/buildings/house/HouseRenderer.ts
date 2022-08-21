@@ -3,7 +3,7 @@ import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
-import { PointLight } from 'three'
+import { AxesHelper, PointLight } from 'three'
 
 import { HouseActor } from './HouseActor'
 
@@ -23,6 +23,10 @@ export class HouseRenderer extends ActorRenderer<HouseActor> {
             light.position.set(1 * ts, 2 * ts, 1 * ts)
             light.castShadow = true
             group.add(light)
+        }
+        if (config.debug.wireModel) {
+            const midlePointHelper = new AxesHelper(ts * 5)
+            group.add(midlePointHelper)
         }
 
         return { group, interactionShape }

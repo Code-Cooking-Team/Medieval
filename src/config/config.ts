@@ -21,6 +21,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     renderer: {
         exposure: 1,
         tileSize: 0.1,
+        texture: true,
         fog: true,
         fogTransparency: 3,
         dayAndNightMode: true,

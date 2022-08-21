@@ -66,7 +66,7 @@ export const rotatePositionOnGrind = (
 }
 
 // Has offsets that are needed for applyTileGrid
-export const getPointPositionOnRotatedGrid = (
+export const getPointPositionOnRotatedGridByCeterPoint = (
     xLength: number,
     yLength: number,
     point: Position,
@@ -74,21 +74,19 @@ export const getPointPositionOnRotatedGrid = (
 ): Position => {
     const [x, y] = point
 
-    const structureDifferent = xLength - yLength
-
     if (rotation === 1) {
-        const xNew = Math.ceil(xLength / 2) - 1 - structureDifferent
+        const xNew = Math.ceil(xLength / 2) - 1
         return [xNew, y]
     }
 
     if (rotation === 2) {
-        const xNew = Math.ceil(xLength / 2) - 1 - structureDifferent
-        const yNew = Math.ceil(yLength / 2) - 1 + structureDifferent
+        const xNew = Math.ceil(xLength / 2) - 1
+        const yNew = Math.ceil(yLength / 2) - 1
         return [xNew, yNew]
     }
 
     if (rotation === 3) {
-        const yNew = Math.ceil(yLength / 2) - 1 + structureDifferent
+        const yNew = Math.ceil(yLength / 2) - 1
         return [x, yNew]
     }
 
