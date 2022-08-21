@@ -1,10 +1,10 @@
 import { config } from '+config'
 import { actorByType } from '+game/actors'
-import { HumanActor } from '+game/actors/units/human/HumanActor'
+import { BuildingTrait } from '+game/actors/buildingTraits/types'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { ActorType } from '+game/types'
-import { random } from '+helpers'
 
+import { ResidenceTrait } from '../../buildingTraits/ResidenceTrait'
 import { HouseBlueprint } from './HouseBlueprint'
 
 export class HouseActor extends BuildingActor {
@@ -13,32 +13,15 @@ export class HouseActor extends BuildingActor {
 
     public maxHp = config.house.hp
     public hp = this.maxHp
-    public residentsLimit = 6
 
-    private newChildCount = this.childCount()
+    public traits: BuildingTrait[] = [
+        new ResidenceTrait(this, {
+            residentsLimit: 3,
+            spawnPosition: this.getSpawnPosition(),
+        }),
+    ]
 
-    public tick(): void {
-        this.newChildCount--
-        if (this.newChildCount <= 0) {
-            this.newChildCount = this.childCount()
-            this.spawnNewHuman()
-        }
-    }
-
-    private spawnNewHuman() {
-        const humans = this.game.findActorsByType(ActorType.Human) as HumanActor[]
-        const residents = humans.filter((human) => human.home === this)
-
-        if (residents.length >= this.residentsLimit) return
-
-        const actor = this.game.spawnActor(HumanActor, this.player, this.position)
-
-        if (!actor) return
-
-        actor.setHome(this)
-    }
-
-    private childCount() {
-        return random(config.house.newChildCountMin, config.house.newChildCountMax, true)
+    public getSpawnPosition() {
+        return this.getGlobalPositionOfLocalPoint(this.blueprint.config.spawnPoint)
     }
 }

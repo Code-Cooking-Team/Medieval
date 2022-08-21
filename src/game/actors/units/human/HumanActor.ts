@@ -1,5 +1,6 @@
 import { config } from '+config/config'
 import { Actor } from '+game/core/Actor'
+import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor, WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
 import { Profession, ProfessionJSON } from '+game/professions/Profession'
@@ -8,14 +9,12 @@ import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { AnimationMixer } from 'three'
 
-import { HouseActor } from '../../buildings/house/HouseActor'
-
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
     public profession?: Profession
     public target?: Actor
-    public home?: HouseActor
+    public home?: BuildingActor
     public animationMixer?: AnimationMixer
 
     // TODO move this to WeakMap inside HumanRenderer
@@ -34,7 +33,7 @@ export class HumanActor extends WalkableActor {
         }
     }
 
-    public setHome(home: HouseActor) {
+    public setHome(home: BuildingActor) {
         this.home = home
     }
 

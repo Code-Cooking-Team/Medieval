@@ -4,7 +4,6 @@ import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType } from '+game/types'
-import { addPosition, rotatePositionOnGrind } from '+helpers'
 
 import { WoodCampBlueprint } from './WoodCampBlueprint'
 
@@ -14,14 +13,8 @@ export class WoodCampActor extends BuildingActor {
 
     public collectedTreeHP = 0
 
-    public getDeliveryPoint() {
-        const config = this.blueprint.config
-        const transposedDeliveryPosition = rotatePositionOnGrind(
-            config.deliveryLocalPosition,
-            this.getSize(),
-            this.rotation,
-        )
-        return addPosition(this.getGlobalPosition(), transposedDeliveryPosition)
+    public getDeliveryPosition() {
+        return this.getGlobalPositionOfLocalPoint(this.blueprint.config.deliveryPoint)
     }
 
     public collectTree(hp: number) {

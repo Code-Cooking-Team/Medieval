@@ -23,7 +23,7 @@ export class WoodCampBlueprint implements ActorBlueprint {
     public height = 3
 
     public config = {
-        deliveryLocalPosition: [2, 5] as Position,
+        deliveryPoint: [2, 5] as Position,
     }
 
     private model = this.loadModel().model

@@ -322,7 +322,6 @@ export class Renderer {
                     (10 - cameraY + cameraRotation) *
                     config.postProcessing.bokehAperture *
                     0.2
-                console.log(uniform.aperture.value)
 
                 this.composer.render()
             }

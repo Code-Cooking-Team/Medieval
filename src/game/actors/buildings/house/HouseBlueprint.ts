@@ -1,4 +1,4 @@
-import { ActorBlueprint } from '+game/types'
+import { ActorBlueprint, Position } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
 import { loadGLTF, updateScale } from '+helpers/three'
 
@@ -23,6 +23,10 @@ export class HouseBlueprint implements ActorBlueprint {
     ]
 
     public height = 3
+
+    public config = {
+        spawnPoint: [3, 4] as Position,
+    }
 
     private model = this.loadModel().model
     public getModel() {

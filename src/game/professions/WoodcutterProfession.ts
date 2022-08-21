@@ -166,7 +166,7 @@ export class WoodcutterProfession extends Profession {
     private findCamp() {
         const camp = this.getCamp()
         if (!camp) return
-        this.actor.setPathTo(camp.getDeliveryPoint())
+        this.actor.setPathTo(camp.getDeliveryPosition())
     }
 
     private gatherWood() {
@@ -199,13 +199,13 @@ export class WoodcutterProfession extends Profession {
     private nearCamp() {
         const camp = this.getCamp()
         if (!camp) return false
-        return isSamePosition(this.actor.position, camp.getDeliveryPoint())
+        return isSamePosition(this.actor.position, camp.getDeliveryPosition())
     }
 
     private reachedCamp() {
         const camp = this.getCamp()
         if (!camp) return false
-        return isSamePosition(camp.getDeliveryPoint(), this.actor.position)
+        return isSamePosition(camp.getDeliveryPosition(), this.actor.position)
     }
 }
 

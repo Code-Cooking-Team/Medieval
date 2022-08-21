@@ -1,9 +1,8 @@
 import { config } from '+config'
 import { actorByType } from '+game/actors'
-import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { ResidenceTrait } from '+game/actors/buildingTraits/ResidenceTrait'
+import { BuildingTrait } from '+game/actors/buildingTraits/types'
 import { BuildingActor } from '+game/core/BuildingActor'
-import { GuardianProfession } from '+game/professions/GuardianProfession'
 import { ActorType } from '+game/types'
 
 import { GuildhallBlueprint } from './GuildhallBlueprint'
@@ -15,17 +14,10 @@ export class GuildhallActor extends BuildingActor {
     public maxHp = config.guildhall.hp
     public hp = this.maxHp
 
-    public tick(): void {}
-
-    public interact(actors: Actor[]) {
-        let interactionHappened = false
-        for (const actor of actors) {
-            if (isHumanActor(actor)) {
-                const profession = new GuardianProfession(this.game, actor)
-                actor.setProfession(profession)
-                interactionHappened = true
-            }
-        }
-        return interactionHappened
-    }
+    public traits: BuildingTrait[] = [
+        new ResidenceTrait(this, {
+            residentsLimit: 5,
+            spawnPosition: this.position,
+        }),
+    ]
 }
