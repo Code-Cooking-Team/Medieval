@@ -53,20 +53,20 @@ export const rotatePositionOnGrind = (
     let transposedPosition = position
 
     if (rotationIndex === 1) {
-        transposedPosition = [sizeY - y, x]
+        transposedPosition = [sizeY - 1 - y, x]
     }
     if (rotationIndex === 2) {
-        transposedPosition = [sizeX - x, sizeY - y]
+        transposedPosition = [sizeX - 1 - x, sizeY - 1 - y]
     }
     if (rotationIndex === 3) {
-        transposedPosition = [y, sizeX - x]
+        transposedPosition = [y, sizeX - 1 - x]
     }
 
     return transposedPosition
 }
 
 // Has offsets that are needed for applyTileGrid
-export const getPointPositionOnRotatedGridByCeterPoint = (
+export const getPointPositionOnRotatedGridByCenterPoint = (
     xLength: number,
     yLength: number,
     point: Position,
