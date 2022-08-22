@@ -4,7 +4,7 @@ import { loadGLTF, updateScale } from '+helpers'
 
 import { Group, LOD } from 'three'
 
-import url from './models/guildhallv3.gltf'
+import url from './models/guildhall.gltf'
 
 const guildhallModel = loadGLTF(url)
 

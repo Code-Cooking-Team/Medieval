@@ -1,20 +1,30 @@
 import { config } from '+config'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
-import { ActorType } from '+game/types'
+import { ActorType, ClockInfo } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
-import { AxesHelper, PointLight, PointLightHelper } from 'three'
+import { AxesHelper, Object3D, PointLight, PointLightHelper } from 'three'
 
 import { GuildhallActor } from './GuildhallActor'
 
 export class GuildhallRenderer extends ActorRenderer<GuildhallActor> {
     public actorType = ActorType.Guildhall
 
+    private fireModel: Object3D[] = []
+
     public createActorModel(actor: GuildhallActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
 
-        const model = actor.blueprint.getModel()
-        group.add(model.clone())
+        const model = actor.blueprint.getModel().clone()
+
+        model.traverse((child) => {
+            if (child instanceof Object3D && child.name.includes('fire')) {
+                console.log('found fire')
+                this.fireModel.push(child)
+            }
+        })
+
+        group.add(model)
 
         const ts = config.renderer.tileSize
 
@@ -36,13 +46,26 @@ export class GuildhallRenderer extends ActorRenderer<GuildhallActor> {
             lightHelper.position.copy(light.position)
             group.add(lightHelper)
 
-            const midlePointHelper = new AxesHelper(ts * 5)
-            group.add(midlePointHelper)
+            const middlePointHelper = new AxesHelper(ts * 5)
+            group.add(middlePointHelper)
         }
 
         group.add(light)
         // }
 
         return { group, interactionShape }
+    }
+
+    public render(clockInfo: ClockInfo): void {
+        this.updatePosition(clockInfo)
+        this.updateHP()
+        this.updateSelect()
+        this.fireModel.forEach((element) => {
+            console.log('fire spin')
+            element.rotation.y += Math.sin(clockInfo.deltaTime * 1) * Math.random() * 2
+            element.scale.y = Math.sin(clockInfo.deltaTime * 20) + 1 / 1.7
+            element.scale.x = Math.sin(clockInfo.deltaTime * 5) + 1 / 1.2
+            element.scale.z = Math.sin(clockInfo.deltaTime * 3) + 1 / 1.2
+        })
     }
 }
