@@ -90,6 +90,8 @@ export const applyTileGrid = (
     let xCenter = Math.floor(xLength / 2)
     let yCenter = Math.floor(yLength / 2)
 
+    console.log('findCenter', xCenter, yCenter)
+
     // const [xRotated, yRotated] = getPointPositionOnRotatedGridByCenterPoint(
     //     xLength,
     //     yLength,
@@ -103,6 +105,7 @@ export const applyTileGrid = (
         [xLength, yLength],
         rotation,
     )
+    console.log('findCenter2', xRotated, yRotated)
 
     rotatedStructure.forEach((row, localY) => {
         row.forEach((tileCode, localX) => {

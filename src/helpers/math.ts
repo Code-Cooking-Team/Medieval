@@ -37,6 +37,16 @@ export const dividePosition = ([x, y]: Position, b: Position | number): Position
 export const isSamePosition = (a: Position, b: Position): boolean =>
     a[0] === b[0] && a[1] === b[1]
 
+export const rotateGridLength = (
+    [x, y]: [number, number],
+    rotation: number,
+): [number, number] => {
+    if (rotation == 1 || rotation == 3) {
+        return [y, x]
+    }
+    return [x, y]
+}
+
 /**
  * Converts rotation index (eg 0 - 3) to radians (eg Math.PI / 2)
  */
