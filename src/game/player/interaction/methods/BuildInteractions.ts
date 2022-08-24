@@ -101,6 +101,16 @@ export class BuildInteractions {
 
         const ActorClass = actorByType[selectedBuilding].actorClass
 
+        const blueprint = actorByType[selectedBuilding]?.blueprint
+
+        if (blueprint) {
+            const canBuild = this.game.checkGridBuildable(
+                position,
+                blueprint,
+                this.player.selectedBuildingRotation,
+            )
+            if (!canBuild) return
+        }
         this.game.spawnActor(
             ActorClass,
             this.player,
@@ -126,7 +136,22 @@ export class BuildInteractions {
 
         updateObjectPosition(this.placeholder, placeholderPosition, currTail.height)
 
-        this.placeHolderMaterial.color.setHex(!currTail.canBuild ? 0xff0000 : 0x5eff64)
+        const selectedBuilding = this.player.selectedBuilding
+        if (!selectedBuilding) return
+
+        const blueprint = actorByType[selectedBuilding]?.blueprint
+        if (blueprint) {
+            const canBuild = this.game.checkGridBuildable(
+                position,
+                blueprint,
+                this.player.selectedBuildingRotation,
+            )
+            this.placeHolderMaterial.color.setHex(canBuild ? 0x5eff64 : 0xff0000)
+
+            if (!canBuild) return
+        } else {
+            this.placeHolderMaterial.color.setHex(0x5eff64)
+        }
     }
 
     private handleContextmenu = (event: MouseEvent) => {

@@ -105,6 +105,7 @@ export class InsideTile extends Tile {
 export class ImportantFootpathTile extends Tile {
     public type = TileType.ImportantFootpath
     public color = 0x474738
+    public canBuild = false
 }
 
 export class FootpathTile extends Tile {

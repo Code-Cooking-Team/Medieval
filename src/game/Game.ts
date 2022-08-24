@@ -8,8 +8,8 @@ import { isBuildingActor, isWalkableActor } from './actors/helpers'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
 import { playerFromJSON } from './player'
-import { ActorType, Position } from './types'
-import { applyTileGrid } from './world/tileCodes'
+import { ActorBlueprint, ActorType, Position } from './types'
+import { applyTileGrid, rotateGrid } from './world/tileCodes'
 import { WordJSON, World } from './world/World'
 
 export class Game {
@@ -113,6 +113,49 @@ export class Game {
 
             return currDist < prevDist ? curr : prev
         }, actors[0])
+    }
+
+    checkGridBuildable = (
+        position: Position,
+        blueprint: ActorBlueprint,
+        rotation: number,
+    ) => {
+        let canBuild = true
+
+        const grid = blueprint.getGrid()
+
+        const rotatedStructure = rotateGrid(grid, 0)
+
+        let debug: any[] = JSON.parse(JSON.stringify(grid))
+
+        const [x, y] = position
+
+        this.world.setMultipleTiles((set, get) => {
+            applyTileGrid(
+                grid,
+                ([localX, localY], TileClass, [centerX, centerY]) => {
+                    const position: Position = [
+                        x + localX - centerX,
+                        y + localY - centerY,
+                    ]
+                    const tileOn = get(position)
+                    if (!tileOn.canBuild) {
+                        const tileBy = new TileClass()
+                        // console.log(tileOn, '->', tileBy, position)
+                        if (!tileBy.canBuild) {
+                            canBuild = false
+                            debug[localX][localY] = 'X'
+                        }
+                    } else {
+                        debug[localX][localY] = 'O'
+                    }
+                },
+                rotation,
+            )
+        })
+        // console.clear()
+        // console.table(debug)
+        return canBuild
     }
 
     public spawnActor<T extends Actor>(

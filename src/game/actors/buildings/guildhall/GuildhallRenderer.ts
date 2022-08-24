@@ -61,7 +61,6 @@ export class GuildhallRenderer extends ActorRenderer<GuildhallActor> {
         this.updateHP()
         this.updateSelect()
         this.fireModel.forEach((element) => {
-            console.log('fire spin')
             element.rotation.y += Math.sin(clockInfo.deltaTime * 1) * Math.random() * 2
             element.scale.y = Math.sin(clockInfo.deltaTime * 20) + 1 / 1.7
             element.scale.x = Math.sin(clockInfo.deltaTime * 5) + 1 / 1.2
