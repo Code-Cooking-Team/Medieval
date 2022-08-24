@@ -139,7 +139,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         depth *= ts
 
         const interactionShape = new Mesh(
-            new BoxGeometry(width, height, depth),
+            new BoxGeometry(width - 2 * ts, height - ts, depth - 2 * ts),
             new MeshBasicMaterial({
                 color: 0xffffff,
                 wireframe: true,
@@ -147,7 +147,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
             }),
         )
 
-        interactionShape.position.y = height / 2
+        interactionShape.position.y = (height - ts) / 2
 
         interactionShape.userData = { actor }
 
@@ -165,7 +165,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
             }),
         )
 
-        const offset = 0.2 * ts
+        const offset = 0.1 * ts
 
         interactionSelect.position.x = 0
         interactionSelect.position.z = 0

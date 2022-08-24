@@ -124,9 +124,10 @@ export class Game {
 
         const grid = blueprint.getGrid()
 
-        const rotatedStructure = rotateGrid(grid, 0)
+        const rotatedStructure = rotateGrid(grid, rotation)
 
-        let debug: any[] = JSON.parse(JSON.stringify(grid))
+        let debug = config.debug.collisonLog
+        let debugArray: any[] = JSON.parse(JSON.stringify(rotatedStructure))
 
         const [x, y] = position
 
@@ -139,22 +140,24 @@ export class Game {
                         y + localY - centerY,
                     ]
                     const tileOn = get(position)
-                    if (!tileOn.canBuild) {
-                        const tileBy = new TileClass()
-                        // console.log(tileOn, '->', tileBy, position)
-                        if (!tileBy.canBuild) {
-                            canBuild = false
-                            debug[localX][localY] = 'X'
-                        }
+                    const tileSymbol = debugArray[localY][localX]
+                    const tileBy = new TileClass()
+                    if (!tileOn.canBuild && !tileBy.canBuild) {
+                        canBuild = false
+                        if (debug)
+                            debugArray[localY][localX] =
+                                tileSymbol + ' ' + tileOn.type[0] + ' ' + tileBy.type[0]
                     } else {
-                        debug[localX][localY] = 'O'
+                        if (debug)
+                            debugArray[localY][localX] =
+                                'V' + ' ' + tileOn.type[0] + ' ' + tileBy.type[0]
                     }
                 },
                 rotation,
             )
         })
-        // console.clear()
-        // console.table(debug)
+
+        if (debug) console.table(debugArray)
         return canBuild
     }
 

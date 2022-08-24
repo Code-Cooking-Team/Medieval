@@ -70,6 +70,10 @@ export class World {
     private setTileAt([x, y]: Position, tile: Tile) {
         const currentTile = this.tiles?.[y]?.[x]
         if (!currentTile) throw new Error(`[Word:setTile] No tile at ${x}, ${y}`)
-        this.tiles[y]![x] = tile
+
+        // Don't remove not walkable tiles like wall and water
+        if (this.tiles[y]![x]?.canWalk) {
+            this.tiles[y]![x] = tile
+        }
     }
 }

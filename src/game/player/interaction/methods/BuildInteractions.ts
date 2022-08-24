@@ -1,3 +1,4 @@
+import { config } from '+config'
 import { actorByType } from '+game/actors'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
@@ -46,9 +47,13 @@ export class BuildInteractions {
             this.player.emitter.on('unselectBuilding', this.removePlaceholder),
             this.player.emitter.on('rotateBuilding', this.rotatePlaceholder),
         ]
+        let timer: ReturnType<typeof setTimeout>
 
         this.el.addEventListener('click', this.handleClick)
-        this.el.addEventListener('pointermove', this.handleMove)
+        this.el.addEventListener('pointermove', (e) => {
+            clearTimeout(timer)
+            timer = setTimeout(() => this.handleMove(e), 0)
+        })
         this.el.addEventListener('contextmenu', this.handleContextmenu)
         this.renderer.scene.add(this.placeholder)
     }
@@ -139,18 +144,16 @@ export class BuildInteractions {
         const selectedBuilding = this.player.selectedBuilding
         if (!selectedBuilding) return
 
-        const blueprint = actorByType[selectedBuilding]?.blueprint
-        if (blueprint) {
-            const canBuild = this.game.checkGridBuildable(
-                position,
-                blueprint,
-                this.player.selectedBuildingRotation,
-            )
-            this.placeHolderMaterial.color.setHex(canBuild ? 0x5eff64 : 0xff0000)
-
-            if (!canBuild) return
-        } else {
-            this.placeHolderMaterial.color.setHex(0x5eff64)
+        if (config.debug.collisonMouseMove) {
+            const blueprint = actorByType[selectedBuilding]?.blueprint
+            if (blueprint) {
+                const canBuild = this.game.checkGridBuildable(
+                    position,
+                    blueprint,
+                    this.player.selectedBuildingRotation,
+                )
+                this.placeHolderMaterial.color.setHex(canBuild ? 0x5eff64 : 0xff0000)
+            }
         }
     }
 

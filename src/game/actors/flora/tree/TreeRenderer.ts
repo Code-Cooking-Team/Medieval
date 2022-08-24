@@ -11,6 +11,7 @@ import {
     MeshStandardMaterial,
     Object3D,
     SphereGeometry,
+    Vector3,
 } from 'three'
 
 import { TreeActor } from './TreeActor'
@@ -97,17 +98,30 @@ export class TreeRenderer implements Renderable {
                 if (config.renderer.treeWaving) {
                     const sendX = dummy.scale.z * rnd(-0.5, 0.5)
                     const sendZ = dummy.scale.z * rnd(-0.5, 0.5)
+                    const ts = config.renderer.tileSize
+                    const timeScale = 0.5
+
+                    // x
+                    dummy.rotation.x +=
+                        Math.sin(sendZ + time * timeScale * (sendZ * (Math.PI / 1))) * ts
+                    dummy.position.z +=
+                        (Math.sin(sendZ + time * timeScale * (sendZ * (Math.PI / 1))) *
+                            ts) /
+                        Math.PI
+
+                    // z
                     dummy.rotation.z +=
-                        Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / 15
+                        Math.sin(sendX + time * timeScale * (sendX * (Math.PI / 1))) * -ts
 
                     dummy.position.x +=
-                        Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / -8
+                        (Math.sin(sendX + time * timeScale * (sendX * (Math.PI / 1))) *
+                            ts) /
+                        Math.PI
 
-                    dummy.rotation.x +=
-                        Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 15
-
-                    dummy.position.z +=
-                        Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 8
+                    // y
+                    dummy.rotation.y +=
+                        Math.sin(sendX + time * timeScale * 2 * (sendX * (Math.PI / 1))) /
+                        3
                 }
             } else {
                 // TODO better remove

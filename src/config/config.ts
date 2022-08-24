@@ -16,6 +16,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
         logSelected: true,
         wireModel: false,
         groundWireframe: false,
+        collisonLog: false,
+        collisonMouseMove: true,
     },
 
     renderer: {
