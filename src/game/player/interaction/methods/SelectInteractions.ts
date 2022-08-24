@@ -93,7 +93,7 @@ export class SelectInteractions {
 
         this.selectionDiv.onUp()
 
-        if (this.distance < 10) {
+        if (this.distance < 4) {
             this.handleClick(event)
             return
         }
