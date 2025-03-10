@@ -1,4 +1,8 @@
 {
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#2F3F2F",
+    "titleBar.inactiveBackground": "#1B1B1B"
+  },
   "cSpell.words": [
     "Bokeh",
     "Buildable",
