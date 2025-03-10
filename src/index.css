@@ -23,13 +23,13 @@ body {
     overflow: hidden;
     color: white;
     touch-action: none;
-    cursor: url('./Cursor.svg') 3 0, default;
+    cursor: url('./assets/Cursor.svg') 3 0, default;
     accent-color: #c8a13c;
 }
 
 input,
 textarea {
-    cursor: url('./CursorText.svg') 10 20, text !important;
+    cursor: url('./assets/CursorText.svg') 10 20, text !important;
 }
 
 a,
@@ -38,14 +38,14 @@ label,
 select,
 input[type='checkbox'],
 input[type='radio'] {
-    cursor: url('./Cursor.svg') 3 0, pointer !important;
-    /* cursor: url('./CursorPointer.svg') 3 0, pointer !important; */
+    cursor: url('./assets/Cursor.svg') 3 0, pointer !important;
+    /* cursor: url('./assets/CursorPointer.svg') 3 0, pointer !important; */
 }
 
 body:active,
 button:active,
 a:active {
-    cursor: url('./CursorPointer.svg') 3 0, pointer !important;
+    cursor: url('./assets/CursorPointer.svg') 3 0, pointer !important;
 }
 
 button {

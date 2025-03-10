@@ -1,5 +1,5 @@
 import { GuardianProfession } from './GuardianProfession'
-import { ProfessionClass, ProfessionJSON } from './Profession'
+import { ProfessionClass } from './Profession'
 import { ProfessionType } from './types'
 import { WoodcutterProfession } from './WoodcutterProfession'
 

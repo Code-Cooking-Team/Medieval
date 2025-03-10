@@ -36,7 +36,7 @@ const simplifyConfigValues = <T extends {}>(config: T, configTemplate = config) 
         for (let key in configTemplate[categoryKey]) {
             if (!configTemplate.hasOwnProperty(categoryKey)) continue
 
-            const templateValue = configTemplate[categoryKey][key]
+            const templateValue = configTemplate[categoryKey][key]!
 
             if (typeof templateValue === 'object' && '__type' in templateValue) {
                 const configValue = config[categoryKey][key] as any
