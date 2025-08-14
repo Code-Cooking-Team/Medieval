@@ -9,10 +9,10 @@ const CAMERA_SPEED = config.renderer.tileSize * 3
 
 export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
-        config.core.cameraFov,
+        config.camera.fov,
         window.innerWidth / window.innerHeight,
-        config.core.cameraNear,
-        config.core.cameraFar,
+        config.camera.near,
+        config.camera.far,
     )
 
     private keyPressed: { [key: string]: number } = {}
@@ -103,10 +103,23 @@ export class RTSCamera implements Renderable {
             ((momentum * this.camera.position.y) / 8) *
                 (this.camera.rotation.x + Math.PI / 2),
         )
+
+        // Clamp the Y position to stay within limits while preserving rotation
+        this.camera.position.y = Math.max(
+            config.camera.minHeight,
+            Math.min(config.camera.maxHeight, this.camera.position.y),
+        )
     }
+
     private rotateCameraX(momentum: number) {
         this.camera.rotateX(momentum * 0.1)
         this.camera.translateY((-momentum * this.camera.position.y) / 8)
+
+        // Clamp the Y position to stay within limits while preserving rotation
+        this.camera.position.y = Math.max(
+            config.camera.minHeight,
+            Math.min(config.camera.maxHeight, this.camera.position.y),
+        )
     }
 
     private orbitalControls() {
@@ -143,6 +156,20 @@ export class RTSCamera implements Renderable {
             delta += this.camera.position.y * 0.01
         }
 
-        this.camera.translateZ(delta)
+        // Calculate where the camera would move
+        const direction = new Vector3(0, 0, 1)
+        direction.applyQuaternion(this.camera.quaternion)
+        const potentialNewPosition = this.camera.position.clone()
+        potentialNewPosition.add(direction.multiplyScalar(delta))
+
+        // Check if the movement would violate height limits
+        const wouldExceedLimits =
+            potentialNewPosition.y < config.camera.minHeight ||
+            potentialNewPosition.y > config.camera.maxHeight
+
+        // Only apply the translation if it stays within limits
+        if (!wouldExceedLimits) {
+            this.camera.translateZ(delta)
+        }
     }
 }

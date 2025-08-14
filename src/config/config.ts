@@ -7,9 +7,13 @@ export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 250,
         orbitalControls: false,
-        cameraFov: 60,
-        cameraFar: 350,
-        cameraNear: 0.1,
+    },
+    camera: {
+        fov: 60,
+        far: 350,
+        near: 0.1,
+        minHeight: 2.0,
+        maxHeight: 8.0,
     },
 
     debug: {
