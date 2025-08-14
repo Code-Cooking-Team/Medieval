@@ -1,0 +1,12 @@
+---
+description: 'Real-time 3D RTS game built with Three.js and React'
+alwaysApply: true
+---
+
+-   The camera is top-down with a slight tilt; Z axis represents vertical height.
+-   Game engine logic, actors, blueprints, and renderers in `src/game`.
+-   Configuration schemas and loader in `src/config` (see `src/config/config.ts` for default settings and schema).
+-   Helpful game and rendering configuration options defined in `src/config/config.ts` (e.g., tickTime, cameraFov, renderer settings).
+-   Rendering pipeline uses EffectComposer, BasicRenderer, and ActorRenderer lists.
+-   Professions implement AI via finite state machines in `src/game/professions`.
+-   UI components, hooks, and modules under `src/ui`.

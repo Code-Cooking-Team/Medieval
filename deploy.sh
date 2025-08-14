@@ -4,10 +4,10 @@ set -e
 
 rm -rf ./dist
 
-yarn ts
-yarn test --run
+pnpm ts
+pnpm test --run
 
-yarn build
+pnpm build
 
 # navigate into the build output directory
 cd ./dist

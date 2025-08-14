@@ -1,5 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn ts
-yarn test --run
+pnpm ts
+pnpm test --run

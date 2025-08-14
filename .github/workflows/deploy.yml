@@ -13,10 +13,10 @@ jobs:
 
       - name: Install and Build 🔧
         run: |
-          yarn install
-          yarn ts
-          yarn test
-          yarn build
+          pnpm install
+          pnpm ts
+          pnpm test
+          pnpm build
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
