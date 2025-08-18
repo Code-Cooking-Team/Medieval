@@ -7,6 +7,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 250,
         orbitalControls: false,
+        unfocusedFpsLimit: 5,
     },
     camera: {
         fov: 60,

@@ -58,6 +58,8 @@ export class Renderer {
     private basicRendererList: BasicRenderer[] = []
     private actorRendererList: ActorRenderer<Actor>[] = []
 
+    private isWindowFocused = window.document.hasFocus()
+
     constructor(
         public game: Game,
         public player: HumanPlayer,
@@ -99,6 +101,8 @@ export class Renderer {
 
         this.resize()
         window.addEventListener('resize', this.resize)
+        window.addEventListener('focus', this.handleWindowFocus)
+        window.addEventListener('blur', this.handleWindowBlur)
 
         this.player.emitter.on(
             ['selectActors', 'unselectActors'],
@@ -133,8 +137,15 @@ export class Renderer {
         this.rootEl.removeChild(stats.dom)
 
         window.removeEventListener('resize', this.resize)
+        window.removeEventListener('focus', this.handleWindowFocus)
+        window.removeEventListener('blur', this.handleWindowBlur)
 
-        cancelAnimationFrame(this.raf)
+        if (this.throttledTimeoutId) {
+            window.clearTimeout(this.throttledTimeoutId)
+        }
+        if (this.rafId) {
+            window.cancelAnimationFrame(this.rafId)
+        }
     }
 
     public getGroundChildren() {
@@ -151,6 +162,27 @@ export class Renderer {
         if (this.outlinePass) {
             this.outlinePass.selectedObjects = this.getSelectedGroupList()
         }
+    }
+
+    private handleWindowFocus = () => {
+        this.isWindowFocused = true
+        if (this.throttledTimeoutId) {
+            window.clearTimeout(this.throttledTimeoutId)
+            this.throttledTimeoutId = null
+        }
+        // Resume normal animation loop
+        this.animate()
+    }
+
+    private handleWindowBlur = () => {
+        this.isWindowFocused = false
+        // Cancel the normal animation loop
+        if (this.rafId) {
+            window.cancelAnimationFrame(this.rafId)
+            this.rafId = null
+        }
+        // Start throttled rendering
+        this.throttledAnimate()
     }
 
     private getSelectedGroupList() {
@@ -290,13 +322,28 @@ export class Renderer {
         }
     }
 
-    private raf: any
-
+    private rafId: number | null = null
     private animate = () => {
+        if (!this.isWindowFocused) {
+            return
+        }
         stats.begin()
         this.render()
         stats.end()
-        this.raf = requestAnimationFrame(this.animate)
+        this.rafId = window.requestAnimationFrame(this.animate)
+    }
+
+    private throttledTimeoutId: number | null = null
+    private throttledAnimate = () => {
+        if (this.isWindowFocused) {
+            return
+        }
+        stats.begin()
+        this.render()
+        stats.end()
+
+        const frameTime = 1000 / config.core.unfocusedFpsLimit
+        this.throttledTimeoutId = window.setTimeout(this.throttledAnimate, frameTime)
     }
 
     private render() {
