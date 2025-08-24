@@ -6,6 +6,7 @@ import {
     InsideTile,
     MeadowTile,
     OvergrownTile,
+    SandTile,
     StepTile,
     Tile,
     TileClass,
@@ -15,6 +16,9 @@ import {
 import { getPointPositionOnRotatedGridByCeterPoint } from '+helpers'
 
 const tileCodes = {
+    ['🏜️']: SandTile,
+    ['_']: SandTile,
+
     ['🌱']: MeadowTile,
     ['.']: MeadowTile,
 

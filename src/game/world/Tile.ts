@@ -65,6 +65,12 @@ export class ForestTile extends Tile {
     public treeChance = 0.1
 }
 
+export class SandTile extends Tile {
+    public type = TileType.Meadow
+    public color = generateSimilarColor(0x626948, 6)
+    public height = random(-0.15, 0.4)
+    public treeChance = 0.001
+}
 export class MeadowTile extends Tile {
     public type = TileType.Meadow
     public color = generateSimilarColor(0x274517, 4)

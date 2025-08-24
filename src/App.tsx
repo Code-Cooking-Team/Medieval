@@ -2,7 +2,7 @@ import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { Actor } from '+game/core/Actor'
 import { Game, GameJSON } from '+game/Game'
 // Island, TestMap, TestMapBig, de_grass
-import map from '+game/maps/de_grass'
+import map from '+game/maps/de_river'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { NaturePlayer } from '+game/player/NaturePlayer'
@@ -52,7 +52,7 @@ function App() {
         }
 
         // increse resolution map by duplicate in x
-        const resolutionMap = map
+        // const resolutionMap = map
         //     .map((row) => [...row.reverse(), ...row.reverse()])
         //     .reverse()
         // const resolutionMap3 = map
