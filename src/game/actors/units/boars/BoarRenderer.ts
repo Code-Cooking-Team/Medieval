@@ -7,12 +7,13 @@ import { Tile } from '+game/world/Tile'
 import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 
 import { BoarActor } from './BoarActor'
+import { config } from '+config'
 
 export class BoarRenderer extends WalkableActorRenderer<BoarActor> {
     public actorType = ActorType.Boar
 
     private material = new MeshStandardMaterial({ color: 0x4a2505 })
-    private geometry = new SphereGeometry(0.5, 5, 5)
+    private geometry = new SphereGeometry(0.7 * config.renderer.tileSize, 5, 5)
 
     public createActorModel(actor: BoarActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
@@ -23,7 +24,7 @@ export class BoarRenderer extends WalkableActorRenderer<BoarActor> {
         actorModel.scale.y = 0.5
         actorModel.scale.x = 0.5
         actorModel.scale.z = 1
-        actorModel.position.y = 0.5
+        actorModel.position.y = 0.5 * config.renderer.tileSize
 
         group.add(actorModel)
 

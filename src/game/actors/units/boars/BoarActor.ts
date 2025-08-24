@@ -11,6 +11,7 @@ import { HumanActor } from '../human/HumanActor'
 export class BoarActor extends WalkableActor {
     public type = ActorType.Boar
     public maxHp = config.boar.hp
+    public hp = this.maxHp
     public target?: Actor
 
     public tick(): void {

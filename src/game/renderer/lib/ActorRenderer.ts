@@ -10,7 +10,6 @@ import { multiplyPosition, rotationIndexToDeg, updateObjectPosition } from '+hel
 import {
     BoxGeometry,
     CircleGeometry,
-    DoubleSide,
     EdgesGeometry,
     Group,
     LineBasicMaterial,
@@ -19,7 +18,8 @@ import {
     MeshBasicMaterial,
     NotEqualDepth,
     Object3D,
-    PlaneGeometry,
+    Sprite,
+    SpriteMaterial,
 } from 'three'
 
 import { BasicRenderer } from './BasicRenderer'
@@ -27,8 +27,12 @@ import { BasicRenderer } from './BasicRenderer'
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
     public actorType = ActorType.Empty
 
-    private hpGeometry = new PlaneGeometry(2, 0.2, 1, 1)
-    private hpMaterial = new MeshBasicMaterial({ color: 0xff0e00, side: DoubleSide })
+    private hpMaterial = new SpriteMaterial({ color: 0xff0e00 })
+    private hpBgMaterial = new SpriteMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.5,
+    })
 
     protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
@@ -58,10 +62,28 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         tile: Tile,
     ): { group: Group; interactionShape: Mesh } {
         const group = new Group()
+        const hp = new Sprite(this.hpMaterial.clone())
+        const hpBg = new Sprite(this.hpBgMaterial)
+        hpBg.renderOrder = 1
+        hp.renderOrder = 2
 
-        const hp = new Mesh(this.hpGeometry, this.hpMaterial)
+        // hp.center.set(0, 0.5)
+        // Transform origin to left middle in screen space
+        // hpBg.center.set(0, 0.5)
+        // hpBg.translateX(-0.55)
+        // hpBg.center.set(0, 0.5)
+
+        hp.scale.x = 2 * config.renderer.tileSize
+        hp.scale.y = 0.2 * config.renderer.tileSize
+
+        hpBg.scale.x = 2.1 * config.renderer.tileSize
+        hpBg.scale.y = 0.3 * config.renderer.tileSize
+
         hp.name = 'hp'
-        hp.position.y = 5 * config.renderer.tileSize
+        hpBg.name = 'hpBg'
+        hp.position.y = 3 * config.renderer.tileSize
+        hpBg.position.y = hp.position.y
+        group.add(hpBg)
         group.add(hp)
 
         const interactionShape = this.createInteractionMesh(actor)
@@ -186,8 +208,19 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     protected updateHP() {
         this.actorGroupMap.forEach((group, actor) => {
             const hpMesh = group.getObjectByName('hp') as Mesh
-            hpMesh.scale.x = actor.hp / actor.maxHp
+            const hpBgMesh = group.getObjectByName('hpBg') as Mesh
+            hpMesh.scale.x = (actor.hp / actor.maxHp) * 2 * config.renderer.tileSize
+
+            if (hpMesh.material instanceof SpriteMaterial) {
+                // Green to red larp based on hp
+                const healthPercent = actor.hp / actor.maxHp
+                const red = 1 * (1 - healthPercent) * 2
+                const green = 1 * healthPercent - 0.5
+                const blue = 0.2 * healthPercent
+                hpMesh.material.color.setRGB(red, green, blue)
+            }
             hpMesh.visible = actor.hp < actor.maxHp
+            hpBgMesh.visible = hpMesh.visible
         })
     }
 

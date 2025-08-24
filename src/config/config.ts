@@ -61,8 +61,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
     },
 
     walkableRenderer: {
-        movementSmoothness: 3,
-        rotationSmoothness: 3,
+        movementSmoothness: 5,
+        rotationSmoothness: 10,
     },
 
     barracks: {
