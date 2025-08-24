@@ -5,7 +5,7 @@ import { normalizeEventKeyName } from '+helpers'
 import { MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-const CAMERA_SPEED = config.renderer.tileSize * 3
+const CAMERA_SPEED = config.renderer.tileSize * 2
 
 export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
@@ -36,16 +36,19 @@ export class RTSCamera implements Renderable {
     public render({ deltaTime }: ClockInfo) {
         const now = new Date().getTime()
 
-        Object.entries(this.keyPressed).forEach(([keyName, start]) => {
+        Object.entries(this.keyPressed).forEach(([keyCode, start]) => {
             const momentum = this.getMomentum(now, start, deltaTime)
-            const zoomOutBust = this.camera.position.y / 100
-            const momentumTranslate = (momentum + zoomOutBust) * CAMERA_SPEED
+            const zoomOutBust = this.camera.position.y * config.renderer.tileSize
             const cameraRotation = this.camera.rotation.x
 
-            const key = normalizeEventKeyName(keyName)
+            let momentumTranslate = (momentum + zoomOutBust) * CAMERA_SPEED
 
-            switch (key) {
-                case 'w':
+            if (this.keyPressed['ShiftLeft'] || this.keyPressed['ShiftRight']) {
+                momentumTranslate *= 2
+            }
+
+            switch (keyCode) {
+                case 'KeyW':
                 case 'ArrowUp':
                     this.camera.translateY(momentumTranslate * -cameraRotation)
                     this.camera.translateZ(
@@ -53,31 +56,31 @@ export class RTSCamera implements Renderable {
                     )
 
                     break
-                case 's':
+                case 'KeyS':
                 case 'ArrowDown':
                     this.camera.translateY(-momentumTranslate * -cameraRotation)
                     this.camera.translateZ(
                         -momentumTranslate * (-cameraRotation - Math.PI / 2),
                     )
                     break
-                case 'd':
+                case 'KeyD':
                 case 'ArrowRight':
                     this.camera.translateX(momentumTranslate)
                     break
-                case 'a':
+                case 'KeyA':
                 case 'ArrowLeft':
                     this.camera.translateX(-momentumTranslate)
                     break
-                case 'q':
+                case 'KeyQ':
                     this.rotateCameraY(-momentum)
                     break
-                case 'e':
+                case 'KeyE':
                     this.rotateCameraY(momentum)
                     break
-                case 'z':
+                case 'KeyZ':
                     this.rotateCameraX(momentum)
                     break
-                case 'x':
+                case 'KeyX':
                     this.rotateCameraX(-momentum)
                     break
                 default:
@@ -135,13 +138,13 @@ export class RTSCamera implements Renderable {
     }
 
     private handleKeyDown = (event: KeyboardEvent) => {
-        if (!this.keyPressed[event.key]) {
-            this.keyPressed[event.key] = new Date().getTime()
+        if (!this.keyPressed[event.code]) {
+            this.keyPressed[event.code] = new Date().getTime()
         }
     }
 
     private handleKeyUp = (event: KeyboardEvent) => {
-        delete this.keyPressed[event.key]
+        delete this.keyPressed[event.code]
     }
 
     private handleWheel = (event: WheelEvent) => {

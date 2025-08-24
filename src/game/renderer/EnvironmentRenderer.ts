@@ -103,7 +103,7 @@ export class EnvironmentRenderer extends BasicRenderer {
 
         this.scene.background = new Color().setHSL(
             10 + Math.sin(time * 1) * 0.1,
-            Math.sin(time * 1),
+            Math.sin(time * 1) / 2,
             // Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
             0.3, // for bloom to keep the eyes from burning
         )
@@ -111,14 +111,15 @@ export class EnvironmentRenderer extends BasicRenderer {
         if (config.renderer.fog) {
             const fogColor = new Color().setHSL(
                 10 + Math.sin(time * 1) * 0.1,
-                Math.sin(time * 1),
-                Math.sin(time * 1 + 1.9) * 0.3 + 0.7,
+                Math.sin(time * 1) / 2,
+                // Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
+                0.3, // for bloom to keep the eyes from burning
             )
 
             this.scene.fog = new Fog(
                 fogColor,
                 config.renderer.fogTransparency,
-                (Math.sin(time * 1) + config.renderer.fogTransparency * 1.5 * 50 + 200) *
+                (Math.sin(time * 1) + config.renderer.fogTransparency * 1.5 * 50 + 400) *
                     config.renderer.tileSize,
             )
         }
