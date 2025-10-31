@@ -19,7 +19,6 @@ class DiagonalsPlaneGeometry extends BufferGeometry {
         diagonals: Diagonals = 'random',
     ) {
         super()
-        this.type = 'PlaneGeometry'
 
         this.parameters = {
             width: width,

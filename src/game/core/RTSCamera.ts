@@ -134,7 +134,6 @@ export class RTSCamera implements Renderable {
             MIDDLE: MOUSE.ROTATE,
             RIGHT: MOUSE.PAN,
         }
-        controls.center
     }
 
     private handleKeyDown = (event: KeyboardEvent) => {

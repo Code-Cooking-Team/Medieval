@@ -4,7 +4,7 @@ import { Game } from '+game/Game'
 import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
 
-import { Intersection, Object3D, Raycaster, Vector2 } from 'three'
+import { Object3D, Raycaster, Vector2 } from 'three'
 
 export class RaycastFinder {
     constructor(public game: Game, public renderer: Renderer) {}
@@ -44,7 +44,7 @@ export class RaycastFinder {
         const intersects = rayCaster.intersectObjects(
             interactionObjectList,
             false,
-        ) as Intersection<Object3D<Event>>[]
+        )
 
         const intersectActors = intersects
             .map((intersect) => intersect.object.userData.actor as Actor)

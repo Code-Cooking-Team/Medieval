@@ -7,7 +7,6 @@ import {
     PCFSoftShadowMap,
     ReinhardToneMapping,
     Scene,
-    sRGBEncoding,
     Vector2,
     WebGLRenderer,
 } from 'three'
@@ -252,8 +251,6 @@ export class Renderer {
                 focus: 5,
                 aperture: config.postProcessing.bokehAperture,
                 maxblur: config.postProcessing.bokehMaxBlur,
-                width: width,
-                height: height,
             })
             this.composer.addPass(this.bokehPass)
         }
