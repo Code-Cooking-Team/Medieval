@@ -15,6 +15,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
         near: 0.1,
         minHeight: 2.0,
         maxHeight: 8.0,
+        scrollSpeed: 0.02,
+        zoomSpeed: 10.0,
     },
 
     debug: {

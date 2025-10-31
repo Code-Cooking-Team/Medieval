@@ -16,6 +16,13 @@ export class RTSCamera implements Renderable {
     )
 
     private keyPressed: { [key: string]: number } = {}
+    private touchpadPanDelta: { x: number; y: number } = { x: 0, y: 0 }
+    private isTwoFingerPanning = false
+    private lastTouchPositions: Map<number, { x: number; y: number }> = new Map()
+    private lastCenterPoint: { x: number; y: number } | null = null
+    private initialPinchDistance: number | null = null
+    private pinchZoomDelta: number = 0
+    private isPinching = false
 
     constructor(private domElement: HTMLElement) {
         this.camera.position.x = 0
@@ -30,7 +37,15 @@ export class RTSCamera implements Renderable {
         if (config.core.orbitalControls) this.orbitalControls()
         window.document.addEventListener('keydown', this.handleKeyDown)
         window.document.addEventListener('keyup', this.handleKeyUp)
-        this.domElement.addEventListener('wheel', this.handleWheel)
+        this.domElement.addEventListener('wheel', this.handleWheel, { passive: false })
+        this.domElement.addEventListener('pointerdown', this.handlePointerDown)
+        this.domElement.addEventListener('pointermove', this.handlePointerMove)
+        this.domElement.addEventListener('pointerup', this.handlePointerUp)
+        this.domElement.addEventListener('pointercancel', this.handlePointerUp)
+        this.domElement.addEventListener('touchstart', this.handleTouchStart, { passive: false })
+        this.domElement.addEventListener('touchmove', this.handleTouchMove, { passive: false })
+        this.domElement.addEventListener('touchend', this.handleTouchEnd)
+        this.domElement.addEventListener('touchcancel', this.handleTouchEnd)
     }
 
     public render({ deltaTime }: ClockInfo) {
@@ -86,6 +101,56 @@ export class RTSCamera implements Renderable {
                 default:
             }
         })
+
+        if (this.isTwoFingerPanning && (this.touchpadPanDelta.x !== 0 || this.touchpadPanDelta.y !== 0)) {
+            const zoomOutBust = this.camera.position.y * config.renderer.tileSize
+            const cameraRotation = this.camera.rotation.x
+            const panSpeed = CAMERA_SPEED * config.camera.scrollSpeed * 10
+
+            const translateX = this.touchpadPanDelta.x * panSpeed
+            const translateY = this.touchpadPanDelta.y * panSpeed
+
+            if (translateX !== 0) {
+                this.camera.translateX(-translateX)
+            }
+
+            if (translateY !== 0) {
+                this.camera.translateY(translateY * -cameraRotation)
+                this.camera.translateZ(
+                    translateY * (-cameraRotation - Math.PI / 2),
+                )
+            }
+
+            this.touchpadPanDelta.x = 0
+            this.touchpadPanDelta.y = 0
+        }
+
+        if (this.isPinching && this.pinchZoomDelta !== 0) {
+            const delta = this.pinchZoomDelta * 0.01 * config.camera.zoomSpeed
+            const zoomDelta = delta
+
+            let finalDelta = zoomDelta
+            if (zoomDelta <= 0) {
+                finalDelta -= this.camera.position.y * 0.01
+            } else {
+                finalDelta += this.camera.position.y * 0.01
+            }
+
+            const direction = new Vector3(0, 0, 1)
+            direction.applyQuaternion(this.camera.quaternion)
+            const potentialNewPosition = this.camera.position.clone()
+            potentialNewPosition.add(direction.multiplyScalar(finalDelta))
+
+            const wouldExceedLimits =
+                potentialNewPosition.y < config.camera.minHeight ||
+                potentialNewPosition.y > config.camera.maxHeight
+
+            if (!wouldExceedLimits) {
+                this.camera.translateZ(finalDelta)
+            }
+
+            this.pinchZoomDelta = 0
+        }
     }
 
     private getMomentum(now: number, start: number, deltaTime: number) {
@@ -147,31 +212,247 @@ export class RTSCamera implements Renderable {
     }
 
     private handleWheel = (event: WheelEvent) => {
-        let delta = (event as any).wheelDelta
+        event.preventDefault()
+        
+        if (event.ctrlKey || event.metaKey) {
+            const delta = (event.deltaY / 240) * config.camera.zoomSpeed
+            const zoomDelta = delta
 
-        delta = delta / 240
-        delta = -delta
+            let finalDelta = zoomDelta
+            if (zoomDelta <= 0) {
+                finalDelta -= this.camera.position.y * 0.01
+            } else {
+                finalDelta += this.camera.position.y * 0.01
+            }
 
-        if (delta <= 0) {
-            delta -= this.camera.position.y * 0.01
+            const direction = new Vector3(0, 0, 1)
+            direction.applyQuaternion(this.camera.quaternion)
+            const potentialNewPosition = this.camera.position.clone()
+            potentialNewPosition.add(direction.multiplyScalar(finalDelta))
+
+            const wouldExceedLimits =
+                potentialNewPosition.y < config.camera.minHeight ||
+                potentialNewPosition.y > config.camera.maxHeight
+
+            if (!wouldExceedLimits) {
+                this.camera.translateZ(finalDelta)
+            }
         } else {
-            delta += this.camera.position.y * 0.01
+            const cameraRotation = this.camera.rotation.x
+            const panSpeed = CAMERA_SPEED * config.camera.scrollSpeed
+
+            const translateX = event.deltaX * panSpeed
+            const translateY = -event.deltaY * panSpeed
+
+            if (translateX !== 0) {
+                this.camera.translateX(translateX)
+            }
+
+            if (translateY !== 0) {
+                this.camera.translateY(translateY * -cameraRotation)
+                this.camera.translateZ(
+                    translateY * (-cameraRotation - Math.PI / 2),
+                )
+            }
+        }
+    }
+
+    private getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
+        const dx = pos2.x - pos1.x
+        const dy = pos2.y - pos1.y
+        return Math.sqrt(dx * dx + dy * dy)
+    }
+
+    private handlePointerDown = (event: PointerEvent) => {
+        if (event.pointerType === 'touch' || event.pointerType === 'mouse') {
+            this.lastTouchPositions.set(event.pointerId, {
+                x: event.clientX,
+                y: event.clientY,
+            })
+
+            if (this.lastTouchPositions.size === 2) {
+                event.preventDefault()
+                
+                const positions = Array.from(this.lastTouchPositions.values())
+                const pos1 = positions[0]
+                const pos2 = positions[1]
+                if (!pos1 || !pos2) return
+
+                this.lastCenterPoint = {
+                    x: positions.reduce((sum, pos) => sum + pos.x, 0) / positions.length,
+                    y: positions.reduce((sum, pos) => sum + pos.y, 0) / positions.length,
+                }
+                this.initialPinchDistance = this.getDistance(pos1, pos2)
+                this.isPinching = false
+                this.isTwoFingerPanning = false
+            }
+        }
+    }
+
+    private handlePointerMove = (event: PointerEvent) => {
+        if (this.lastTouchPositions.size !== 2 || !this.lastCenterPoint || !this.initialPinchDistance) return
+
+        event.preventDefault()
+
+        this.lastTouchPositions.set(event.pointerId, {
+            x: event.clientX,
+            y: event.clientY,
+        })
+
+        const positions = Array.from(this.lastTouchPositions.values())
+        const pos1 = positions[0]
+        const pos2 = positions[1]
+        if (!pos1 || !pos2) return
+
+        const currentCenter = {
+            x: positions.reduce((sum, pos) => sum + pos.x, 0) / positions.length,
+            y: positions.reduce((sum, pos) => sum + pos.y, 0) / positions.length,
         }
 
-        // Calculate where the camera would move
-        const direction = new Vector3(0, 0, 1)
-        direction.applyQuaternion(this.camera.quaternion)
-        const potentialNewPosition = this.camera.position.clone()
-        potentialNewPosition.add(direction.multiplyScalar(delta))
+        const currentDistance = this.getDistance(pos1, pos2)
+        const distanceChange = currentDistance - this.initialPinchDistance
+        const centerMoveX = currentCenter.x - this.lastCenterPoint.x
+        const centerMoveY = currentCenter.y - this.lastCenterPoint.y
+        const centerMoveDistance = Math.sqrt(centerMoveX * centerMoveX + centerMoveY * centerMoveY)
 
-        // Check if the movement would violate height limits
-        const wouldExceedLimits =
-            potentialNewPosition.y < config.camera.minHeight ||
-            potentialNewPosition.y > config.camera.maxHeight
+        if (Math.abs(distanceChange) > 10 || this.isPinching) {
+            if (!this.isTwoFingerPanning) {
+                this.isPinching = true
+                this.pinchZoomDelta += distanceChange
+                this.initialPinchDistance = currentDistance
+                this.lastCenterPoint = currentCenter
+            }
+        } else if (centerMoveDistance > 5 || this.isTwoFingerPanning) {
+            if (!this.isPinching) {
+                this.isTwoFingerPanning = true
+                this.touchpadPanDelta.x += centerMoveX
+                this.touchpadPanDelta.y += centerMoveY
+                this.lastCenterPoint = currentCenter
+            }
+        }
+    }
 
-        // Only apply the translation if it stays within limits
-        if (!wouldExceedLimits) {
-            this.camera.translateZ(delta)
+    private handlePointerUp = (event: PointerEvent) => {
+        if (this.isPinching || this.isTwoFingerPanning) {
+            event.preventDefault()
+        }
+
+        this.lastTouchPositions.delete(event.pointerId)
+
+        if (this.lastTouchPositions.size < 2) {
+            this.isTwoFingerPanning = false
+            this.isPinching = false
+            this.touchpadPanDelta = { x: 0, y: 0 }
+            this.lastCenterPoint = null
+            this.initialPinchDistance = null
+            this.pinchZoomDelta = 0
+        } else if (this.lastTouchPositions.size === 2) {
+            const positions = Array.from(this.lastTouchPositions.values())
+            const pos1 = positions[0]
+            const pos2 = positions[1]
+            if (!pos1 || !pos2) return
+
+            this.lastCenterPoint = {
+                x: positions.reduce((sum, pos) => sum + pos.x, 0) / positions.length,
+                y: positions.reduce((sum, pos) => sum + pos.y, 0) / positions.length,
+            }
+            this.initialPinchDistance = this.getDistance(pos1, pos2)
+            this.isPinching = false
+            this.isTwoFingerPanning = false
+        }
+    }
+
+    private handleTouchStart = (event: TouchEvent) => {
+        if (event.touches.length === 2) {
+            event.preventDefault()
+            
+            const touch1 = event.touches[0]
+            const touch2 = event.touches[1]
+            if (!touch1 || !touch2) return
+            
+            this.lastTouchPositions.clear()
+            this.lastTouchPositions.set(0, { x: touch1.clientX, y: touch1.clientY })
+            this.lastTouchPositions.set(1, { x: touch2.clientX, y: touch2.clientY })
+            
+            this.lastCenterPoint = {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2,
+            }
+            this.initialPinchDistance = this.getDistance(
+                { x: touch1.clientX, y: touch1.clientY },
+                { x: touch2.clientX, y: touch2.clientY }
+            )
+            this.isPinching = false
+            this.isTwoFingerPanning = false
+        }
+    }
+
+    private handleTouchMove = (event: TouchEvent) => {
+        if (event.touches.length === 2) {
+            event.preventDefault()
+            
+            const touch1 = event.touches[0]
+            const touch2 = event.touches[1]
+            if (!touch1 || !touch2) return
+            
+            if (!this.lastCenterPoint || !this.initialPinchDistance) {
+                this.lastCenterPoint = {
+                    x: (touch1.clientX + touch2.clientX) / 2,
+                    y: (touch1.clientY + touch2.clientY) / 2,
+                }
+                this.initialPinchDistance = this.getDistance(
+                    { x: touch1.clientX, y: touch1.clientY },
+                    { x: touch2.clientX, y: touch2.clientY }
+                )
+                return
+            }
+            
+            const currentCenter = {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2,
+            }
+            
+            const currentDistance = this.getDistance(
+                { x: touch1.clientX, y: touch1.clientY },
+                { x: touch2.clientX, y: touch2.clientY }
+            )
+            
+            const distanceChange = currentDistance - this.initialPinchDistance
+            const centerMoveX = currentCenter.x - this.lastCenterPoint.x
+            const centerMoveY = currentCenter.y - this.lastCenterPoint.y
+            const centerMoveDistance = Math.sqrt(centerMoveX * centerMoveX + centerMoveY * centerMoveY)
+            
+            if (Math.abs(distanceChange) > 10 || this.isPinching) {
+                if (!this.isTwoFingerPanning) {
+                    this.isPinching = true
+                    this.pinchZoomDelta += distanceChange
+                    this.initialPinchDistance = currentDistance
+                    this.lastCenterPoint = currentCenter
+                }
+            } else if (centerMoveDistance > 5 || this.isTwoFingerPanning) {
+                if (!this.isPinching) {
+                    this.isTwoFingerPanning = true
+                    this.touchpadPanDelta.x += centerMoveX
+                    this.touchpadPanDelta.y += centerMoveY
+                    this.lastCenterPoint = currentCenter
+                }
+            }
+        }
+    }
+
+    private handleTouchEnd = (event: TouchEvent) => {
+        if (event.touches.length < 2) {
+            if (this.isPinching || this.isTwoFingerPanning) {
+                event.preventDefault()
+            }
+            
+            this.isTwoFingerPanning = false
+            this.isPinching = false
+            this.touchpadPanDelta = { x: 0, y: 0 }
+            this.lastCenterPoint = null
+            this.initialPinchDistance = null
+            this.pinchZoomDelta = 0
+            this.lastTouchPositions.clear()
         }
     }
 }
