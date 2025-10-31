@@ -1,32 +1,27 @@
-import styled from '@emotion/styled'
-import { margin, MarginProps } from 'styled-system'
+import { cn } from '+helpers/string'
 
-interface ButtonProps extends MarginProps {
+interface ButtonProps {
     label: string
     onClick: () => void
     submit?: boolean
+    className?: string
 }
 
-export const Button = ({ label, onClick, submit, ...props }: ButtonProps) => {
+export const Button = ({ label, onClick, submit, className }: ButtonProps) => {
     return (
-        <Container onClick={onClick} type={submit ? 'submit' : 'button'} {...props}>
+        <button
+            type={submit ? 'submit' : 'button'}
+            onClick={onClick}
+            className={cn(
+                'bg-[var(--color-black-70)] text-[var(--color-text)] border-2 border-[var(--color-primary)] rounded-[var(--radius-small)] px-3 py-2 select-none',
+                'hover:bg-[var(--color-primary)]',
+                'hover:text-[var(--color-black)]',
+                'focus-visible:bg-[var(--color-primary)]',
+                'focus-visible:text-[var(--color-black)]',
+                className,
+            )}
+        >
             {label}
-        </Container>
+        </button>
     )
 }
-
-const Container = styled.button<MarginProps>(margin, ({ theme }) => ({
-    backgroundColor: theme.colors.black70,
-    color: theme.colors.text,
-    border: '2px solid',
-    borderColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.small,
-    padding: theme.space[2],
-    paddingLeft: theme.space[3],
-    paddingRight: theme.space[3],
-    userSelect: 'none',
-    ':hover, :focus-visible': {
-        backgroundColor: theme.colors.primary,
-        color: theme.colors.black,
-    },
-}))

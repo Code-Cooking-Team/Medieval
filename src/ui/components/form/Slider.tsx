@@ -1,4 +1,4 @@
-import styled from '@emotion/styled'
+import { cn } from '+helpers/string'
 import * as SliderPrimitive from '@radix-ui/react-slider'
 
 interface SliderProps {
@@ -11,65 +11,34 @@ interface SliderProps {
 
 export const Slider = ({ value, min, max, onChange, step = 1 }: SliderProps) => {
     return (
-        <StyledSlider
+        <SliderPrimitive.Root
             defaultValue={[value]}
             min={min}
             max={max}
             step={step}
             onValueChange={(values) => onChange(values[0]!)}
+            className={cn(
+                'relative flex items-center select-none touch-none w-[200px] [&[data-orientation=horizontal]]:h-5 [&[data-orientation=vertical]]:flex-col [&[data-orientation=vertical]]:w-5 [&[data-orientation=vertical]]:h-[100px]',
+            )}
         >
-            <StyledTrack>
-                <StyledRange />
-            </StyledTrack>
-            <StyledThumb />
-        </StyledSlider>
+            <SliderPrimitive.Track
+                className={cn(
+                    'bg-[var(--color-black-10)] relative flex-grow rounded-full [&[data-orientation=horizontal]]:h-[3px] [&[data-orientation=vertical]]:w-[3px]',
+                )}
+            >
+                <SliderPrimitive.Range
+                    className={cn(
+                        'absolute bg-white rounded-full h-full',
+                    )}
+                />
+            </SliderPrimitive.Track>
+            <SliderPrimitive.Thumb
+                className={cn(
+                    'unset-all block w-5 h-5 bg-white shadow-[0_2px_10px_white] rounded-[10px]',
+                    'hover:bg-[var(--color-light-gray)]',
+                    'focus:shadow-[0_0_0_5px_var(--color-black-70)]',
+                )}
+            />
+        </SliderPrimitive.Root>
     )
 }
-
-const StyledSlider = styled(SliderPrimitive.Root)({
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    userSelect: 'none',
-    touchAction: 'none',
-    width: 200,
-
-    '&[data-orientation="horizontal"]': {
-        height: 20,
-    },
-
-    '&[data-orientation="vertical"]': {
-        flexDirection: 'column',
-        width: 20,
-        height: 100,
-    },
-})
-
-const StyledTrack = styled(SliderPrimitive.Track)(({ theme }) => ({
-    backgroundColor: theme.colors.black10,
-    position: 'relative',
-    flexGrow: 1,
-    borderRadius: '9999px',
-
-    '&[data-orientation="horizontal"]': { height: 3 },
-    '&[data-orientation="vertical"]': { width: 3 },
-}))
-
-const StyledRange = styled(SliderPrimitive.Range)({
-    position: 'absolute',
-    backgroundColor: 'white',
-    borderRadius: '9999px',
-    height: '100%',
-})
-
-const StyledThumb = styled(SliderPrimitive.Thumb)(({ theme }) => ({
-    all: 'unset',
-    display: 'block',
-    width: 20,
-    height: 20,
-    backgroundColor: 'white',
-    boxShadow: `0 2px 10px ${theme.colors.white}`,
-    borderRadius: 10,
-    '&:hover': { backgroundColor: theme.colors.lightGray },
-    '&:focus': { boxShadow: `0 0 0 5px ${theme.colors.black70}` },
-}))

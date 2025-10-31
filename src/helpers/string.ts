@@ -6,3 +6,7 @@ export const normalizeEventKeyName = (key: string) => {
 
     return key
 }
+
+export function cn(...classes: (string | undefined | null | false)[]): string {
+    return classes.filter(Boolean).join(' ')
+}

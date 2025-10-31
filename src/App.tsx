@@ -21,7 +21,6 @@ import { ConfigForm } from '+ui/modules/config/ConfigForm'
 import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 
-import styled from '@emotion/styled'
 import { useEffect, useMemo, useState } from 'react'
 
 const gameRootEl = document.getElementById('game-root') as HTMLElement
@@ -117,7 +116,14 @@ function App() {
 
     return (
         <>
-            <Right>
+            <Box
+                position="absolute"
+                style={{ zIndex: 10 }}
+                top={0}
+                right={0}
+                bottom={0}
+                className="overflow-auto bg-black/50 backdrop-blur-[15px] max-w-[280px] w-[90%]"
+            >
                 <Box
                     p={3}
                     display="flex"
@@ -177,22 +183,9 @@ function App() {
                         <ConfigForm />
                     </Tab>
                 </Tabs>
-            </Right>
+            </Box>
         </>
     )
 }
-
-const Right = styled(Box)({
-    position: 'absolute',
-    zIndex: 10,
-    top: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'auto',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    backdropFilter: 'blur(15px)',
-    maxWidth: 280,
-    width: '90%',
-})
 
 export default App

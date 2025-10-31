@@ -1,12 +1,13 @@
-import styled from '@emotion/styled'
+import { cn } from '+helpers/string'
 import React from 'react'
-import { margin, MarginProps } from 'styled-system'
 
-interface SelectProps<T> extends MarginProps {
+interface SelectProps<T> {
     value: T
     items: T[]
     onChange(value: T): void
     getLabel(item: T): string
+    fullWidth?: boolean
+    className?: string
 }
 
 export const Select = <T extends string>({
@@ -14,37 +15,26 @@ export const Select = <T extends string>({
     items,
     onChange,
     getLabel = (item) => item,
-    ...props
+    fullWidth,
+    className,
 }: SelectProps<T>) => {
     return (
-        <StyledSelect
+        <select
+            className={cn(
+                'bg-[var(--color-black)] border border-solid border-[var(--color-border)] text-base p-2 text-[var(--color-text)]',
+                fullWidth ? 'w-full' : 'w-auto',
+                className,
+            )}
             value={value}
             onChange={(event: any) => onChange(event.target.value)}
-            {...props}
         >
             {items.map((item) => (
                 <option key={item} value={item}>
                     {getLabel(item)}
                 </option>
             ))}
-        </StyledSelect>
+        </select>
     )
 }
 
-interface StyledSelectProps extends MarginProps {
-    fullWidth?: boolean
-}
-
-export const StyledSelect = styled.select<StyledSelectProps>(
-    margin,
-    ({ theme, fullWidth }) => ({
-        background: theme.colors.black,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: theme.colors.border,
-        fontSize: theme.fontSizes[2],
-        padding: theme.space[2],
-        color: theme.colors.text,
-        width: fullWidth ? '100%' : 'auto',
-    }),
-)
+export const StyledSelect = Select

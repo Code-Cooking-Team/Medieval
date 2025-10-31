@@ -1,6 +1,10 @@
-import styled from '@emotion/styled'
+import { cn } from '+helpers/string'
 import { InputHTMLAttributes } from 'react'
-import { margin, MarginProps } from 'styled-system'
+
+export interface InputStyleProps {
+    fullWidth?: boolean
+    className?: string
+}
 
 interface InputProps extends InputStyleProps {
     value?: string
@@ -20,11 +24,19 @@ export const Input = ({
     type,
     placeholder,
     autoFocus,
-    ...props
+    fullWidth,
+    className,
 }: InputProps) => {
+    const inputClasses = cn(
+        'bg-[var(--color-black)] border border-solid border-[var(--color-border)] text-base p-2 max-w-full text-[var(--color-text)]',
+        fullWidth ? 'w-full' : 'w-[280px]',
+        className,
+    )
+
     if (type === 'number') {
         return (
-            <StyledInput
+            <input
+                className={inputClasses}
                 value={value}
                 onChange={(event) => onChange(event.target.valueAsNumber.toString())}
                 onBlur={onBlur}
@@ -33,12 +45,12 @@ export const Input = ({
                 type={type}
                 placeholder={placeholder}
                 autoFocus={autoFocus}
-                {...props}
             />
         )
     } else {
         return (
-            <StyledInput
+            <input
+                className={inputClasses}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 onBlur={onBlur}
@@ -46,27 +58,9 @@ export const Input = ({
                 type={type}
                 placeholder={placeholder}
                 autoFocus={autoFocus}
-                {...props}
             />
         )
     }
 }
 
-export interface InputStyleProps extends MarginProps {
-    fullWidth?: boolean
-}
-
-export const StyledInput = styled.input<InputStyleProps>(
-    margin,
-    ({ theme, fullWidth }) => ({
-        background: theme.colors.black,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: theme.colors.border,
-        fontSize: theme.fontSizes[2],
-        padding: theme.space[2],
-        width: fullWidth ? '100%' : '280px',
-        maxWidth: '100%',
-        color: theme.colors.text,
-    }),
-)
+export const StyledInput = Input

@@ -1,4 +1,5 @@
-import { InputStyleProps, StyledInput } from './Input'
+import { cn } from '+helpers/string'
+import { InputStyleProps } from './Input'
 
 interface NumberInputProps extends InputStyleProps {
     value?: number
@@ -18,22 +19,30 @@ export const NumberInput = ({
     placeholder,
     onBlur,
     autoFocus,
-    ...props
+    fullWidth,
+    className,
 }: NumberInputProps) => {
-    const val = Number.isNaN(value) ? '' : value
+    const val = value === undefined || Number.isNaN(value) ? '' : value.toString()
+
+    const inputClasses = cn(
+        'bg-[var(--color-black)] border border-solid border-[var(--color-border)] text-base p-2 max-w-full text-[var(--color-text)]',
+        fullWidth ? 'w-full' : 'w-[280px]',
+        className,
+    )
 
     return (
-        <StyledInput
+        <input
+            className={inputClasses}
             value={val}
-            onChange={({ target }) => {
-                onChange(parseFloat(target.value))
+            onChange={(event) => {
+                onChange(parseFloat(event.target.value))
             }}
             onBlur={onBlur}
             name={name}
             step={step}
+            type="number"
             placeholder={placeholder}
             autoFocus={autoFocus}
-            {...props}
         />
     )
 }

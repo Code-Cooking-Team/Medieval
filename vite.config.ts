@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
@@ -11,6 +12,7 @@ export default defineConfig({
         react({
             fastRefresh: true,
         }),
+        tailwindcss(),
     ],
     server: {
         port: 3333,
