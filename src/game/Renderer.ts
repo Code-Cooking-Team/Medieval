@@ -66,7 +66,7 @@ export class Renderer {
         public rootEl: HTMLElement,
     ) {
         // Better visual but don't work with composer
-        this.webGLRenderer.outputEncoding = sRGBEncoding
+        // this.webGLRenderer.outputEncoding = sRGBEncoding
         this.webGLRenderer.toneMapping = NoToneMapping
 
         this.webGLRenderer.toneMapping = ReinhardToneMapping

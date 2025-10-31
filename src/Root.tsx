@@ -5,8 +5,8 @@ import { ThemeProvider } from '@emotion/react'
 
 export const Root = () => {
     return (
-        <ThemeProvider theme={theme}>
+        // <ThemeProvider theme={theme}>
             <App />
-        </ThemeProvider>
+        // </ThemeProvider>
     )
 }
