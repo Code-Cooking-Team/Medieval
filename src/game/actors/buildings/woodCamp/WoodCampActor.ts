@@ -1,15 +1,14 @@
-import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType } from '+game/types'
 
-import { WoodCampBlueprint } from './WoodCampBlueprint'
+import { woodCampBlueprint } from './WoodCampBlueprint'
 
 export class WoodCampActor extends BuildingActor {
     public type = ActorType.WoodCamp
-    public blueprint = actorByType[this.type].blueprint as WoodCampBlueprint
+    public blueprint = woodCampBlueprint
 
     public collectedTreeHP = 0
 

@@ -55,3 +55,5 @@ export class HouseBlueprint implements ActorBlueprint {
         return { model: lod, promise }
     }
 }
+
+export const houseBlueprint = new HouseBlueprint()

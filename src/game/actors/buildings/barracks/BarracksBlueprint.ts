@@ -54,3 +54,5 @@ export class BarracksBlueprint implements ActorBlueprint {
         return { model: lod, promise }
     }
 }
+
+export const barracksBlueprint = new BarracksBlueprint()

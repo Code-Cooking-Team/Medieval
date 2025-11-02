@@ -54,3 +54,5 @@ export class WoodCampBlueprint implements ActorBlueprint {
         return { model: lod, promise }
     }
 }
+
+export const woodCampBlueprint = new WoodCampBlueprint()

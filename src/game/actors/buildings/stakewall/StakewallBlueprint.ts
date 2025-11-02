@@ -49,3 +49,5 @@ export class StakewallBlueprint implements ActorBlueprint {
         return this.grid
     }
 }
+
+export const stakewallBlueprint = new StakewallBlueprint()

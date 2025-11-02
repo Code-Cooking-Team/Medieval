@@ -55,3 +55,5 @@ export class GuildhallBlueprint implements ActorBlueprint {
         return { model: group, promise }
     }
 }
+
+export const guildhallBlueprint = new GuildhallBlueprint()
