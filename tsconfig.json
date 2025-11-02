@@ -18,7 +18,7 @@
     "jsx": "react-jsx",
     "experimentalDecorators": true,
     "baseUrl": ".",
-    "types": ["vitest/globals"],
+    "types": ["bun-types"],
     "paths": {
       "+*": ["src/*"]
     }

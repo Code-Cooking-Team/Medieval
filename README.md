@@ -26,7 +26,7 @@ Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
 - Three.js
 - Emotion (styled)
 - Radix UI (Accordion, Slider, Switch, Tabs)
-- Vitest + Happy DOM
+- Bun test
 - Oxlint (linting)
 - Prettier (formatting)
 
@@ -66,7 +66,7 @@ bun run preview
 | `bun run preview`  | Preview production build locally    |
 | `bun run lint`     | Lint code with Oxlint               |
 | `bun run format`   | Format code with Prettier           |
-| `bun run test`     | Run unit tests with Vitest          |
+| `bun run test`     | Run unit tests with Bun             |
 | `bun run coverage` | Run tests with coverage report      |
 | `bun run ts`       | Type-check the project              |
 
@@ -108,7 +108,6 @@ Medieval/
 ├── public/                 # Static files and assets (if any)
 ├── index.html              # HTML template
 ├── vite.config.ts          # Vite configuration
-├── vitest.config.ts        # Vitest configuration
 ├── tsconfig.json           # TypeScript configuration
 └── package.json            # Project metadata & scripts
 ```

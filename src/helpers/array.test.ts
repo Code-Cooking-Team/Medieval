@@ -1,3 +1,5 @@
+import { expect, it } from 'bun:test'
+
 import { createArray, getPositionByIndex } from './array'
 
 it('should create an array', () => {

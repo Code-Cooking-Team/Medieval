@@ -1,3 +1,5 @@
+import { expect, test } from 'bun:test'
+
 import { color0xToHex, colorHexTo0x } from './color'
 
 const colors = [
