@@ -25,7 +25,10 @@ export class Game {
         stopped: undefined
     }>('Game')
 
-    constructor(public world: World, public players: Player[]) {
+    constructor(
+        public world: World,
+        public players: Player[],
+    ) {
         this.pf = new Pathfinding(world)
     }
 

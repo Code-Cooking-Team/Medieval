@@ -1,7 +1,6 @@
 # Logs
 logs
 *.log
-pnpm-debug.log*
 
 coverage
 node_modules

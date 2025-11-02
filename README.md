@@ -15,6 +15,7 @@ Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
 - [Available Scripts](#available-scripts)
 - [Project Structure](#project-structure)
 - [Running Tests](#running-tests)
+- [Linting & Formatting](#linting--formatting)
 - [Contributing](#contributing)
 
 ## Tech Stack
@@ -26,45 +27,48 @@ Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
 - Emotion (styled)
 - Radix UI (Accordion, Slider, Switch, Tabs)
 - Vitest + Happy DOM
+- Oxlint (linting)
+- Prettier (formatting)
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js v16+
-- pnpm (https://pnpm.io)
+- bun (https://bun.sh)
 
 ### Installation
 
 ```bash
-pnpm install
+bun install
 ```
 
 ### Development Server
 
 ```bash
-pnpm run dev
+bun run dev
 # opens http://localhost:3333/
 ```
 
 ### Building for Production
 
 ```bash
-pnpm run build
-pnpm run preview
+bun run build
+bun run preview
 ```
 
 ## Available Scripts
 
-| Command             | Description                         |
-| ------------------- | ----------------------------------- |
-| `pnpm run dev`      | Start the development server        |
-| `pnpm run build`    | Compile TypeScript and build assets |
-| `pnpm run preview`  | Preview production build locally    |
-| `pnpm run format`   | Format code with Prettier           |
-| `pnpm run test`     | Run unit tests with Vitest          |
-| `pnpm run coverage` | Run tests with coverage report      |
-| `pnpm run ts`       | Type-check the project              |
+| Command            | Description                         |
+| ------------------ | ----------------------------------- |
+| `bun run dev`      | Start the development server        |
+| `bun run build`    | Compile TypeScript and build assets |
+| `bun run preview`  | Preview production build locally    |
+| `bun run lint`     | Lint code with Oxlint               |
+| `bun run format`   | Format code with Prettier           |
+| `bun run test`     | Run unit tests with Vitest          |
+| `bun run coverage` | Run tests with coverage report      |
+| `bun run ts`       | Type-check the project              |
 
 ## Project Structure
 
@@ -200,8 +204,22 @@ export class WoodcutterProfession extends Profession {
 Place unit tests next to the code using the `.test.ts` suffix:
 
 ```bash
-pnpm run test src/algorithm/squareFloodFill.test.ts
+bun run test src/algorithm/squareFloodFill.test.ts
 ```
+
+## Linting & Formatting
+
+The project uses Oxlint for linting and Prettier for code formatting:
+
+```bash
+# Run linter
+bun run lint
+
+# Format code
+bun run format
+```
+
+Linting runs automatically on pre-commit hooks via Husky.
 
 ## Contributing
 
