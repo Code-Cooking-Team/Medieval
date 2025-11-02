@@ -22,6 +22,7 @@
     "emittery": "^1.2.0",
     "lodash": "^4.17.21",
     "lz-string": "^1.4.4",
+    "postprocessing": "^6.37.8",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "stats.js": "^0.17.0",

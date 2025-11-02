@@ -13,8 +13,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
         fov: 60,
         far: 350,
         near: 0.1,
-        minHeight: 2.0,
-        maxHeight: 8.0,
+        minHeight: 0.7,
+        maxHeight: 10.0,
         scrollSpeed: 0.02,
         zoomSpeed: 10.0,
     },
@@ -44,9 +44,9 @@ export const { config, resetConfig, saveConfig } = createConfig({
         postprocessingEnabled: true,
 
         bloomEnabled: true,
-        bloomStrength: 1.25,
-        bloomThreshold: 0.45,
-        bloomRadius: 0.45,
+        bloomStrength: 1,
+        bloomThreshold: 0.56,
+        bloomRadius: 0.75,
 
         outlineEnabled: true,
         outlineEdgeStrength: 2.0,
@@ -54,12 +54,9 @@ export const { config, resetConfig, saveConfig } = createConfig({
         outlineEdgeThickness: 0.2,
         outlinePulsePeriod: 0,
 
-        FXAAEnabled: true,
         bokehEnable: true,
         bokehAperture: 0.002,
-        bokehMaxBlur: 0.01,
-
-        gammaCorrectionShader: true,
+        bokehMaxBlur: 3,
     },
 
     walkableRenderer: {

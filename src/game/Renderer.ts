@@ -3,21 +3,27 @@ import { config } from '+config'
 import Stats from 'stats.js'
 import {
     Clock,
-    NoToneMapping,
     PCFSoftShadowMap,
+    ACESFilmicToneMapping,
     ReinhardToneMapping,
     Scene,
     Vector2,
     WebGLRenderer,
+    Vector3,
+    Raycaster,
 } from 'three'
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
-import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js'
+import {
+    BloomEffect,
+    DepthOfFieldEffect,
+    EffectComposer,
+    EffectPass,
+    FXAAEffect,
+    OutlineEffect,
+    RenderPass,
+    ToneMappingEffect,
+    ToneMappingMode,
+} from 'postprocessing'
+import { Mesh } from 'three'
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
@@ -41,10 +47,13 @@ export class Renderer {
     })
 
     private composer = new EffectComposer(this.webGLRenderer)
-    private outlinePass?: OutlinePass
-    private FXAAPass?: any
-    private GammaCorrectionPass?: any
-    private bokehPass?: BokehPass
+    private outlineEffect?: OutlineEffect
+    private bloomEffect?: BloomEffect
+    private depthOfFieldEffect?: DepthOfFieldEffect
+
+    private raycaster = new Raycaster()
+    private smoothFocusTarget = new Vector3()
+    private currentFocusTarget = new Vector3()
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
@@ -64,12 +73,9 @@ export class Renderer {
         public player: HumanPlayer,
         public rootEl: HTMLElement,
     ) {
-        // Better visual but don't work with composer
-        // this.webGLRenderer.outputEncoding = sRGBEncoding
-        this.webGLRenderer.toneMapping = NoToneMapping
-
         this.webGLRenderer.toneMapping = ReinhardToneMapping
-        this.webGLRenderer.toneMappingExposure = Math.pow(config.renderer.exposure, 4.0)
+        // this.webGLRenderer.toneMapping = ACESFilmicToneMapping
+        this.webGLRenderer.toneMappingExposure = config.renderer.exposure * 2.2
 
         this.webGLRenderer.shadowMap.enabled = true
         this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
@@ -158,8 +164,24 @@ export class Renderer {
     }
 
     private handleSelectChange = () => {
-        if (this.outlinePass) {
-            this.outlinePass.selectedObjects = this.getSelectedGroupList()
+        if (this.outlineEffect) {
+            // OutlineEffect uses a selection property to set selected objects
+            // We need to collect all meshes from selected groups, as OutlineEffect
+            // works best with Mesh objects that have geometry
+            const selectedGroups = this.getSelectedGroupList()
+            this.outlineEffect.selection.clear()
+
+            selectedGroups.forEach((group) => {
+                // Add the group itself (OutlineEffect can traverse it)
+                this.outlineEffect?.selection.add(group)
+
+                // Also collect and add all meshes within the group
+                group.traverse((child) => {
+                    if (child instanceof Mesh) {
+                        this.outlineEffect?.selection.add(child)
+                    }
+                })
+            })
         }
     }
 
@@ -194,65 +216,59 @@ export class Renderer {
         const camera = this.rtsCamera.camera
 
         const renderPass = new RenderPass(this.scene, camera)
+        this.composer.addPass(renderPass)
 
         // Outline
         if (config.postProcessing.outlineEnabled) {
-            const outlineParams = {
+            this.outlineEffect = new OutlineEffect(this.scene, camera, {
                 edgeStrength: config.postProcessing.outlineEdgeStrength,
-                edgeGlow: config.postProcessing.outlineEdgeGlow,
-                edgeThickness: config.postProcessing.outlineEdgeThickness,
-                pulsePeriod: config.postProcessing.outlinePulsePeriod,
-            }
-            this.outlinePass = new OutlinePass(
-                new Vector2(width, height),
-                this.scene,
-                camera,
-            )
-
-            this.outlinePass.edgeStrength = outlineParams.edgeStrength
-            this.outlinePass.edgeGlow = outlineParams.edgeGlow
-            this.outlinePass.edgeThickness = outlineParams.edgeThickness
-            this.outlinePass.pulsePeriod = outlineParams.pulsePeriod
-            this.outlinePass.visibleEdgeColor.set(0x5eff64)
-            this.outlinePass.hiddenEdgeColor.set(0x5eff64)
-            this.composer.addPass(renderPass)
-            this.composer.addPass(this.outlinePass)
+                visibleEdgeColor: 0x5eff64,
+                hiddenEdgeColor: 0x5eff64,
+            })
         }
 
         // Bloom
         if (config.postProcessing.bloomEnabled) {
-            const bloomPass = new UnrealBloomPass(
-                new Vector2(width, height),
-                1.5,
-                0.4,
-                0.85,
-            )
-            bloomPass.strength = config.postProcessing.bloomStrength
-            bloomPass.threshold = config.postProcessing.bloomThreshold
-            bloomPass.radius = config.postProcessing.bloomRadius
-            this.composer.addPass(bloomPass)
-        }
-
-        // GammaCorrection
-        if (config.postProcessing.gammaCorrectionShader) {
-            this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
-            this.composer.addPass(this.GammaCorrectionPass)
-        }
-
-        // FXAA
-        if (config.postProcessing.FXAAEnabled) {
-            this.FXAAPass = new ShaderPass(FXAAShader)
-            this.composer.addPass(this.FXAAPass)
-        }
-
-        // Bokeh
-        if (config.postProcessing.bokehEnable) {
-            this.bokehPass = new BokehPass(this.scene, camera, {
-                focus: 5,
-                aperture: config.postProcessing.bokehAperture,
-                maxblur: config.postProcessing.bokehMaxBlur,
+            this.bloomEffect = new BloomEffect({
+                intensity: config.postProcessing.bloomStrength,
+                luminanceThreshold: config.postProcessing.bloomThreshold,
+                luminanceSmoothing: 1,
+                radius: config.postProcessing.bloomRadius,
             })
-            this.composer.addPass(this.bokehPass)
+        }
+
+        // Depth of Field (Bokeh)
+        if (config.postProcessing.bokehEnable) {
+            this.depthOfFieldEffect = new DepthOfFieldEffect(camera, {
+                // focusRange: 0.5,
+                // focusDistance: 0.02,
+                focalLength: 0.03,
+                bokehScale: 10,
+            })
+
+            // Initialize smooth focus target to a point in front of camera
+            const initialForward = new Vector3()
+            camera.getWorldDirection(initialForward)
+            this.smoothFocusTarget.copy(camera.position)
+            this.smoothFocusTarget.add(initialForward.multiplyScalar(10))
+            this.currentFocusTarget.copy(this.smoothFocusTarget)
+        }
+
+        // Combine effects into a single pass
+        const effects = []
+        if (this.bloomEffect) effects.push(this.bloomEffect)
+        if (this.depthOfFieldEffect) effects.push(this.depthOfFieldEffect)
+        if (this.outlineEffect) effects.push(this.outlineEffect)
+
+        // Tone mapping effect wrapped in EffectPass
+        const toneMappingEffect = new ToneMappingEffect({
+            mode: ToneMappingMode.REINHARD,
+        })
+        effects.push(toneMappingEffect)
+
+        if (effects.length > 0) {
+            const effectPass = new EffectPass(camera, ...effects)
+            this.composer.addPass(effectPass)
         }
     }
 
@@ -306,16 +322,6 @@ export class Renderer {
 
         if (config.postProcessing.postprocessingEnabled) {
             this.composer.setSize(width, height)
-            this.composer.setPixelRatio(pixelRatio)
-        }
-
-        if (this.FXAAPass) {
-            this.FXAAPass.material.uniforms.resolution.value.x = 1 / (width * pixelRatio)
-            this.FXAAPass.material.uniforms.resolution.value.y = 1 / (height * pixelRatio)
-        }
-
-        if (this.bokehPass) {
-            this.bokehPass.setSize(width, height)
         }
     }
 
@@ -354,21 +360,36 @@ export class Renderer {
         this.rtsCamera.render(clockInfo)
 
         if (config.postProcessing.postprocessingEnabled) {
-            if (this.bokehPass) {
-                const cameraY = this.rtsCamera.camera.position.y
-                const cameraRotation =
-                    (this.rtsCamera.camera.rotation.x + Math.PI / 2) *
-                    1.5 *
-                    (cameraY * 0.2)
-                const uniform = this.bokehPass.uniforms as any
-                uniform.focus.value = cameraY + cameraRotation
-                uniform.aperture.value =
-                    (10 - cameraY + cameraRotation) *
-                    config.postProcessing.bokehAperture *
-                    0.2
+            // Auto-focus using raycast from center of screen
+            if (this.depthOfFieldEffect) {
+                // Cast ray from center of screen
+                const centerScreen = new Vector2(0, 0)
+                this.raycaster.setFromCamera(centerScreen, this.rtsCamera.camera)
 
-                this.composer.render()
+                // Get all objects that can be hit
+                const raycastObjects = [
+                    ...this.getGroundChildren(),
+                    ...this.getInteractionObjectList(),
+                ]
+
+                // Find intersection
+                const intersects = this.raycaster.intersectObjects(raycastObjects, false)
+                const hitPoint = intersects[0]?.point
+
+                if (hitPoint) {
+                    // Update current target to hit point
+                    this.currentFocusTarget.copy(hitPoint)
+                }
+
+                // Smoothly interpolate towards current target
+                // Adjust lerp speed (0.1 = smooth, 0.3 = faster, 0.05 = slower)
+                const lerpSpeed = 0.15
+                this.smoothFocusTarget.lerp(this.currentFocusTarget, lerpSpeed)
+
+                // Set the smooth target to depth of field effect
+                this.depthOfFieldEffect.target = this.smoothFocusTarget.clone()
             }
+            this.composer.render()
         } else {
             this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
         }

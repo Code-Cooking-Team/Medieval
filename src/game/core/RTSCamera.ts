@@ -215,12 +215,11 @@ export class RTSCamera implements Renderable {
         const movementVector = normalizedDirection.clone().multiplyScalar(-finalDelta)
         const potentialPosition = this.camera.position.clone().add(movementVector)
 
-        const heightBelowMinimum = potentialPosition.y < config.camera.minHeight
-        const heightAboveMaximum = potentialPosition.y > config.camera.maxHeight
-
-        if (heightBelowMinimum || heightAboveMaximum) {
-            return false
-        }
+        // Clamp Y position to min/max height limits instead of blocking movement
+        potentialPosition.y = Math.max(
+            config.camera.minHeight,
+            Math.min(config.camera.maxHeight, potentialPosition.y),
+        )
 
         this.camera.position.copy(potentialPosition)
 
