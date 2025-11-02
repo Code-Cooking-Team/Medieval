@@ -1,7 +1,7 @@
 import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
 import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Player } from '+game/player/types'
@@ -23,7 +23,7 @@ export class SelectInteractions {
     private el: HTMLCanvasElement
 
     constructor(
-        public game: Game,
+        public game: GameLike,
         public renderer: Renderer,
         public player: HumanPlayer,
     ) {

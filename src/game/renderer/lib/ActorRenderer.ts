@@ -1,11 +1,10 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType, ClockInfo, Position } from '+game/types'
+import { ActorType, ClockInfo } from '+game/types'
 import { Tile } from '+game/world/Tile'
-import { multiplyPosition, rotationIndexToDeg, updateObjectPosition } from '+helpers'
+import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
 import {
     BoxGeometry,
@@ -22,6 +21,7 @@ import {
     SpriteMaterial,
 } from 'three'
 
+import { GameLike } from '+game/GameLike'
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
@@ -37,7 +37,10 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
-    constructor(public game: Game, public player: HumanPlayer) {
+    constructor(
+        public game: GameLike,
+        public player: HumanPlayer,
+    ) {
         super()
     }
 

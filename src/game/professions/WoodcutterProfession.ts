@@ -3,7 +3,7 @@ import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { ActorType } from '+game/types'
 import { isSamePosition, maxValue } from '+helpers'
 
@@ -50,7 +50,10 @@ export class WoodcutterProfession extends Profession {
 
     private machine = new MachineInterpreter(woodcutterMachine, this.actions, this.guards)
 
-    constructor(public game: Game, public actor: HumanActor) {
+    constructor(
+        public game: GameLike,
+        public actor: HumanActor,
+    ) {
         super(game, actor)
     }
 

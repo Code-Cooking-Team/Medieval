@@ -1,4 +1,4 @@
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
 import { normalizeEventKeyName } from '+helpers'
@@ -8,7 +8,7 @@ export class KeyboardInteractions {
     public isHoldingSpaceBar = false
 
     constructor(
-        public game: Game,
+        public game: GameLike,
         public renderer: Renderer,
         public player: HumanPlayer,
     ) {}

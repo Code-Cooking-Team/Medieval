@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { ClockInfo } from '+game/types'
 
 import {
@@ -24,7 +24,7 @@ export class EnvironmentRenderer extends BasicRenderer {
     private sunTarget = new Object3D()
     private ambient = new AmbientLight(0xdae6e8, 0.1)
 
-    constructor(public game: Game, private scene: Scene, private camera: Camera) {
+    constructor(public game: GameLike, private scene: Scene, private camera: Camera) {
         super()
 
         if (config.renderer.fog) {

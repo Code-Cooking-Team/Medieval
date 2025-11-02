@@ -1,13 +1,13 @@
 import { config } from '+config'
 import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { Renderer } from '+game/Renderer'
 import { Position } from '+game/types'
 
 import { Object3D, Raycaster, Vector2 } from 'three'
 
 export class RaycastFinder {
-    constructor(public game: Game, public renderer: Renderer) {}
+    constructor(public game: GameLike, public renderer: Renderer) {}
 
     public findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
         const rayCaster = new Raycaster()

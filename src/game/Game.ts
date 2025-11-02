@@ -7,12 +7,13 @@ import { actorFromJSON } from './actors'
 import { isBuildingActor, isWalkableActor } from './actors/helpers'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
+import { GameLike } from './GameLike'
 import { playerFromJSON } from './player'
 import { ActorType, Position } from './types'
 import { applyTileGrid } from './world/tileCodes'
 import { WordJSON, World } from './world/World'
 
-export class Game {
+export class Game implements GameLike {
     public pf: Pathfinding
     public actors: Actor[] = []
     loop: any

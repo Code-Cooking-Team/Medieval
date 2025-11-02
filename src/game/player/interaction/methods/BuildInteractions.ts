@@ -1,5 +1,5 @@
 import { actorByType } from '+game/actors'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
 import { ActorType, Position } from '+game/types'
@@ -22,7 +22,7 @@ export class BuildInteractions {
     })
 
     constructor(
-        public game: Game,
+        public game: GameLike,
         public renderer: Renderer,
         public player: HumanPlayer,
     ) {

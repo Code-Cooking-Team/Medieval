@@ -1,4 +1,4 @@
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { Player } from '+game/player/types'
 import { ActorType, Position } from '+game/types'
 import { ClassType, maxValue, randomSeed, uuid } from '+helpers'
@@ -21,7 +21,7 @@ export abstract class Actor {
     public rotation = 0
 
     constructor(
-        public game: Game,
+        public game: GameLike,
         public player: Player,
         public position: Position = [0, 0],
     ) {}

@@ -1,5 +1,5 @@
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { NaturePlayer } from '+game/player/NaturePlayer'
 import { Position } from '+game/types'
 import { OvergrownTile, Tile } from '+game/world/Tile'
@@ -8,7 +8,10 @@ import { seededRandom } from '+helpers'
 export class FloraSpawner {
     private rng = seededRandom()
 
-    constructor(public game: Game, public player: NaturePlayer) {}
+    constructor(
+        public game: GameLike,
+        public player: NaturePlayer,
+    ) {}
 
     public bulkSpawnTrees() {
         const tilePositions: Position[] = []

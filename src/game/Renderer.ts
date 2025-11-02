@@ -1,34 +1,32 @@
 import { config } from '+config'
 
-import Stats from 'stats.js'
-import {
-    Clock,
-    PCFSoftShadowMap,
-    ACESFilmicToneMapping,
-    ReinhardToneMapping,
-    Scene,
-    Vector2,
-    WebGLRenderer,
-    Vector3,
-    Raycaster,
-} from 'three'
 import {
     BloomEffect,
     DepthOfFieldEffect,
     EffectComposer,
     EffectPass,
-    FXAAEffect,
     OutlineEffect,
     RenderPass,
     ToneMappingEffect,
     ToneMappingMode,
 } from 'postprocessing'
-import { Mesh } from 'three'
+import Stats from 'stats.js'
+import {
+    Clock,
+    Mesh,
+    PCFSoftShadowMap,
+    Raycaster,
+    ReinhardToneMapping,
+    Scene,
+    Vector2,
+    Vector3,
+    WebGLRenderer,
+} from 'three'
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
-import { Game } from './Game'
+import { GameLike } from './GameLike'
 import { HumanPlayer } from './player/HumanPlayer'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
@@ -69,7 +67,7 @@ export class Renderer {
     private isWindowFocused = window.document.hasFocus()
 
     constructor(
-        public game: Game,
+        public game: GameLike,
         public player: HumanPlayer,
         public rootEl: HTMLElement,
     ) {

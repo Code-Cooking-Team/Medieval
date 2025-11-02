@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { getPositionByIndex, HorizontalPlaneGeometry } from '+helpers'
 
 import {
@@ -29,7 +29,7 @@ export class GroundRenderer extends BasicRenderer {
     private groundMaterial: MeshStandardMaterial
     private geometry?: HorizontalPlaneGeometry
 
-    constructor(public game: Game) {
+    constructor(public game: GameLike) {
         super()
 
         this.geometry = createWordPlane(this.game.world, config.renderer.diagonals)

@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { ClockInfo } from '+game/types'
 
 import { DoubleSide, Mesh, MeshStandardMaterial } from 'three'
@@ -10,7 +10,7 @@ import { createWordPlane } from './lib/createWordPlane'
 export class WaterRenderer extends BasicRenderer {
     private mesh?: Mesh
 
-    constructor(public game: Game) {
+    constructor(public game: GameLike) {
         super()
         const geometry = createWordPlane(this.game.world, 'random', 0.8)
 

@@ -1,7 +1,7 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
+import { GameLike } from '+game/GameLike'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
-import { multiplyPosition, seededRandom, updateObjectPosition } from '+helpers'
+import { seededRandom, updateObjectPosition } from '+helpers'
 
 import {
     CylinderGeometry,
@@ -48,7 +48,7 @@ export class TreeRenderer implements Renderable {
 
     private actorCount = 0
 
-    constructor(public game: Game) {
+    constructor(public game: GameLike) {
         this.boughInstanceMesh.instanceMatrix.setUsage(DynamicDrawUsage)
         this.boughInstanceMesh.castShadow = true
         this.boughInstanceMesh.receiveShadow = true
