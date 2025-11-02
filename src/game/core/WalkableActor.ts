@@ -1,5 +1,5 @@
 import { type Path, type Position } from '+game/types'
-import { distanceBetweenPoints } from '+helpers'
+import { distanceBetweenPoints } from '+helpers/math'
 
 import { Actor, type ActorJSON } from './Actor'
 

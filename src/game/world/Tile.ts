@@ -1,9 +1,6 @@
-import {
-    changeColorLightnessSaturation,
-    type ClassType,
-    generateSimilarColor,
-    random,
-} from '+helpers'
+import { changeColorLightnessSaturation, generateSimilarColor } from '+helpers/color'
+import { type ClassType } from '+helpers/types'
+import { random } from '+helpers/random'
 
 import { omitBy } from 'lodash'
 

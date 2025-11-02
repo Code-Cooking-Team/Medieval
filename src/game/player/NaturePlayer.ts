@@ -1,4 +1,4 @@
-import { uuid } from '+helpers'
+import { v4 as uuid } from 'uuid'
 
 import { type Player, type PlayerJSON, PlayerType } from './types'
 

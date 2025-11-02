@@ -4,7 +4,7 @@ import {
     type BuildingTraitJSON,
 } from '+game/actors/buildingTraits/types'
 import { type ActorBlueprint, type Position } from '+game/types'
-import { addPosition, rotatePositionOnGrind } from '+helpers'
+import { addPosition, rotatePositionOnGrind } from '+helpers/math'
 
 import { Actor, type ActorJSON } from './Actor'
 

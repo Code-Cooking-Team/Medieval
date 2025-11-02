@@ -1,4 +1,4 @@
-import { Actor, type ActorJSON } from '+game/core/Actor'
+import { type ActorJSON } from '+game/core/Actor'
 import { type ActorClass } from '+game/core/ActorClass'
 import { type ActorLike } from '+game/core/ActorLike'
 import { type GameLike } from '+game/GameLike'

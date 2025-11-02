@@ -5,7 +5,8 @@ import { WalkableActor, type WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
 import { type Profession, type ProfessionJSON } from '+game/professions/Profession'
 import { ActorType, type Position } from '+game/types'
-import { addPosition, distanceBetweenPoints, random } from '+helpers'
+import { addPosition, distanceBetweenPoints } from '+helpers/math'
+import { random } from '+helpers/random'
 
 import { type AnimationMixer } from 'three'
 

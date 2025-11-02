@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { type ClockInfo, type Renderable } from '+game/types'
-import { normalizeEventKeyName } from '+helpers'
+import { normalizeEventKeyName } from '+helpers/string'
 
 import {
     MOUSE,

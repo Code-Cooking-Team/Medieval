@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { type ActorLike } from '+game/core/ActorLike'
 import { type ActorType } from '+game/types'
-import { uuid } from '+helpers'
+import { v4 as uuid } from 'uuid'
 import { Emitter } from '+lib/Emitter'
 
 import { type Player, type PlayerJSON, PlayerType } from './types'

@@ -134,7 +134,8 @@ function App() {
                     <Button
                         label={started ? 'Stop' : 'Start'}
                         onClick={() => {
-                            started ? game.stop() : game.start()
+                            if (started) game.stop()
+                            else game.start()
                         }}
                     />
                     {!started && <Button label="Tick" onClick={() => game.tick()} />}

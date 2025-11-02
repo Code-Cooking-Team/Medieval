@@ -15,7 +15,7 @@ export class World {
     constructor(public tiles: TileGrid) {}
 
     public hasTile([x, y]: Position) {
-        return this.tiles?.[y]?.[x]!!
+        return this.tiles?.[y]?.[x]
     }
 
     public getTile([x, y]: Position) {

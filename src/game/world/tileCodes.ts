@@ -13,7 +13,7 @@ import {
     WallTile,
     WaterTile,
 } from '+game/world/Tile'
-import { getPointPositionOnRotatedGridByCeterPoint } from '+helpers'
+import { getPointPositionOnRotatedGridByCeterPoint } from '+helpers/math'
 
 const tileCodes = {
     ['🏜️']: SandTile,

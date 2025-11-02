@@ -2,9 +2,9 @@ import { config } from '+config/config'
 import { isHumanActor } from '+game/actors/helpers'
 import { type ActorLike } from '+game/core/ActorLike'
 import { WalkableActor } from '+game/core/WalkableActor'
-import { Game } from '+game/Game'
 import { ActorType, type Position } from '+game/types'
-import { addPosition, distanceBetweenPoints, random } from '+helpers'
+import { addPosition, distanceBetweenPoints } from '+helpers/math'
+import { random } from '+helpers/random'
 
 import { type HumanActor } from '../human/HumanActor'
 

@@ -2,7 +2,8 @@ import { config } from '+config'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { type BuildingActor } from '+game/core/BuildingActor'
 import { ActorType, type Position } from '+game/types'
-import { type ClassType, random } from '+helpers'
+import { type ClassType } from '+helpers/types'
+import { random } from '+helpers/random'
 
 import { type BuildingTrait, type BuildingTraitJSON, BuildingTraitType } from './types'
 

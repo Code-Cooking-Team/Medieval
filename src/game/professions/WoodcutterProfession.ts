@@ -5,7 +5,7 @@ import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
 import { type GameLike } from '+game/GameLike'
 import { ActorType } from '+game/types'
-import { isSamePosition, maxValue } from '+helpers'
+import { isSamePosition, maxValue } from '+helpers/math'
 
 import {
     Mesh,

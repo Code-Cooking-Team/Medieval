@@ -5,12 +5,8 @@ import { ProfessionType } from '+game/professions/types'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { ActorType, type ClockInfo } from '+game/types'
 import { type Tile } from '+game/world/Tile'
-import {
-    changeColorLightnessSaturation,
-    generateSimilarColor,
-    loadRawGLTF,
-    updateScale,
-} from '+helpers'
+import { changeColorLightnessSaturation, generateSimilarColor } from '+helpers/color'
+import { loadRawGLTF, updateScale } from '+helpers/three'
 
 import { type AnimationClip, AnimationMixer, MeshStandardMaterial, type SkinnedMesh } from 'three'
 

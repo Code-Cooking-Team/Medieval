@@ -1,7 +1,7 @@
 import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { type GameLike } from '+game/GameLike'
-import { type ClassType } from '+helpers'
+import { type ClassType } from '+helpers/types'
 
 import { Group, type Object3D } from 'three'
 

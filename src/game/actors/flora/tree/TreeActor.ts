@@ -1,8 +1,9 @@
 import { config } from '+config/config'
-import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { Actor } from '+game/core/Actor'
 import { ActorType, type Position } from '+game/types'
-import { random, randomArrayItem, randomSeed } from '+helpers'
+import { type Tile } from '+game/world/Tile'
+import { randomArrayItem } from '+helpers/array'
+import { random, randomSeed } from '+helpers/random'
 
 export class TreeActor extends Actor {
     public type = ActorType.Tree
@@ -44,8 +45,16 @@ export class TreeActor extends Actor {
 
         const tile = this.game.world.getTile(newTreePosition)
 
-        const spawner = new FloraSpawner(this.game, this.player)
-        spawner.spawnNewTree(tile, newTreePosition)
+        if (!this.shouldSpawnTree(tile, newTreePosition)) return
+        this.game.spawnActor(TreeActor, this.player, newTreePosition)
+    }
+
+    private shouldSpawnTree(tile: Tile, position: Position) {
+        if (tile.treeChance === 0) return false
+        if (random(0, 1) > tile.treeChance) return false
+        if (this.game.findActorsByPosition(position, 1).length > 0) return false
+
+        return true
     }
 
     private treeCount() {

@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { type World } from '+game/world/World'
-import { HorizontalPlaneGeometry } from '+helpers'
+import { HorizontalPlaneGeometry } from '+helpers/three'
 
 import { type Diagonals } from './DiagonalsPlaneGeometry'
 

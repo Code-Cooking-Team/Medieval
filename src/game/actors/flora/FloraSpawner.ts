@@ -3,7 +3,7 @@ import { type GameLike } from '+game/GameLike'
 import { type NaturePlayer } from '+game/player/NaturePlayer'
 import { type Position } from '+game/types'
 import { OvergrownTile, type Tile } from '+game/world/Tile'
-import { seededRandom } from '+helpers'
+import { seededRandom } from '+helpers/random'
 
 export class FloraSpawner {
     private rng = seededRandom()
@@ -32,12 +32,6 @@ export class FloraSpawner {
                 set(position, new OvergrownTile(tile))
             })
         })
-    }
-
-    public spawnNewTree(tile: Tile, position: Position) {
-        if (this.shouldSpawnTree(tile, position)) {
-            this.game.spawnActor(TreeActor, this.player, position)
-        }
     }
 
     private shouldSpawnTree(tile: Tile, position: Position) {

@@ -1,8 +1,8 @@
 import { config } from '+config/config'
 import { type Player, type PlayerJSON } from '+game/player/types'
-import { distanceBetweenPoints, removeArrayItem } from '+helpers'
+import { distanceBetweenPoints } from '+helpers/math'
+import { removeArrayItem } from '+helpers/array'
 import { Emitter } from '+lib/Emitter'
-
 import { actorFromJSON } from './actors'
 import { isBuildingActor, isWalkableActor } from './actors/helpers'
 import { type Actor, type ActorJSON } from './core/Actor'

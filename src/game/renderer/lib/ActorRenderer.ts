@@ -5,7 +5,8 @@ import { type ActorLike } from '+game/core/ActorLike'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType, type ClockInfo } from '+game/types'
 import { type Tile } from '+game/world/Tile'
-import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
+import { rotationIndexToDeg } from '+helpers/math'
+import { updateObjectPosition } from '+helpers/three'
 
 import {
     BoxGeometry,

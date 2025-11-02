@@ -1,4 +1,4 @@
-import { asArray } from '+helpers'
+import { asArray } from '+helpers/array'
 
 import { type Machine, type MachineActions, type MachineConditions } from './types'
 

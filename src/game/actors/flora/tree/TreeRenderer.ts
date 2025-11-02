@@ -1,7 +1,8 @@
 import { config } from '+config'
 import { type GameLike } from '+game/GameLike'
 import { ActorType, type ClockInfo, type Renderable } from '+game/types'
-import { seededRandom, updateObjectPosition } from '+helpers'
+import { seededRandom } from '+helpers/random'
+import { updateObjectPosition } from '+helpers/three'
 
 import {
     CylinderGeometry,

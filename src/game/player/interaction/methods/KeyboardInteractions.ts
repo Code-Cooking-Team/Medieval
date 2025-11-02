@@ -1,7 +1,7 @@
 import { type GameLike } from '+game/GameLike'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { type Renderer } from '+game/Renderer'
-import { normalizeEventKeyName } from '+helpers'
+import { normalizeEventKeyName } from '+helpers/string'
 
 export class KeyboardInteractions {
     // TODO move selection when holding space bar

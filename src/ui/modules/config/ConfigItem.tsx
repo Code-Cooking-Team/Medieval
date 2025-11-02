@@ -1,5 +1,5 @@
 import { ConfigType } from '+config/lib/definitions'
-import { color0xToHex, colorHexTo0x } from '+helpers'
+import { color0xToHex, colorHexTo0x } from '+helpers/color'
 import { NumberInput } from '+ui/components/form/InputNumber'
 import { Switch } from '+ui/components/form/Switch'
 
