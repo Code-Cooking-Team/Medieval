@@ -1,5 +1,5 @@
 import { isHumanActor } from '+game/actors/helpers'
-import { type ActorLike } from '+game/core/ActorLike'
+import { type Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType } from '+game/types'
@@ -20,7 +20,7 @@ export class WoodCampActor extends BuildingActor {
         this.collectedTreeHP += hp
     }
 
-    public interact(actors: ActorLike[]) {
+    public interact(actors: Actor[]) {
         let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {

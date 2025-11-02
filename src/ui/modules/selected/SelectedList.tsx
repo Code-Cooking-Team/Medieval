@@ -1,5 +1,5 @@
 import { isHumanActor } from '+game/actors/helpers'
-import { type ActorLike } from '+game/core/ActorLike'
+import { type Actor } from '+game/core/Actor'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { type ActorType } from '+game/types'
 import { Box } from '+ui/components/base/Box'
@@ -15,19 +15,19 @@ interface SelectedListProps {
 const noProfession = 'No profession'
 
 export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
-    const [selectedActors, setSelectedActors] = useState<ActorLike[]>(
+    const [selectedActors, setSelectedActors] = useState<Actor[]>(
         humanPlayer.selectedActors,
     )
 
     const selectedTypes = useMemo(() => {
         return Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [
             ActorType,
-            ActorLike[],
+            Actor[],
         ][]
     }, [selectedActors])
 
     useEffect(() => {
-        const selectActors = (actor: ActorLike[]) => setSelectedActors(actor)
+        const selectActors = (actor: Actor[]) => setSelectedActors(actor)
         const unselectActors = () => setSelectedActors([])
 
         humanPlayer.emitter.on('selectActors', selectActors)
@@ -83,7 +83,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         </>
     )
 
-    function selectActorsByProfession(actors: ActorLike[], professionType: string): void {
+    function selectActorsByProfession(actors: Actor[], professionType: string): void {
         return humanPlayer.selectActors(
             actors
                 .filter(isHumanActor)
@@ -95,7 +95,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         )
     }
 
-    function countProfessions(humanActors: ActorLike[]) {
+    function countProfessions(humanActors: Actor[]) {
         const count = humanActors.filter(isHumanActor).reduce(
             (acc, humanActor) => {
                 const prof = humanActor.profession?.type || noProfession

@@ -26,7 +26,7 @@ import {
 import { actorRenderers, basicRenderers } from './actors'
 import { type Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
-import { type GameLike } from './GameLike'
+import { type Game } from './Game'
 import { type HumanPlayer } from './player/HumanPlayer'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
@@ -67,7 +67,7 @@ export class Renderer {
     private isWindowFocused = window.document.hasFocus()
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public player: HumanPlayer,
         public rootEl: HTMLElement,
     ) {

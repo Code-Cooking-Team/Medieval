@@ -1,6 +1,6 @@
 import { config } from '+config'
-import { type ActorLike } from '+game/core/ActorLike'
-import { type GameLike } from '+game/GameLike'
+import { type Actor } from '+game/core/Actor'
+import { type Game } from '+game/Game'
 import { type Renderer } from '+game/Renderer'
 import { type Position } from '+game/types'
 
@@ -8,7 +8,7 @@ import { type Object3D, Raycaster, Vector2 } from 'three'
 
 export class RaycastFinder {
     constructor(
-        public game: GameLike,
+        public game: Game,
         public renderer: Renderer,
     ) {}
 
@@ -33,7 +33,7 @@ export class RaycastFinder {
         return [x, y]
     }
 
-    public findActorsByMouseEvent = (event: MouseEvent): ActorLike[] => {
+    public findActorsByMouseEvent = (event: MouseEvent): Actor[] => {
         // TODO: Optimize intersectObjects execution
         const rayCaster = new Raycaster()
         const pointer = new Vector2(
@@ -47,7 +47,7 @@ export class RaycastFinder {
         const intersects = rayCaster.intersectObjects(interactionObjectList, false)
 
         const intersectActors = intersects
-            .map((intersect) => intersect.object.userData.actor as ActorLike)
+            .map((intersect) => intersect.object.userData.actor as Actor)
             .filter((actor) => !!actor)
 
         const objectList: Object3D[] = []
@@ -63,7 +63,7 @@ export class RaycastFinder {
         return intersectActors
     }
 
-    public findSingleActorByMouseEvent(event: MouseEvent): ActorLike | undefined {
+    public findSingleActorByMouseEvent(event: MouseEvent): Actor | undefined {
         const actors = this.findActorsByMouseEvent(event)
 
         if (!actors.length) return

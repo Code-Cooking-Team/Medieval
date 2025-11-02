@@ -1,5 +1,5 @@
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
-import { type GameLike } from '+game/GameLike'
+import { type Game } from '+game/Game'
 import { type NaturePlayer } from '+game/player/NaturePlayer'
 import { type Position } from '+game/types'
 import { OvergrownTile, type Tile } from '+game/world/Tile'
@@ -9,7 +9,7 @@ export class FloraSpawner {
     private rng = seededRandom()
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public player: NaturePlayer,
     ) {}
 

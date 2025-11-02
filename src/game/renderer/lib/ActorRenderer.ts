@@ -1,7 +1,6 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
 import { type Actor } from '+game/core/Actor'
-import { type ActorLike } from '+game/core/ActorLike'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType, type ClockInfo } from '+game/types'
 import { type Tile } from '+game/world/Tile'
@@ -23,7 +22,7 @@ import {
     SpriteMaterial,
 } from 'three'
 
-import { type GameLike } from '+game/GameLike'
+import { type Game } from '+game/Game'
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {
@@ -40,7 +39,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public player: HumanPlayer,
     ) {
         super()
@@ -121,11 +120,11 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return Array.from(this.actorInteractionShapeMap.keys())
     }
 
-    private handleActorAdded = (actor: ActorLike) => {
+    private handleActorAdded = (actor: Actor) => {
         if (actor.type === this.actorType) this.onAddActor(actor as TActor)
     }
 
-    private handleActorRemoved = (actor: ActorLike) => {
+    private handleActorRemoved = (actor: Actor) => {
         if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
     }
 

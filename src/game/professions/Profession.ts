@@ -1,6 +1,6 @@
 import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
-import { type GameLike } from '+game/GameLike'
+import { type Game } from '+game/Game'
 import { type ClassType } from '+helpers/types'
 
 import { Group, type Object3D } from 'three'
@@ -13,7 +13,7 @@ export abstract class Profession {
     public isPristine = true
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public actor: HumanActor,
     ) {}
 

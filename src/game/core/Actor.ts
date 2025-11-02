@@ -1,12 +1,12 @@
-import type { GameLike } from '+game/GameLike'
+import type { Game } from '+game/Game'
 import { type Player } from '+game/player/types'
 import { ActorType, type Position } from '+game/types'
 import { maxValue } from '+helpers/math'
 import { randomSeed } from '+helpers/random'
+import type { ClassType } from '+helpers/types'
 import { v4 as uuid } from 'uuid'
-import { type ActorLike } from './ActorLike'
 
-export abstract class Actor implements ActorLike {
+export abstract class Actor {
     public id = uuid()
     public type: ActorType = ActorType.Empty
     /**
@@ -24,7 +24,7 @@ export abstract class Actor implements ActorLike {
     public rotation = 0
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public player: Player,
         public position: Position = [0, 0],
     ) {}
@@ -39,9 +39,9 @@ export abstract class Actor implements ActorLike {
         this.game.removeActor(this)
     }
 
-    public hitBy(actor?: ActorLike): void {}
+    public hitBy(actor?: Actor): void {}
 
-    public hit(damage: number, byActor?: ActorLike): number {
+    public hit(damage: number, byActor?: Actor): number {
         if (this.isDead()) return 0
 
         const maxHit = maxValue(this.hp, damage)
@@ -58,7 +58,7 @@ export abstract class Actor implements ActorLike {
         return this.hp <= 0
     }
 
-    public interact(actors: ActorLike[]): boolean {
+    public interact(actors: Actor[]): boolean {
         return false
     }
 
@@ -102,3 +102,8 @@ export interface ActorJSON {
     seed: number
     rotation: number
 }
+
+export type ActorClass<T extends Actor = Actor> = ClassType<
+    T,
+    [game: Game, player: Player, position?: Position]
+>

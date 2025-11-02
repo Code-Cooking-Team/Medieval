@@ -1,7 +1,7 @@
 import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
-import { type ActorLike } from '+game/core/ActorLike'
-import { type GameLike } from '+game/GameLike'
+import { type Actor } from '+game/core/Actor'
+import { type Game } from '+game/Game'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Player } from '+game/player/types'
@@ -23,7 +23,7 @@ export class SelectInteractions {
     private el: HTMLCanvasElement
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public renderer: Renderer,
         public player: HumanPlayer,
     ) {
@@ -177,7 +177,7 @@ export class SelectInteractions {
 
         const newSelected = selectedMeshes
             .map((item) => item.userData.actor)
-            .filter((actor) => !!actor) as ActorLike[]
+            .filter((actor) => !!actor) as Actor[]
 
         const maxSelectImportance = newSelected.reduce((current, actor) => {
             return Math.max(current, actor.getSelectedImportance())

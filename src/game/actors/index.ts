@@ -1,7 +1,7 @@
 import { type ActorJSON } from '+game/core/Actor'
-import { type ActorClass } from '+game/core/ActorClass'
-import { type ActorLike } from '+game/core/ActorLike'
-import { type GameLike } from '+game/GameLike'
+import { type ActorClass } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
+import { type Game } from '+game/Game'
 import { type Player } from '+game/player/types'
 import { type ActorBlueprint, ActorType } from '+game/types'
 
@@ -79,11 +79,7 @@ export const actorByType: Record<
     },
 }
 
-export const actorFromJSON = (
-    json: ActorJSON,
-    game: GameLike,
-    player: Player,
-): ActorLike => {
+export const actorFromJSON = (json: ActorJSON, game: Game, player: Player): Actor => {
     const ActorClass = actorByType[json.type].actorClass
     const actor = new ActorClass(game, player)
     actor.fromJSON(json)

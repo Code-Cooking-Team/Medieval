@@ -1,4 +1,4 @@
-import { type GameLike } from '+game/GameLike'
+import { type Game } from '+game/Game'
 import { type Renderer } from '+game/Renderer'
 
 import { type HumanPlayer } from '../HumanPlayer'
@@ -12,7 +12,7 @@ export class InteractionsManager {
     private build: BuildInteractions
 
     constructor(
-        public game: GameLike,
+        public game: Game,
         public renderer: Renderer,
         public player: HumanPlayer,
     ) {

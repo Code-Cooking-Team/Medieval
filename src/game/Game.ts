@@ -6,24 +6,22 @@ import { Emitter } from '+lib/Emitter'
 import { actorFromJSON } from './actors'
 import { isBuildingActor, isWalkableActor } from './actors/helpers'
 import { type Actor, type ActorJSON } from './core/Actor'
-import { type ActorClass } from './core/ActorClass'
-import { type ActorLike } from './core/ActorLike'
+import { type ActorClass } from './core/Actor'
 import { Pathfinding } from './core/Pathfinding'
-import { type GameLike } from './GameLike'
 import { playerFromJSON } from './player'
 import { type ActorType, type Position } from './types'
 import { applyTileGrid } from './world/tileCodes'
 import { type WordJSON, World } from './world/World'
 
-export class Game implements GameLike {
+export class Game {
     public pf: Pathfinding
-    public actors: ActorLike[] = []
+    public actors: Actor[] = []
     loop: any
 
     public emitter = new Emitter<{
         tick: undefined
-        actorAdded: ActorLike
-        actorRemoved: ActorLike
+        actorAdded: Actor
+        actorRemoved: Actor
         started: undefined
         stopped: undefined
     }>('Game')
@@ -61,33 +59,33 @@ export class Game implements GameLike {
         this.emitter.emit('tick')
     }
 
-    public addActor(actor: ActorLike): void {
+    public addActor(actor: Actor): void {
         this.actors.push(actor)
         this.emitter.emit('actorAdded', actor)
     }
 
-    public removeActor(actor: ActorLike): void {
+    public removeActor(actor: Actor): void {
         removeArrayItem(this.actors, actor)
         this.pf.update()
         this.emitter.emit('actorRemoved', actor)
     }
 
-    public getActorById(id: string): ActorLike | undefined {
+    public getActorById(id: string): Actor | undefined {
         return this.actors.find((actor) => actor.id === id)
     }
 
     public findActorByRange(
         position: Position,
         range: number,
-        additionalCondition?: (actor: ActorLike) => boolean,
-    ): ActorLike | undefined {
+        additionalCondition?: (actor: Actor) => boolean,
+    ): Actor | undefined {
         return this.actors.find((actor) => {
             if (distanceBetweenPoints(actor.position, position) > range) return false
             return additionalCondition?.(actor) ?? true
         })
     }
 
-    public findActorsByType(type: ActorType, isAlive = true): ActorLike[] {
+    public findActorsByType(type: ActorType, isAlive = true): Actor[] {
         return this.actors.filter((actor) => {
             if (isAlive && actor.isDead()) return false
             return actor.type === type
@@ -98,7 +96,7 @@ export class Game implements GameLike {
         position: Position,
         range: number,
         isAlive = true,
-    ): ActorLike[] {
+    ): Actor[] {
         return this.actors.filter((actor) => {
             if (isAlive && actor.hp <= 0) return false
             return distanceBetweenPoints(actor.position, position) <= range
@@ -109,7 +107,7 @@ export class Game implements GameLike {
         type: ActorType,
         position: Position,
         isAlive = true,
-    ): ActorLike | undefined {
+    ): Actor | undefined {
         const actors = this.findActorsByType(type, isAlive)
         if (!actors[0]) return
 
