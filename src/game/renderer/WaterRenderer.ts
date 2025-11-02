@@ -1,6 +1,6 @@
 import { config } from '+config'
-import { GameLike } from '+game/GameLike'
-import { ClockInfo } from '+game/types'
+import { type GameLike } from '+game/GameLike'
+import { type ClockInfo } from '+game/types'
 
 import { DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 

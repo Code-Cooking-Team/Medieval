@@ -1,4 +1,4 @@
-import { Position } from '+game/types'
+import { type Position } from '+game/types'
 
 import { squareFloodFill } from './squareFloodFill'
 

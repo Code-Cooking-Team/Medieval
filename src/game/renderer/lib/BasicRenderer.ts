@@ -1,6 +1,6 @@
-import { ClockInfo, Renderable } from '+game/types'
+import { type ClockInfo, type Renderable } from '+game/types'
 
-import { Group, Object3D } from 'three'
+import { Group, type Object3D } from 'three'
 
 export abstract class BasicRenderer implements Renderable {
     public group: Object3D = new Group()

@@ -1,8 +1,8 @@
 import { config } from '+config'
-import { World } from '+game/world/World'
+import { type World } from '+game/world/World'
 import { HorizontalPlaneGeometry } from '+helpers'
 
-import { Diagonals } from './DiagonalsPlaneGeometry'
+import { type Diagonals } from './DiagonalsPlaneGeometry'
 
 export const createWordPlane = (
     word: World,

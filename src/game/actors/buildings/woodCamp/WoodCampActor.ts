@@ -1,5 +1,5 @@
 import { isHumanActor } from '+game/actors/helpers'
-import { ActorLike } from '+game/core/ActorLike'
+import { type ActorLike } from '+game/core/ActorLike'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType } from '+game/types'

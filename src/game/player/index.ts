@@ -1,6 +1,6 @@
 import { HumanPlayer } from './HumanPlayer'
 import { NaturePlayer } from './NaturePlayer'
-import { Player, PlayerJSON, PlayerType } from './types'
+import { type Player, type PlayerJSON, PlayerType } from './types'
 
 export const playerByType: Record<PlayerType, any> = {
     [PlayerType.Human]: HumanPlayer,

@@ -1,7 +1,7 @@
 import type { GameLike } from '+game/GameLike'
-import { Player } from '+game/player/types'
-import { ActorType, Position } from '+game/types'
-import { ActorJSON } from './Actor'
+import { type Player } from '+game/player/types'
+import { type ActorType, type Position } from '+game/types'
+import { type ActorJSON } from './Actor'
 
 export interface ActorLike {
     id: string

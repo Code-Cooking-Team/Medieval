@@ -1,9 +1,9 @@
 import { config } from '+config'
-import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
-import { TreeActor } from '+game/actors/flora/tree/TreeActor'
-import { HumanActor } from '+game/actors/units/human/HumanActor'
+import { type WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
+import { type TreeActor } from '+game/actors/flora/tree/TreeActor'
+import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
-import { GameLike } from '+game/GameLike'
+import { type GameLike } from '+game/GameLike'
 import { ActorType } from '+game/types'
 import { isSamePosition, maxValue } from '+helpers'
 
@@ -11,12 +11,12 @@ import {
     Mesh,
     MeshStandardMaterial,
     NotEqualDepth,
-    Object3D,
+    type Object3D,
     SphereGeometry,
 } from 'three'
 
 import { woodcutterMachine } from './machines/woodcutterMachine'
-import { Profession, ProfessionJSON } from './Profession'
+import { Profession, type ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
 
 export class WoodcutterProfession extends Profession {

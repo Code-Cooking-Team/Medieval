@@ -1,5 +1,5 @@
 import { cn } from '+helpers/string'
-import { InputHTMLAttributes } from 'react'
+import { type InputHTMLAttributes } from 'react'
 
 export interface InputStyleProps {
     fullWidth?: boolean

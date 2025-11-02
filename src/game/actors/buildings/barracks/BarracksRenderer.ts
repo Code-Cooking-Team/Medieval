@@ -1,11 +1,11 @@
 import { config } from '+config'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight } from 'three'
 
-import { BarracksActor } from './BarracksActor'
+import { type BarracksActor } from './BarracksActor'
 
 export class BarracksRenderer extends ActorRenderer<BarracksActor> {
     public actorType = ActorType.Barracks

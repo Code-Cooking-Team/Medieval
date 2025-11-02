@@ -1,12 +1,12 @@
 import { actorByType } from '+game/actors'
-import { GameLike } from '+game/GameLike'
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { Renderer } from '+game/Renderer'
-import { ActorType, Position } from '+game/types'
+import { type GameLike } from '+game/GameLike'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { type Renderer } from '+game/Renderer'
+import { type ActorType, type Position } from '+game/types'
 import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
-import { UnsubscribeFunction } from 'emittery'
-import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
+import { type UnsubscribeFunction } from 'emittery'
+import { type Group, type LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
 
 import { RaycastFinder } from './lib/RaycastFinder'
 

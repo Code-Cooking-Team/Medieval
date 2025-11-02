@@ -1,5 +1,5 @@
 import { cn } from '+helpers/string'
-import { ButtonHTMLAttributes, ReactNode } from 'react'
+import { type ButtonHTMLAttributes, type ReactNode } from 'react'
 
 interface ClickableProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
     onClick(): void

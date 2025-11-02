@@ -1,11 +1,11 @@
 import { config } from '+config'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight, PointLightHelper } from 'three'
 
-import { GuildhallActor } from './GuildhallActor'
+import { type GuildhallActor } from './GuildhallActor'
 
 export class GuildhallRenderer extends ActorRenderer<GuildhallActor> {
     public actorType = ActorType.Guildhall

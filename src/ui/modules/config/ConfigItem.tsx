@@ -3,7 +3,7 @@ import { color0xToHex, colorHexTo0x } from '+helpers'
 import { NumberInput } from '+ui/components/form/InputNumber'
 import { Switch } from '+ui/components/form/Switch'
 
-import { FC } from 'react'
+import { type FC } from 'react'
 
 import { Box } from '../../components/base/Box'
 import { Checkbox } from '../../components/form/Checkbox'

@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { BuildingTrait } from '+game/actors/buildingTraits/types'
+import { type BuildingTrait } from '+game/actors/buildingTraits/types'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { ActorType } from '+game/types'
 

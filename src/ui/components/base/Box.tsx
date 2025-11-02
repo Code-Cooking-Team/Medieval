@@ -1,5 +1,5 @@
 import { cn } from '+helpers/string'
-import { HTMLAttributes, ReactNode } from 'react'
+import { type HTMLAttributes, type ReactNode } from 'react'
 
 export interface BoxProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode

@@ -16,7 +16,7 @@ export const emitLogger =
     (logEventData = false, filter?: string) =>
     (type: string, debugName: string, eventName?: string, eventData?: any) => {
         if (typeof eventName === 'symbol') {
-            eventName = (eventName as Symbol).toString()
+            eventName = (eventName as symbol).toString()
         }
 
         const currentTime = new Date()

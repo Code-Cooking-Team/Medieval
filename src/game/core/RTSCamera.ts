@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { ClockInfo, Renderable } from '+game/types'
+import { type ClockInfo, type Renderable } from '+game/types'
 import { normalizeEventKeyName } from '+helpers'
 
 import {

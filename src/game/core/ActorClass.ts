@@ -1,8 +1,8 @@
 import type { GameLike } from '+game/GameLike'
-import { Player } from '+game/player/types'
-import { Position } from '+game/types'
-import { ClassType } from '+helpers'
-import { ActorLike } from './ActorLike'
+import { type Player } from '+game/player/types'
+import { type Position } from '+game/types'
+import { type ClassType } from '+helpers'
+import { type ActorLike } from './ActorLike'
 
 export type ActorClass<T extends ActorLike = ActorLike> = ClassType<
     T,

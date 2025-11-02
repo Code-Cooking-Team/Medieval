@@ -1,7 +1,7 @@
 import { isHumanActor } from '+game/actors/helpers'
-import { ActorLike } from '+game/core/ActorLike'
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType } from '+game/types'
+import { type ActorLike } from '+game/core/ActorLike'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { type ActorType } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 

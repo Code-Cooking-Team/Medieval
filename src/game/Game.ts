@@ -1,19 +1,19 @@
 import { config } from '+config/config'
-import { Player, PlayerJSON } from '+game/player/types'
+import { type Player, type PlayerJSON } from '+game/player/types'
 import { distanceBetweenPoints, removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
 import { actorFromJSON } from './actors'
 import { isBuildingActor, isWalkableActor } from './actors/helpers'
-import { Actor, ActorJSON } from './core/Actor'
-import { ActorClass } from './core/ActorClass'
-import { ActorLike } from './core/ActorLike'
+import { type Actor, type ActorJSON } from './core/Actor'
+import { type ActorClass } from './core/ActorClass'
+import { type ActorLike } from './core/ActorLike'
 import { Pathfinding } from './core/Pathfinding'
-import { GameLike } from './GameLike'
+import { type GameLike } from './GameLike'
 import { playerFromJSON } from './player'
-import { ActorType, Position } from './types'
+import { type ActorType, type Position } from './types'
 import { applyTileGrid } from './world/tileCodes'
-import { WordJSON, World } from './world/World'
+import { type WordJSON, World } from './world/World'
 
 export class Game implements GameLike {
     public pf: Pathfinding

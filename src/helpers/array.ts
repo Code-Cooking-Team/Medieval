@@ -1,4 +1,4 @@
-import { Position } from '+game/types'
+import { type Position } from '+game/types'
 
 export const createArray = (length: number) => {
     return Array.from({ length }, (_, i) => i)

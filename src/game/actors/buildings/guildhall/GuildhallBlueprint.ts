@@ -1,5 +1,5 @@
-import { ActorBlueprint } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
+import { type ActorBlueprint } from '+game/types'
+import { type TileCodeGrid } from '+game/world/tileCodes'
 import { loadGLTF, updateScale } from '+helpers'
 
 import { Group, LOD } from 'three'

@@ -1,5 +1,5 @@
 import { cn } from '+helpers/string'
-import { InputStyleProps } from './Input'
+import { type InputStyleProps } from './Input'
 
 interface NumberInputProps extends InputStyleProps {
     value?: number

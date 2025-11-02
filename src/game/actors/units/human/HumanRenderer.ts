@@ -1,10 +1,10 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
-import { Profession } from '+game/professions/Profession'
+import { type Profession } from '+game/professions/Profession'
 import { ProfessionType } from '+game/professions/types'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
-import { ActorType, ClockInfo } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { ActorType, type ClockInfo } from '+game/types'
+import { type Tile } from '+game/world/Tile'
 import {
     changeColorLightnessSaturation,
     generateSimilarColor,
@@ -12,9 +12,9 @@ import {
     updateScale,
 } from '+helpers'
 
-import { AnimationClip, AnimationMixer, MeshStandardMaterial, SkinnedMesh } from 'three'
+import { type AnimationClip, AnimationMixer, MeshStandardMaterial, type SkinnedMesh } from 'three'
 
-import { HumanActor } from './HumanActor'
+import { type HumanActor } from './HumanActor'
 import humanModelUrl from './models/human.gltf'
 
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {

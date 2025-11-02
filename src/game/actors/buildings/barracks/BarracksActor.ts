@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { isHumanActor } from '+game/actors/helpers'
-import { ActorLike } from '+game/core/ActorLike'
+import { type ActorLike } from '+game/core/ActorLike'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { GuardianProfession } from '+game/professions/GuardianProfession'
 import { ActorType } from '+game/types'

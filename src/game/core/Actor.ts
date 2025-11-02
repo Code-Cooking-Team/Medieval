@@ -1,8 +1,8 @@
 import type { GameLike } from '+game/GameLike'
-import { Player } from '+game/player/types'
-import { ActorType, Position } from '+game/types'
+import { type Player } from '+game/player/types'
+import { ActorType, type Position } from '+game/types'
 import { maxValue, randomSeed, uuid } from '+helpers'
-import { ActorLike } from './ActorLike'
+import { type ActorLike } from './ActorLike'
 
 export abstract class Actor implements ActorLike {
     public id = uuid()

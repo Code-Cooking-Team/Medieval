@@ -1,6 +1,6 @@
 import { config } from '+config'
-import { GameLike } from '+game/GameLike'
-import { getPositionByIndex, HorizontalPlaneGeometry } from '+helpers'
+import { type GameLike } from '+game/GameLike'
+import { getPositionByIndex, type HorizontalPlaneGeometry } from '+helpers'
 
 import {
     BufferAttribute,

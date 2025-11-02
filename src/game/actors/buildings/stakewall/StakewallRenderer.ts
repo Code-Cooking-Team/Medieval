@@ -1,11 +1,11 @@
 import { config } from '+config'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { AxesHelper } from 'three'
 
-import { StakewallActor } from './StakewallActor'
+import { type StakewallActor } from './StakewallActor'
 import { StakewallBlueprint } from './StakewallBlueprint'
 
 export class StakewallRenderer extends ActorRenderer<StakewallActor> {

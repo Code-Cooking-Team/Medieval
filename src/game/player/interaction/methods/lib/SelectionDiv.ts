@@ -1,4 +1,4 @@
-import { Vector2, WebGLRenderer } from 'three'
+import { Vector2, type WebGLRenderer } from 'three'
 
 export class SelectionDiv {
     private startPoint = new Vector2()

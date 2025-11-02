@@ -1,7 +1,7 @@
-import { BuildingActor } from '+game/core/BuildingActor'
+import { type BuildingActor } from '+game/core/BuildingActor'
 
-import { ResidenceTrait, ResidenceTraitClass } from './ResidenceTrait'
-import { BuildingTrait, BuildingTraitJSON, BuildingTraitType } from './types'
+import { ResidenceTrait, type ResidenceTraitClass } from './ResidenceTrait'
+import { type BuildingTrait, type BuildingTraitJSON, BuildingTraitType } from './types'
 
 type BuildingTraitClass = ResidenceTraitClass
 

@@ -1,6 +1,6 @@
 import { config } from '+config'
-import { GameLike } from '+game/GameLike'
-import { ActorType, ClockInfo, Renderable } from '+game/types'
+import { type GameLike } from '+game/GameLike'
+import { ActorType, type ClockInfo, type Renderable } from '+game/types'
 import { seededRandom, updateObjectPosition } from '+helpers'
 
 import {
@@ -13,7 +13,7 @@ import {
     SphereGeometry,
 } from 'three'
 
-import { TreeActor } from './TreeActor'
+import { type TreeActor } from './TreeActor'
 
 export class TreeRenderer implements Renderable {
     public actorType: ActorType = ActorType.Tree

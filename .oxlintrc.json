@@ -1,7 +1,7 @@
 {
-  "plugins": ["import"],
+  "plugins": ["import", "typescript"],
   "rules": {
-    // "import/no-cycle": "warn",
+    "import/no-cycle": "warn",
     "no-unused-vars": "off",
     "typescript/consistent-type-imports": [
       "error",

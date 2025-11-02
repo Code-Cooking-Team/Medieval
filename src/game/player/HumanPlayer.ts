@@ -1,10 +1,10 @@
 import { config } from '+config'
-import { ActorLike } from '+game/core/ActorLike'
-import { ActorType } from '+game/types'
+import { type ActorLike } from '+game/core/ActorLike'
+import { type ActorType } from '+game/types'
 import { uuid } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
-import { Player, PlayerJSON, PlayerType } from './types'
+import { type Player, type PlayerJSON, PlayerType } from './types'
 
 export class HumanPlayer implements Player {
     public id = uuid()

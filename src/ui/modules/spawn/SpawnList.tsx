@@ -1,5 +1,5 @@
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType, actorTypesByCategory } from '+game/types'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { type ActorType, actorTypesByCategory } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 

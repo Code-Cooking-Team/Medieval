@@ -1,6 +1,6 @@
 import { uuid } from '+helpers'
 
-import { Player, PlayerJSON, PlayerType } from './types'
+import { type Player, type PlayerJSON, PlayerType } from './types'
 
 export class NaturePlayer implements Player {
     public id = uuid()

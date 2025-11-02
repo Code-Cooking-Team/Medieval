@@ -1,11 +1,11 @@
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { Mesh, MeshStandardMaterial, SphereGeometry } from 'three'
 
 import { config } from '+config'
-import { BoarActor } from './BoarActor'
+import { type BoarActor } from './BoarActor'
 
 export class BoarRenderer extends WalkableActorRenderer<BoarActor> {
     public actorType = ActorType.Boar

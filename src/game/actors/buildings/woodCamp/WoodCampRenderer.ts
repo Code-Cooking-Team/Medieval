@@ -1,12 +1,12 @@
 import { config } from '+config'
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { listenerAdded } from 'emittery'
 import { AxesHelper, PointLight } from 'three'
 
-import { WoodCampActor } from './WoodCampActor'
+import { type WoodCampActor } from './WoodCampActor'
 
 export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp

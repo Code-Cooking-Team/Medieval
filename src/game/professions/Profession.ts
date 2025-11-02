@@ -1,9 +1,9 @@
-import { HumanActor } from '+game/actors/units/human/HumanActor'
+import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
-import { GameLike } from '+game/GameLike'
-import { ClassType } from '+helpers'
+import { type GameLike } from '+game/GameLike'
+import { type ClassType } from '+helpers'
 
-import { Group, Object3D } from 'three'
+import { Group, type Object3D } from 'three'
 
 import { ProfessionType } from './types'
 

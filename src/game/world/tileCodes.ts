@@ -1,4 +1,4 @@
-import { Position } from '+game/types'
+import { type Position } from '+game/types'
 import {
     FootpathTile,
     ForestTile,
@@ -8,8 +8,8 @@ import {
     OvergrownTile,
     SandTile,
     StepTile,
-    Tile,
-    TileClass,
+    type Tile,
+    type TileClass,
     WallTile,
     WaterTile,
 } from '+game/world/Tile'

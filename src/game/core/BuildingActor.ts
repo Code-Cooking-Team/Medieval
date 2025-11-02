@@ -1,9 +1,12 @@
 import { buildingTraitFromJSON } from '+game/actors/buildingTraits'
-import { BuildingTrait, BuildingTraitJSON } from '+game/actors/buildingTraits/types'
-import { ActorBlueprint, Position } from '+game/types'
+import {
+    type BuildingTrait,
+    type BuildingTraitJSON,
+} from '+game/actors/buildingTraits/types'
+import { type ActorBlueprint, type Position } from '+game/types'
 import { addPosition, rotatePositionOnGrind } from '+helpers'
 
-import { Actor, ActorJSON } from './Actor'
+import { Actor, type ActorJSON } from './Actor'
 
 export abstract class BuildingActor extends Actor {
     public selectImportance = 1

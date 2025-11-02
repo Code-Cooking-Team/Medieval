@@ -1,4 +1,4 @@
-import { Color, HSL } from 'three'
+import { Color, type HSL } from 'three'
 
 export const color0xToHex = (color: number) => {
     return `#${color.toString(16)}`

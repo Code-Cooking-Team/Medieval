@@ -1,10 +1,10 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
-import { ActorLike } from '+game/core/ActorLike'
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType, ClockInfo } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Actor } from '+game/core/Actor'
+import { type ActorLike } from '+game/core/ActorLike'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { ActorType, type ClockInfo } from '+game/types'
+import { type Tile } from '+game/world/Tile'
 import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
 import {
@@ -17,12 +17,12 @@ import {
     Mesh,
     MeshBasicMaterial,
     NotEqualDepth,
-    Object3D,
+    type Object3D,
     Sprite,
     SpriteMaterial,
 } from 'three'
 
-import { GameLike } from '+game/GameLike'
+import { type GameLike } from '+game/GameLike'
 import { BasicRenderer } from './BasicRenderer'
 
 export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer {

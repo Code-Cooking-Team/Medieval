@@ -24,17 +24,17 @@ import {
 } from 'three'
 
 import { actorRenderers, basicRenderers } from './actors'
-import { Actor } from './core/Actor'
+import { type Actor } from './core/Actor'
 import { ActorLike } from './core/ActorLike'
 import { RTSCamera } from './core/RTSCamera'
-import { GameLike } from './GameLike'
-import { HumanPlayer } from './player/HumanPlayer'
+import { type GameLike } from './GameLike'
+import { type HumanPlayer } from './player/HumanPlayer'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
-import { ActorRenderer } from './renderer/lib/ActorRenderer'
-import { BasicRenderer } from './renderer/lib/BasicRenderer'
+import { type ActorRenderer } from './renderer/lib/ActorRenderer'
+import { type BasicRenderer } from './renderer/lib/BasicRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { ClockInfo } from './types'
+import { type ClockInfo } from './types'
 
 const stats = new Stats()
 

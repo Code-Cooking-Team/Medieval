@@ -1,16 +1,16 @@
 import { config } from '+config'
 import { DiagonalsPlaneGeometry } from '+game/renderer/lib/DiagonalsPlaneGeometry'
-import { Position } from '+game/types'
+import { type Position } from '+game/types'
 
 import {
     AnimationAction,
     AnimationMixer,
-    Group,
-    Mesh,
+    type Group,
+    type Mesh,
     MeshBasicMaterial,
-    Object3D,
+    type Object3D,
 } from 'three'
-import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 import { multiplyPosition } from './math'
 

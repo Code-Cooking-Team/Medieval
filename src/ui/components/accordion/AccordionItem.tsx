@@ -1,6 +1,6 @@
 import { cn } from '+helpers/string'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 import { Box } from '../base/Box'
 

@@ -1,4 +1,4 @@
-import { ActorLike } from '+game/core/ActorLike'
+import { type ActorLike } from '+game/core/ActorLike'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 

@@ -1,6 +1,6 @@
 import { config } from '+config'
-import { WalkableActor } from '+game/core/WalkableActor'
-import { ClockInfo } from '+game/types'
+import { type WalkableActor } from '+game/core/WalkableActor'
+import { type ClockInfo } from '+game/types'
 
 import { Quaternion, Vector3 } from 'three'
 

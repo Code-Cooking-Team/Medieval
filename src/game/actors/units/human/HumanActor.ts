@@ -1,13 +1,13 @@
 import { config } from '+config/config'
-import { ActorLike } from '+game/core/ActorLike'
-import { BuildingActor } from '+game/core/BuildingActor'
-import { WalkableActor, WalkableActorJSON } from '+game/core/WalkableActor'
+import { type ActorLike } from '+game/core/ActorLike'
+import { type BuildingActor } from '+game/core/BuildingActor'
+import { WalkableActor, type WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
-import { Profession, ProfessionJSON } from '+game/professions/Profession'
-import { ActorType, Position } from '+game/types'
+import { type Profession, type ProfessionJSON } from '+game/professions/Profession'
+import { ActorType, type Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
-import { AnimationMixer } from 'three'
+import { type AnimationMixer } from 'three'
 
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human

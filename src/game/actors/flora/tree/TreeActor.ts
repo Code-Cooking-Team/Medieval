@@ -1,7 +1,7 @@
 import { config } from '+config/config'
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { Actor } from '+game/core/Actor'
-import { ActorType, Position } from '+game/types'
+import { ActorType, type Position } from '+game/types'
 import { random, randomArrayItem, randomSeed } from '+helpers'
 
 export class TreeActor extends Actor {

@@ -1,8 +1,8 @@
 import { cn } from '+helpers/string'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import { Children, ReactElement, ReactNode } from 'react'
+import { Children, type ReactElement, type ReactNode } from 'react'
 
-import { TabProps } from './Tab'
+import { type TabProps } from './Tab'
 
 interface TabsProps {
     children: ReactNode

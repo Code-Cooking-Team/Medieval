@@ -1,3 +1,3 @@
-import { Machine } from './types'
+import { type Machine } from './types'
 
 export const createMachine = (machine: Machine) => machine

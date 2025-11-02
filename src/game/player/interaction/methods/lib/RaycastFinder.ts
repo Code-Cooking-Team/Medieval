@@ -1,10 +1,10 @@
 import { config } from '+config'
-import { ActorLike } from '+game/core/ActorLike'
-import { GameLike } from '+game/GameLike'
-import { Renderer } from '+game/Renderer'
-import { Position } from '+game/types'
+import { type ActorLike } from '+game/core/ActorLike'
+import { type GameLike } from '+game/GameLike'
+import { type Renderer } from '+game/Renderer'
+import { type Position } from '+game/types'
 
-import { Object3D, Raycaster, Vector2 } from 'three'
+import { type Object3D, Raycaster, Vector2 } from 'three'
 
 export class RaycastFinder {
     constructor(

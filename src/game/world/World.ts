@@ -1,9 +1,9 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
-import { Position } from '../types'
-import { getTileByJSON, Tile } from './Tile'
-import { TileGrid, TileJSON } from './types'
+import { type Position } from '../types'
+import { getTileByJSON, type Tile } from './Tile'
+import { type TileGrid, type TileJSON } from './types'
 
 export interface WordJSON {
     tiles: TileJSON[][]

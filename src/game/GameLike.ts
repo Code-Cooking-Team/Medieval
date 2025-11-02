@@ -1,11 +1,11 @@
-import { Emitter } from '+lib/Emitter'
+import { type Emitter } from '+lib/Emitter'
 
-import type { ActorClass } from './core/ActorClass'
-import { ActorLike } from './core/ActorLike'
-import { Pathfinding } from './core/Pathfinding'
-import { Player } from './player/types'
-import { ActorType, Position } from './types'
-import { World } from './world/World'
+import { type ActorClass } from './core/ActorClass'
+import { type ActorLike } from './core/ActorLike'
+import { type Pathfinding } from './core/Pathfinding'
+import { type Player } from './player/types'
+import { type ActorType, type Position } from './types'
+import { type World } from './world/World'
 
 export interface GameLike {
     world: World

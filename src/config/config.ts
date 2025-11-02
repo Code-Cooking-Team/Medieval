@@ -1,4 +1,4 @@
-import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
+import { type Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 
 import { createConfig } from './lib/createConfig'
 import { colorInput } from './lib/definitions'
