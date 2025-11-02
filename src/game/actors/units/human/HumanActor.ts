@@ -1,5 +1,5 @@
 import { config } from '+config/config'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor, WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
@@ -13,7 +13,7 @@ export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
     public profession?: Profession
-    public target?: Actor
+    public target?: ActorLike
     public home?: BuildingActor
     public animationMixer?: AnimationMixer
 
@@ -42,11 +42,11 @@ export class HumanActor extends WalkableActor {
         this.selectImportance = profession.selectImportance
     }
 
-    public setTarget(target: Actor) {
+    public setTarget(target: ActorLike) {
         this.target = target
     }
 
-    public hitBy(actor?: Actor) {
+    public hitBy(actor?: ActorLike) {
         super.hitBy(actor)
         if (actor && !this.target) {
             this.setTarget(actor)

@@ -1,9 +1,10 @@
 import { Emitter } from '+lib/Emitter'
 
-import { Actor, ActorClass } from './core/Actor'
+import type { ActorClass } from './core/ActorClass'
+import { ActorLike } from './core/ActorLike'
 import { Pathfinding } from './core/Pathfinding'
 import { Player } from './player/types'
-import { Position, ActorType } from './types'
+import { ActorType, Position } from './types'
 import { World } from './world/World'
 
 export interface GameLike {
@@ -11,27 +12,31 @@ export interface GameLike {
     pf: Pathfinding
     emitter: Emitter<{
         tick: undefined
-        actorAdded: Actor
-        actorRemoved: Actor
+        actorAdded: ActorLike
+        actorRemoved: ActorLike
         started: undefined
         stopped: undefined
     }>
-    removeActor(actor: Actor): void
-    addActor(actor: Actor): void
-    getActorById(id: string): Actor | undefined
+    removeActor(actor: ActorLike): void
+    addActor(actor: ActorLike): void
+    getActorById(id: string): ActorLike | undefined
     findActorByRange(
         position: Position,
         range: number,
-        additionalCondition?: (actor: Actor) => boolean,
-    ): Actor | undefined
-    findActorsByType(type: ActorType, isAlive?: boolean): Actor[]
-    findActorsByPosition(position: Position, range: number, isAlive?: boolean): Actor[]
+        additionalCondition?: (actor: ActorLike) => boolean,
+    ): ActorLike | undefined
+    findActorsByType(type: ActorType, isAlive?: boolean): ActorLike[]
+    findActorsByPosition(
+        position: Position,
+        range: number,
+        isAlive?: boolean,
+    ): ActorLike[]
     findClosestActorByType(
         type: ActorType,
         position: Position,
         isAlive?: boolean,
-    ): Actor | undefined
-    spawnActor<T extends Actor>(
+    ): ActorLike | undefined
+    spawnActor<T extends ActorLike>(
         ActorClass: ActorClass<T>,
         player: Player,
         position: Position,

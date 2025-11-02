@@ -1,5 +1,5 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { Game, GameJSON } from '+game/Game'
 // Island, TestMap, TestMapBig, de_grass
 import map from '+game/maps/de_river'

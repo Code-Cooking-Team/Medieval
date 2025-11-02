@@ -25,6 +25,7 @@ import {
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
+import { ActorLike } from './core/ActorLike'
 import { RTSCamera } from './core/RTSCamera'
 import { GameLike } from './GameLike'
 import { HumanPlayer } from './player/HumanPlayer'

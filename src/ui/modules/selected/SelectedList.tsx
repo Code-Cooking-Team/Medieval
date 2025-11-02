@@ -1,5 +1,5 @@
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType } from '+game/types'
 import { Box } from '+ui/components/base/Box'
@@ -15,19 +15,19 @@ interface SelectedListProps {
 const noProfession = 'No profession'
 
 export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
-    const [selectedActors, setSelectedActors] = useState<Actor[]>(
+    const [selectedActors, setSelectedActors] = useState<ActorLike[]>(
         humanPlayer.selectedActors,
     )
 
     const selectedTypes = useMemo(() => {
         return Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [
             ActorType,
-            Actor[],
+            ActorLike[],
         ][]
     }, [selectedActors])
 
     useEffect(() => {
-        const selectActors = (actor: Actor[]) => setSelectedActors(actor)
+        const selectActors = (actor: ActorLike[]) => setSelectedActors(actor)
         const unselectActors = () => setSelectedActors([])
 
         humanPlayer.emitter.on('selectActors', selectActors)
@@ -83,7 +83,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         </>
     )
 
-    function selectActorsByProfession(actors: Actor[], professionType: string): void {
+    function selectActorsByProfession(actors: ActorLike[], professionType: string): void {
         return humanPlayer.selectActors(
             actors
                 .filter(isHumanActor)
@@ -95,12 +95,15 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         )
     }
 
-    function countProfessions(humanActors: Actor[]) {
-        const count = humanActors.filter(isHumanActor).reduce((acc, humanActor) => {
-            const prof = humanActor.profession?.type || noProfession
-            acc[prof] = (acc[prof] || 0) + 1
-            return acc
-        }, {} as { [profession: string]: number })
+    function countProfessions(humanActors: ActorLike[]) {
+        const count = humanActors.filter(isHumanActor).reduce(
+            (acc, humanActor) => {
+                const prof = humanActor.profession?.type || noProfession
+                acc[prof] = (acc[prof] || 0) + 1
+                return acc
+            },
+            {} as { [profession: string]: number },
+        )
 
         return Object.entries(count)
     }

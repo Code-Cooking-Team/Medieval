@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { ActorType } from '+game/types'
 import { uuid } from '+helpers'
 import { Emitter } from '+lib/Emitter'
@@ -11,19 +11,19 @@ export class HumanPlayer implements Player {
     public type = PlayerType.Human
     public name = 'Unnamed player'
 
-    public selectedActors: Actor[] = []
+    public selectedActors: ActorLike[] = []
     public selectedBuilding?: ActorType
     public selectedBuildingRotation = 0
 
     public emitter = new Emitter<{
         selectBuilding: ActorType
         unselectBuilding: ActorType
-        selectActors: Actor[]
-        unselectActors: Actor[]
+        selectActors: ActorLike[]
+        unselectActors: ActorLike[]
         rotateBuilding: number
     }>('Player')
 
-    public selectActors(actors: Actor[]) {
+    public selectActors(actors: ActorLike[]) {
         if (config.debug.logSelected) {
             console.log('Selected actors', actors)
         }

@@ -1,6 +1,7 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType, ClockInfo } from '+game/types'
 import { Tile } from '+game/world/Tile'
@@ -119,11 +120,11 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return Array.from(this.actorInteractionShapeMap.keys())
     }
 
-    private handleActorAdded = (actor: Actor) => {
+    private handleActorAdded = (actor: ActorLike) => {
         if (actor.type === this.actorType) this.onAddActor(actor as TActor)
     }
 
-    private handleActorRemoved = (actor: Actor) => {
+    private handleActorRemoved = (actor: ActorLike) => {
         if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
     }
 

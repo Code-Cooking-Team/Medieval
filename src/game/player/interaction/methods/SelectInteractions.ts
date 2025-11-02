@@ -1,6 +1,6 @@
 import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { GameLike } from '+game/GameLike'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
@@ -177,7 +177,7 @@ export class SelectInteractions {
 
         const newSelected = selectedMeshes
             .map((item) => item.userData.actor)
-            .filter((actor) => !!actor) as Actor[]
+            .filter((actor) => !!actor) as ActorLike[]
 
         const maxSelectImportance = newSelected.reduce((current, actor) => {
             return Math.max(current, actor.getSelectedImportance())

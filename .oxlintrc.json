@@ -1,8 +1,16 @@
 {
   "plugins": ["import"],
   "rules": {
-    "import/no-cycle": "warn",
-    "no-unused-vars": "off"
+    // "import/no-cycle": "warn",
+    "no-unused-vars": "off",
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports",
+        "fixStyle": "inline-type-imports",
+        "disallowTypeAnnotations": true
+      }
+    ]
   },
   "tsconfig": "./tsconfig.json"
 }

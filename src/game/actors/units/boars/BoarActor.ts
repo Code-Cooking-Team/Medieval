@@ -1,6 +1,6 @@
 import { config } from '+config/config'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
@@ -12,7 +12,7 @@ export class BoarActor extends WalkableActor {
     public type = ActorType.Boar
     public maxHp = config.boar.hp
     public hp = this.maxHp
-    public target?: Actor
+    public target?: ActorLike
 
     public tick(): void {
         super.tick()
@@ -34,13 +34,13 @@ export class BoarActor extends WalkableActor {
         }
     }
 
-    public hitBy(actor?: Actor): void {
+    public hitBy(actor?: ActorLike): void {
         if (actor && !this.target) {
             this.setTarget(actor)
         }
     }
 
-    public setTarget(target: Actor) {
+    public setTarget(target: ActorLike) {
         this.target = target
     }
 
@@ -74,7 +74,7 @@ export class BoarActor extends WalkableActor {
         }
     }
 
-    public interact(actors: Actor[]): boolean {
+    public interact(actors: ActorLike[]): boolean {
         const humans = actors.filter(isHumanActor)
         for (const human of humans) {
             human.setTarget(this)

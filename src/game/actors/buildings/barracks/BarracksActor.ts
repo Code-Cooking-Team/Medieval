@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { ActorLike } from '+game/core/ActorLike'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { GuardianProfession } from '+game/professions/GuardianProfession'
 import { ActorType } from '+game/types'
@@ -16,7 +16,7 @@ export class BarracksActor extends BuildingActor {
 
     public tick(): void {}
 
-    public interact(actors: Actor[]) {
+    public interact(actors: ActorLike[]) {
         let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {
