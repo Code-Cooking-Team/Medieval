@@ -3,7 +3,7 @@ description: 'Real-time 3D RTS game built with Three.js and React'
 alwaysApply: true
 ---
 
--   The camera is top-down with a slight tilt; Z axis represents vertical height.
+-   For grid coordinates and Three.js axes, see `docs/game-code-map.md`.
 -   Game engine logic, actors, blueprints, and renderers in `src/game`.
 -   Configuration schemas and loader in `src/config` (see `src/config/config.ts` for default settings and schema).
 -   Helpful game and rendering configuration options defined in `src/config/config.ts` (e.g., tickTime, cameraFov, renderer settings).
