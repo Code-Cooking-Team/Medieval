@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { Game } from '+game/Game'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
-import { multiplyPosition, seededRandom, updateObjectPosition } from '+helpers'
+import { seededRandom, updateObjectPosition } from '+helpers'
 
 import {
     Color,
@@ -20,14 +20,15 @@ import { TreeActor } from './TreeActor'
 export class TreeRenderer implements Renderable {
     public actorType: ActorType = ActorType.Tree
 
-    private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3)
+    // Both meshes share a pivot at the base of the trunk.
+    private boughGeometry = new CylinderGeometry(0.2, 0.4, 3, 3).translate(0, 1.5, 0)
     private boughMaterial = new MeshStandardMaterial({
         color: new Color().setHex(0x2e2625, LinearSRGBColorSpace),
         metalness: 0.8,
         roughness: 1,
     })
 
-    private coronaGeometry = new SphereGeometry(1.5, 5, 4)
+    private coronaGeometry = new SphereGeometry(1.5, 5, 4).translate(0, 3.6, 0)
     private coronaMaterial = new MeshStandardMaterial({
         color: new Color().setHex(0x2c420b, LinearSRGBColorSpace),
         metalness: 0.8,
@@ -45,7 +46,6 @@ export class TreeRenderer implements Renderable {
     private createMesh(
         geometry: CylinderGeometry | SphereGeometry,
         material: MeshStandardMaterial,
-        height: number,
     ) {
         const mesh = new InstancedMesh(geometry, material, this.capacity)
         mesh.count = 0
@@ -54,7 +54,6 @@ export class TreeRenderer implements Renderable {
         mesh.receiveShadow = true
         // This batch spans the map and moves with the wind. Skip per-frame bounds scans.
         mesh.frustumCulled = false
-        mesh.position.y = height * config.renderer.tileSize
         this.group.add(mesh)
         return mesh
     }
@@ -83,8 +82,8 @@ export class TreeRenderer implements Renderable {
             this.releaseMeshes()
             this.capacity = Math.max(treeActors.length, this.capacity * 2)
             this.meshes = [
-                this.createMesh(this.boughGeometry, this.boughMaterial, 1.8),
-                this.createMesh(this.coronaGeometry, this.coronaMaterial, 4.5),
+                this.createMesh(this.boughGeometry, this.boughMaterial),
+                this.createMesh(this.coronaGeometry, this.coronaMaterial),
             ]
         }
 
@@ -107,19 +106,14 @@ export class TreeRenderer implements Renderable {
             )
 
             if (config.renderer.treeWaving) {
-                const sendX = dummy.scale.z * rnd(-0.5, 0.5)
-                const sendZ = dummy.scale.z * rnd(-0.5, 0.5)
+                const swayAngle = 0.17
+                const phaseX = dummy.scale.z * rnd(-0.5, 0.5)
+                const phaseZ = dummy.scale.z * rnd(-0.5, 0.5)
                 dummy.rotation.z +=
-                    Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / 15
-
-                dummy.position.x +=
-                    Math.sin(sendX + time * 0.2 * (sendX * (Math.PI / 1))) / -8
+                    Math.sin(phaseX + time * 0.2 * phaseX * Math.PI) * swayAngle
 
                 dummy.rotation.x +=
-                    Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 15
-
-                dummy.position.z +=
-                    Math.sin(sendZ + time * 0.2 * (sendZ * (Math.PI / 1))) / 8
+                    Math.sin(phaseZ + time * 0.2 * phaseZ * Math.PI) * swayAngle
             }
 
             dummy.updateMatrix()

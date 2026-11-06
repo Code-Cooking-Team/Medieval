@@ -22,6 +22,8 @@ import { TreeActor } from './flora/tree/TreeActor'
 import { TreeRenderer } from './flora/tree/TreeRenderer'
 import { BoarActor } from './units/boars/BoarActor'
 import { BoarRenderer } from './units/boars/BoarRenderer'
+import { DeerActor } from './units/deer/DeerActor'
+import { DeerRenderer } from './units/deer/DeerRenderer'
 import { HumanActor } from './units/human/HumanActor'
 import { HumanRenderer } from './units/human/HumanRenderer'
 
@@ -33,6 +35,7 @@ export const actorRenderers = [
     BarracksRenderer,
     StakewallRenderer,
     BoarRenderer,
+    DeerRenderer,
 ]
 
 export const basicRenderers = [TreeRenderer]
@@ -74,6 +77,9 @@ export const actorByType: Record<
     },
     [ActorType.Boar]: {
         actorClass: BoarActor,
+    },
+    [ActorType.Deer]: {
+        actorClass: DeerActor,
     },
 }
 

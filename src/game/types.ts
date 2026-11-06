@@ -18,10 +18,11 @@ export enum ActorType {
 
     Tree = 'Tree',
     Boar = 'Boar',
+    Deer = 'Deer',
 }
 
 export const actorTypesByCategory = {
-    Unit: [ActorType.Human, ActorType.Boar],
+    Unit: [ActorType.Human, ActorType.Boar, ActorType.Deer],
     Building: [
         ActorType.Guildhall,
         ActorType.House,
