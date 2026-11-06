@@ -60,6 +60,10 @@ export class WoodcutterProfession extends Profession {
 
     public async tick() {
         super.tick()
+        if (!this.getCamp()) {
+            this.move()
+            return
+        }
         await this.machine.send('TICK')
     }
 

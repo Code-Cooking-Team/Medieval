@@ -1,4 +1,5 @@
 import { actorByType } from '+game/actors'
+import { isBuildingActor } from '+game/actors/helpers'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
@@ -84,6 +85,7 @@ export class BuildInteractions {
         this.subscriptions = []
         this.removePlaceholder()
 
+        this.ignoreClick = false
         this.el.removeEventListener('click', this.handleClick)
         this.el.removeEventListener('pointerdown', this.handleDown)
         this.el.removeEventListener('pointermove', this.handleMove)
@@ -237,6 +239,16 @@ export class BuildInteractions {
 
     private handleClick = (event: MouseEvent) => {
         event.preventDefault()
+        if (event.button !== 0) return
+
+        if (this.player.removingBuildings) {
+            const building = this.finder
+                .findActorsByMouseEvent(event)
+                .find(isBuildingActor)
+            if (building) this.game.removeActor(building)
+            return
+        }
+
         if (this.ignoreClick) {
             this.ignoreClick = false
             return
@@ -286,6 +298,7 @@ export class BuildInteractions {
     private handleContextmenu = (event: MouseEvent) => {
         event.preventDefault()
         this.clearWallDrag()
+        this.player.setBuildingRemoval(false)
         this.player.unselectBuilding()
     }
 }
