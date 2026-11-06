@@ -12,23 +12,61 @@ import {
     updateScale,
 } from '+helpers'
 
-import { AnimationClip, AnimationMixer, MeshStandardMaterial, SkinnedMesh } from 'three'
+import {
+    AnimationAction,
+    AnimationMixer,
+    MathUtils,
+    MeshStandardMaterial,
+    SkinnedMesh,
+} from 'three'
 
 import { HumanActor } from './HumanActor'
 import humanModelUrl from './models/human.gltf'
 
+interface HumanLocomotion {
+    mixer: AnimationMixer
+    idle: AnimationAction
+    walk: AnimationAction
+    x: number
+    z: number
+    blend: number
+}
+
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
     public actorType = ActorType.Human
-    private animationList?: AnimationClip[]
+    private locomotion = new WeakMap<HumanActor, HumanLocomotion>()
+
+    public destroy() {
+        super.destroy()
+        for (const actor of this.actorGroupMap.keys()) this.onRemoveActor(actor)
+    }
+
+    protected onRemoveActor(actor: HumanActor) {
+        super.onRemoveActor(actor)
+        const animation = this.locomotion.get(actor)
+        if (animation) {
+            const { mixer } = animation
+            mixer.stopAllAction()
+            mixer.uncacheRoot(mixer.getRoot())
+            this.locomotion.delete(actor)
+        }
+    }
 
     public createActorModel(actor: HumanActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
 
         loadRawGLTF(humanModelUrl).then((gltf) => {
-            this.animationList = gltf.animations
-            actor.animationMixer = new AnimationMixer(gltf.scene)
-            if (this.animationList) {
-                actor.animationMixer.clipAction(this.animationList[0]!).play()
+            if (this.actorGroupMap.get(actor) !== group) return
+
+            const [idleClip, walkClip] = gltf.animations
+            if (idleClip && walkClip) {
+                const mixer = new AnimationMixer(gltf.scene)
+                const idle = mixer.clipAction(idleClip).play()
+                const walk = mixer.clipAction(walkClip).setEffectiveWeight(0).play()
+                mixer.update(0)
+
+                const { x, z } = group.position
+                this.locomotion.set(actor, { mixer, idle, walk, x, z, blend: 0 })
             }
 
             if (gltf.scene) {
@@ -90,22 +128,34 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
 
     public render(clockInfo: ClockInfo): void {
         super.render(clockInfo)
-        this.actorGroupMap.forEach((group, actor) => {
-            if (actor.animationMixer && this.animationList) {
-                if (actor.hasPath() && actor.actorAnimationState != 'walking') {
-                    actor.animationMixer.stopAllAction()
-                    actor.animationMixer.clipAction(this.animationList[1]!).play()
-                    actor.actorAnimationState = 'walking'
-                }
-                if (!actor.hasPath() && actor.actorAnimationState != 'idle') {
-                    actor.animationMixer.stopAllAction()
-                    actor.animationMixer.clipAction(this.animationList[0]!).play()
-                    actor.actorAnimationState = 'idle'
-                }
-                actor.animationMixer.update(clockInfo.deltaTime)
-            }
-        })
         this.updateProfession()
+    }
+
+    protected updatePosition(clockInfo: ClockInfo) {
+        super.updatePosition(clockInfo)
+        const { deltaTime } = clockInfo
+        if (deltaTime <= 0) return
+
+        for (const [actor, { position }] of this.actorGroupMap) {
+            const animation = this.locomotion.get(actor)
+            if (!animation) continue
+
+            const distance = Math.hypot(
+                position.x - animation.x,
+                position.z - animation.z,
+            )
+            animation.x = position.x
+            animation.z = position.z
+
+            const speed = distance / (deltaTime * config.renderer.tileSize)
+            const targetBlend = MathUtils.smoothstep(speed, 0.08, 1.5)
+            animation.blend = MathUtils.damp(animation.blend, targetBlend, 12, deltaTime)
+            animation.idle.setEffectiveWeight(1 - animation.blend)
+            animation.walk.setEffectiveWeight(animation.blend)
+            // Keep the stride advancing as the walk fades into idle.
+            animation.walk.setEffectiveTimeScale(MathUtils.clamp(speed / 2, 0.5, 1.5))
+            animation.mixer.update(deltaTime)
+        }
     }
 
     private actorPreviousProfession = new WeakMap<HumanActor, Profession>()

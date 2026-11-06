@@ -7,18 +7,12 @@ import { Profession, ProfessionJSON } from '+game/professions/Profession'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
-import { AnimationMixer } from 'three'
-
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
     public profession?: Profession
     public target?: Actor
     public home?: BuildingActor
-    public animationMixer?: AnimationMixer
-
-    // TODO move this to WeakMap inside HumanRenderer
-    public actorAnimationState: 'idle' | 'walking' = 'idle'
 
     public tick(): void {
         super.tick()
