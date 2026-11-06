@@ -16,21 +16,42 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
         humanPlayer.selectedBuilding,
     )
 
+    const [removingBuildings, setRemovingBuildings] = useState(
+        humanPlayer.removingBuildings,
+    )
+
     useEffect(() => {
-        const selectBuilding = ({ data }: { data: ActorType }) => setSelectedBuilding(data)
+        const updateRemovalMode = () =>
+            setRemovingBuildings(humanPlayer.removingBuildings)
+        setSelectedBuilding(humanPlayer.selectedBuilding)
+        updateRemovalMode()
+        humanPlayer.emitter.on('removalModeChanged', updateRemovalMode)
+        const selectBuilding = ({ data }: { data: ActorType }) =>
+            setSelectedBuilding(data)
         const unselectBuilding = () => setSelectedBuilding(undefined)
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)
         humanPlayer.emitter.on('unselectBuilding', unselectBuilding)
 
         return () => {
+            humanPlayer.emitter.off('removalModeChanged', updateRemovalMode)
+            humanPlayer.setBuildingRemoval(false)
             humanPlayer.emitter.off('selectBuilding', selectBuilding)
             humanPlayer.emitter.off('unselectBuilding', unselectBuilding)
         }
-    }, [])
+    }, [humanPlayer])
 
     return (
         <Box p={3} display="flex" flexDirection="column" rowGap={3}>
+            <Button
+                label={removingBuildings ? '✓ Remove buildings' : 'Remove buildings'}
+                onClick={() =>
+                    humanPlayer.setBuildingRemoval(!humanPlayer.removingBuildings)
+                }
+            />
+            {removingBuildings && (
+                <Box>Click a building to remove it. Press Esc to cancel.</Box>
+            )}
             {categories.map(([category, actorTypes]) => (
                 <Box key={category} display="flex" flexDirection="column" rowGap={2}>
                     <Box>{category}</Box>

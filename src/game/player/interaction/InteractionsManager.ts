@@ -20,13 +20,14 @@ export class InteractionsManager {
         this.select = new SelectInteractions(game, renderer, player)
         this.build = new BuildInteractions(game, renderer, player)
 
-        this.player.emitter.on('selectBuilding', this.buildMode)
-        this.player.emitter.on('unselectBuilding', this.selectMode)
+        this.player.emitter.on('selectBuilding', this.updateMode)
+        this.player.emitter.on('removalModeChanged', this.updateMode)
+        this.player.emitter.on('unselectBuilding', this.updateMode)
     }
 
     public init() {
         this.keyboard.enable()
-        this.selectMode()
+        this.updateMode()
     }
 
     public destroy() {
@@ -34,17 +35,18 @@ export class InteractionsManager {
         this.build.disable()
         this.select.disable()
 
-        this.player.emitter.off('selectBuilding', this.buildMode)
-        this.player.emitter.off('unselectBuilding', this.selectMode)
+        this.player.emitter.off('selectBuilding', this.updateMode)
+        this.player.emitter.off('removalModeChanged', this.updateMode)
+        this.player.emitter.off('unselectBuilding', this.updateMode)
     }
 
-    public selectMode = () => {
-        this.select.enable()
-        this.build.disable()
-    }
-
-    public buildMode = () => {
-        this.select.disable()
-        this.build.enable()
+    private updateMode = () => {
+        if (this.player.selectedBuilding || this.player.removingBuildings) {
+            this.select.disable()
+            this.build.enable()
+        } else {
+            this.build.disable()
+            this.select.enable()
+        }
     }
 }
