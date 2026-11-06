@@ -76,8 +76,8 @@ export class Pathfinding {
         this.easyStar.setGrid(tiles)
         this.easyStar.setAcceptableTiles([1])
         this.easyStar.enableDiagonals()
-        // This don't work work check https://github.com/prettymuchbryce/easystarjs/pull/100
-        // this.easyStar.enableCornerCutting()
+        // A diagonal line of wall tiles must block movement between its segments.
+        this.easyStar.disableCornerCutting()
         this.easyStar.setIterationsPerCalculation(1000)
     }
 }

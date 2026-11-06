@@ -6,18 +6,31 @@ import { ActorType, Position } from '+game/types'
 import { randomSeed, rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
 import { UnsubscribeFunction } from 'emittery'
-import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
+import { Mesh, MeshBasicMaterial, Object3D } from 'three'
 
 import { RaycastFinder } from './lib/RaycastFinder'
+import { snapWallLine } from './lib/snapWallLine'
+
+interface Preview {
+    root: Object3D
+    seed?: number
+}
 
 export class BuildInteractions {
     private finder: RaycastFinder
-    private placeholder = new Object3D()
-    private placeholderModel?: LOD | Group
-    private placeholderSeed?: number
+    private preview?: Preview
+    private previews = new Object3D()
+    private wallPreviews: Preview[] = []
+    private wallDrag?: { pointerId: number; start: Position; end: Position }
+    private ignoreClick = false
     private el: HTMLCanvasElement
-    private placeHolderMaterial = new MeshBasicMaterial({
+    private validMaterial = new MeshBasicMaterial({
         color: 0x5eff64,
+        opacity: 0.5,
+        transparent: true,
+    })
+    private invalidMaterial = new MeshBasicMaterial({
+        color: 0xff0000,
         opacity: 0.5,
         transparent: true,
     })
@@ -31,115 +44,248 @@ export class BuildInteractions {
         this.finder = new RaycastFinder(game, renderer)
     }
 
-    public rotatePlaceholder = (rotateNumber: number) => {
-        this.placeholder.rotation.y = rotationIndexToDeg(rotateNumber)
+    public rotatePlaceholder = (rotation: number) => {
+        for (const preview of [this.preview, ...this.wallPreviews]) {
+            if (preview) preview.root.rotation.y = rotationIndexToDeg(rotation)
+        }
     }
 
     private subscriptions: UnsubscribeFunction[] = []
 
     public enable() {
+        if (this.subscriptions.length) return
+
         if (this.player.selectedBuilding) {
             this.setPlaceholder(this.player.selectedBuilding)
         }
 
         this.subscriptions = [
-            this.player.emitter.on('selectBuilding', ({ data }) => this.setPlaceholder(data)),
+            this.player.emitter.on('selectBuilding', ({ data }) =>
+                this.setPlaceholder(data),
+            ),
             this.player.emitter.on('unselectBuilding', this.removePlaceholder),
-            this.player.emitter.on('rotateBuilding', ({ data }) => this.rotatePlaceholder(data)),
+            this.player.emitter.on('rotateBuilding', ({ data }) =>
+                this.rotatePlaceholder(data),
+            ),
         ]
 
         this.el.addEventListener('click', this.handleClick)
+        this.el.addEventListener('pointerdown', this.handleDown)
         this.el.addEventListener('pointermove', this.handleMove)
+        this.el.addEventListener('pointerup', this.handleUp)
+        this.el.addEventListener('pointercancel', this.handleCancel)
+        this.el.addEventListener('lostpointercapture', this.handleCancel)
         this.el.addEventListener('contextmenu', this.handleContextmenu)
-        this.renderer.scene.add(this.placeholder)
+        this.renderer.scene.add(this.previews)
     }
 
     public disable() {
         this.subscriptions.forEach((unsubscribe) => unsubscribe())
+        this.subscriptions = []
+        this.removePlaceholder()
 
         this.el.removeEventListener('click', this.handleClick)
+        this.el.removeEventListener('pointerdown', this.handleDown)
         this.el.removeEventListener('pointermove', this.handleMove)
+        this.el.removeEventListener('pointerup', this.handleUp)
+        this.el.removeEventListener('pointercancel', this.handleCancel)
+        this.el.removeEventListener('lostpointercapture', this.handleCancel)
         this.el.removeEventListener('contextmenu', this.handleContextmenu)
-        this.renderer.scene.remove(this.placeholder)
+        this.renderer.scene.remove(this.previews)
     }
 
-    private setPlaceholder = async (type: ActorType) => {
-        this.removePlaceholder()
-        const actorBlueprint = actorByType[type].blueprint
+    private createPreview(type: ActorType, valid: boolean): Preview | undefined {
+        const blueprint = actorByType[type].blueprint
+        if (!blueprint) return
 
-        if (!actorBlueprint) return
+        const seed = type === ActorType.Stakewall ? randomSeed() : undefined
+        const { model, promise } = blueprint.getPlaceholder(seed)
+        const root = new Object3D()
+        root.userData.valid = valid
+        root.rotation.y = rotationIndexToDeg(this.player.selectedBuildingRotation)
+        root.add(model)
+        this.previews.add(root)
 
-        this.placeholderSeed = type === ActorType.Stakewall ? randomSeed() : undefined
-        const { model, promise } = actorBlueprint.getPlaceholder(this.placeholderSeed)
-        this.rotatePlaceholder(this.player.selectedBuildingRotation)
+        void promise.then(() => {
+            model.traverse((object) => {
+                if (object instanceof Mesh) {
+                    object.castShadow = false
+                    object.receiveShadow = false
+                }
+            })
+            this.colorPreview(root, root.userData.valid)
+        })
 
-        this.placeholderModel = model
-        this.placeholder.add(this.placeholderModel)
+        return { root, seed }
+    }
 
-        await promise
-
-        if (this.placeholderModel !== model) return
-
-        model.traverse((object) => {
+    private colorPreview(root: Object3D, valid: boolean) {
+        root.userData.valid = valid
+        root.traverse((object) => {
             if (object instanceof Mesh) {
-                object.castShadow = false
-                object.receiveShadow = false
-                object.material = this.placeHolderMaterial
+                object.material = valid ? this.validMaterial : this.invalidMaterial
             }
         })
     }
 
+    private setPlaceholder = (type: ActorType) => {
+        this.removePlaceholder()
+        this.preview = this.createPreview(type, true)
+        if (this.preview) this.preview.root.visible = false
+    }
+
     private removePlaceholder = () => {
-        if (!this.placeholderModel) return
-        this.placeholder.remove(this.placeholderModel)
-        this.placeholderModel = undefined
+        this.clearWallDrag()
+        this.previews.clear()
+        this.preview = undefined
+    }
+
+    private clearWallDrag() {
+        const drag = this.wallDrag
+        this.wallDrag = undefined
+        if (drag && this.el.hasPointerCapture(drag.pointerId)) {
+            this.el.releasePointerCapture(drag.pointerId)
+        }
+        for (const { root } of this.wallPreviews) this.previews.remove(root)
+        this.wallPreviews = []
+    }
+
+    private canBuild(position: Position) {
+        return (
+            this.game.world.hasTile(position) &&
+            this.game.world.getTile(position).canBuild
+        )
+    }
+
+    private showPreview(preview: Preview, position: Position, valid: boolean) {
+        const { root } = preview
+        root.visible = !!this.game.world.hasTile(position)
+        if (!root.visible) return
+
+        const [width, height] = this.game.world.getSize()
+        updateObjectPosition(
+            root,
+            [position[0] - width / 2, position[1] - height / 2],
+            this.game.world.getTile(position).height,
+        )
+        if (root.userData.valid !== valid) this.colorPreview(root, valid)
+    }
+
+    private showWallLine(positions: Position[]) {
+        if (!this.preview) return
+        const valid = positions.every((position) => this.canBuild(position))
+        this.showPreview(this.preview, positions[0]!, valid)
+
+        for (let i = 1; i < positions.length; i++) {
+            const preview = (this.wallPreviews[i - 1] ??= this.createPreview(
+                ActorType.Stakewall,
+                valid,
+            )!)
+            this.showPreview(preview, positions[i]!, valid)
+        }
+        for (let i = positions.length - 1; i < this.wallPreviews.length; i++) {
+            this.wallPreviews[i]!.root.visible = false
+        }
+    }
+
+    private handleDown = (event: PointerEvent) => {
+        if (event.button !== 0 || this.wallDrag) return
+        this.ignoreClick = false
+        if (this.player.selectedBuilding !== ActorType.Stakewall) return
+
+        this.ignoreClick = true
+        const start = this.finder.findPositionByMouseEvent(event)
+        if (!start || !this.game.world.hasTile(start)) return
+
+        this.wallDrag = { pointerId: event.pointerId, start, end: start }
+        this.el.setPointerCapture(event.pointerId)
+        this.showWallLine([start])
+    }
+
+    private handleUp = (event: PointerEvent) => {
+        const drag = this.wallDrag
+        if (!drag || drag.pointerId !== event.pointerId || event.button !== 0) return
+
+        const end = this.finder.findPositionByMouseEvent(event)
+        if (end && this.player.selectedBuilding === ActorType.Stakewall) {
+            const positions = snapWallLine(drag.start, end)
+            if (positions.every((position) => this.canBuild(position))) {
+                const rotation = this.player.selectedBuildingRotation
+                positions.forEach((position, index) => {
+                    const preview =
+                        index === 0 ? this.preview : this.wallPreviews[index - 1]
+                    this.game.spawnActor(
+                        actorByType[ActorType.Stakewall].actorClass,
+                        this.player,
+                        position,
+                        rotation,
+                        preview?.seed ?? randomSeed(),
+                    )
+                })
+                this.setPlaceholder(ActorType.Stakewall)
+            }
+        }
+        this.clearWallDrag()
+        this.updateHover(end)
+    }
+
+    private handleCancel = (event: PointerEvent) => {
+        if (this.wallDrag?.pointerId !== event.pointerId) return
+        this.clearWallDrag()
+        this.updateHover(undefined)
     }
 
     private handleClick = (event: MouseEvent) => {
         event.preventDefault()
+        if (this.ignoreClick) {
+            this.ignoreClick = false
+            return
+        }
 
         const selectedBuilding = this.player.selectedBuilding
         if (!selectedBuilding) return
 
         const position = this.finder.findPositionByMouseEvent(event)
-        if (!position) return
-
-        const ActorClass = actorByType[selectedBuilding].actorClass
+        if (!position || !this.game.world.hasTile(position)) return
 
         const actor = this.game.spawnActor(
-            ActorClass,
+            actorByType[selectedBuilding].actorClass,
             this.player,
             position,
             this.player.selectedBuildingRotation,
-            this.placeholderSeed,
+            this.preview?.seed,
         )
         if (actor && selectedBuilding === ActorType.Stakewall) {
-            void this.setPlaceholder(selectedBuilding)
+            this.setPlaceholder(selectedBuilding)
+            this.updateHover(position)
         }
     }
 
+    private updateHover(position?: Position) {
+        if (!this.preview) return
+        if (position) this.showPreview(this.preview, position, this.canBuild(position))
+        else this.preview.root.visible = false
+    }
+
     private handleMove = (event: PointerEvent) => {
-        if (!this.placeholderModel) return
+        if (!this.preview) return
+        const drag = this.wallDrag
+        if (drag && drag.pointerId !== event.pointerId) return
 
         const position = this.finder.findPositionByMouseEvent(event)
-
-        if (!position) return
-
-        const currTail = this.game.world.getTile(position)
-        const worldSize = this.game.world.getSize()
-
-        const placeholderPosition: Position = [
-            position[0] - worldSize[0] / 2,
-            position[1] - worldSize[1] / 2,
-        ]
-
-        updateObjectPosition(this.placeholder, placeholderPosition, currTail.height)
-
-        this.placeHolderMaterial.color.setHex(!currTail.canBuild ? 0xff0000 : 0x5eff64)
+        if (drag) {
+            if (!position || (position[0] === drag.end[0] && position[1] === drag.end[1]))
+                return
+            drag.end = position
+            this.showWallLine(snapWallLine(drag.start, position))
+        } else {
+            this.updateHover(position)
+        }
     }
 
     private handleContextmenu = (event: MouseEvent) => {
         event.preventDefault()
+        this.clearWallDrag()
         this.player.unselectBuilding()
     }
 }
