@@ -2,23 +2,21 @@ import { config } from '+config'
 
 import Stats from 'stats.js'
 import {
-    Clock,
-    NoToneMapping,
-    PCFSoftShadowMap,
+    PCFShadowMap,
     ReinhardToneMapping,
     Scene,
-    sRGBEncoding,
+    Timer,
     Vector2,
     WebGLRenderer,
 } from 'three'
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'
-import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js'
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js'
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js'
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js'
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js'
 
 import { actorRenderers, basicRenderers } from './actors'
 import { Actor } from './core/Actor'
@@ -43,14 +41,13 @@ export class Renderer {
 
     private composer = new EffectComposer(this.webGLRenderer)
     private outlinePass?: OutlinePass
-    private FXAAPass?: any
-    private GammaCorrectionPass?: any
+    private FXAAPass?: ShaderPass
     private bokehPass?: BokehPass
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
 
-    private clock = new Clock()
+    private clock = new Timer()
     private ground: GroundRenderer
     private environment: EnvironmentRenderer
     private water: WaterRenderer
@@ -65,15 +62,11 @@ export class Renderer {
         public player: HumanPlayer,
         public rootEl: HTMLElement,
     ) {
-        // Better visual but don't work with composer
-        this.webGLRenderer.outputEncoding = sRGBEncoding
-        this.webGLRenderer.toneMapping = NoToneMapping
-
         this.webGLRenderer.toneMapping = ReinhardToneMapping
         this.webGLRenderer.toneMappingExposure = Math.pow(config.renderer.exposure, 4.0)
 
         this.webGLRenderer.shadowMap.enabled = true
-        this.webGLRenderer.shadowMap.type = PCFSoftShadowMap
+        this.webGLRenderer.shadowMap.type = PCFShadowMap
         this.webGLRenderer.xr.enabled = true
 
         this.environment = new EnvironmentRenderer(
@@ -131,6 +124,10 @@ export class Renderer {
         })
 
         // TODO fix "WARNING: Too many active WebGL contexts three"
+        this.basicRendererList.forEach((renderer) => renderer.destroy?.())
+        this.composer.passes.forEach((pass) => pass.dispose())
+        this.composer.dispose()
+        this.clock.dispose()
         this.webGLRenderer.dispose() // TODO needed?
 
         this.rootEl.removeChild(this.webGLRenderer.domElement)
@@ -194,7 +191,7 @@ export class Renderer {
         const height = window.innerHeight
         const camera = this.rtsCamera.camera
 
-        const renderPass = new RenderPass(this.scene, camera)
+        this.composer.addPass(new RenderPass(this.scene, camera))
 
         // Outline
         if (config.postProcessing.outlineEnabled) {
@@ -216,7 +213,6 @@ export class Renderer {
             this.outlinePass.pulsePeriod = outlineParams.pulsePeriod
             this.outlinePass.visibleEdgeColor.set(0x5eff64)
             this.outlinePass.hiddenEdgeColor.set(0x5eff64)
-            this.composer.addPass(renderPass)
             this.composer.addPass(this.outlinePass)
         }
 
@@ -234,28 +230,22 @@ export class Renderer {
             this.composer.addPass(bloomPass)
         }
 
-        // GammaCorrection
-        if (config.postProcessing.gammaCorrectionShader) {
-            this.GammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
-            this.composer.addPass(this.GammaCorrectionPass)
-        }
-
-        // FXAA
-        if (config.postProcessing.FXAAEnabled) {
-            this.FXAAPass = new ShaderPass(FXAAShader)
-            this.composer.addPass(this.FXAAPass)
-        }
-
         // Bokeh
         if (config.postProcessing.bokehEnable) {
             this.bokehPass = new BokehPass(this.scene, camera, {
                 focus: 5,
                 aperture: config.postProcessing.bokehAperture,
                 maxblur: config.postProcessing.bokehMaxBlur,
-                width: width,
-                height: height,
             })
             this.composer.addPass(this.bokehPass)
+        }
+
+        this.composer.addPass(new OutputPass())
+
+        // FXAA
+        if (config.postProcessing.FXAAEnabled) {
+            this.FXAAPass = new ShaderPass(FXAAShader)
+            this.composer.addPass(this.FXAAPass)
         }
     }
 
@@ -313,8 +303,8 @@ export class Renderer {
         }
 
         if (this.FXAAPass) {
-            this.FXAAPass.material.uniforms.resolution.value.x = 1 / (width * pixelRatio)
-            this.FXAAPass.material.uniforms.resolution.value.y = 1 / (height * pixelRatio)
+            this.FXAAPass.uniforms.resolution!.value.x = 1 / (width * pixelRatio)
+            this.FXAAPass.uniforms.resolution!.value.y = 1 / (height * pixelRatio)
         }
 
         if (this.bokehPass) {
@@ -347,8 +337,9 @@ export class Renderer {
     }
 
     private render() {
+        this.clock.update()
         const deltaTime = this.clock.getDelta()
-        const elapsedTime = this.clock.elapsedTime
+        const elapsedTime = this.clock.getElapsed()
         const clockInfo: ClockInfo = { deltaTime, elapsedTime }
 
         this.basicRendererList.forEach((renderer) => renderer.render(clockInfo))
@@ -369,9 +360,8 @@ export class Renderer {
                     (10 - cameraY + cameraRotation) *
                     config.postProcessing.bokehAperture *
                     0.2
-
-                this.composer.render()
             }
+            this.composer.render()
         } else {
             this.webGLRenderer.render(this.scene, this.rtsCamera.camera)
         }

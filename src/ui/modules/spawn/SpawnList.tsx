@@ -17,7 +17,7 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
     )
 
     useEffect(() => {
-        const selectBuilding = (building: ActorType) => setSelectedBuilding(building)
+        const selectBuilding = ({ data }: { data: ActorType }) => setSelectedBuilding(data)
         const unselectBuilding = () => setSelectedBuilding(undefined)
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)

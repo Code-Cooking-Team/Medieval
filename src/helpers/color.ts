@@ -1,4 +1,4 @@
-import { Color, HSL } from 'three'
+import { Color, HSL, SRGBColorSpace } from 'three'
 
 export const color0xToHex = (color: number) => {
     return `#${color.toString(16)}`
@@ -15,19 +15,17 @@ export const generateSimilarColor = (
 ) => {
     const threeColor = new Color(color)
 
-    const r = threeColor.r * 255
-    const g = threeColor.g * 255
-    const b = threeColor.b * 255
+    const { r, g, b } = threeColor.getRGB({ r: 0, g: 0, b: 0 }, SRGBColorSpace)
 
-    let nr = Math.round(r + (Math.random() - 0.5) * 2 * deviation)
-    let ng = Math.round(g + (Math.random() - 0.5) * 2 * deviation)
-    let nb = Math.round(b + (Math.random() - 0.5) * 2 * deviation)
+    let nr = Math.round(r * 255 + (Math.random() - 0.5) * 2 * deviation)
+    let ng = Math.round(g * 255 + (Math.random() - 0.5) * 2 * deviation)
+    let nb = Math.round(b * 255 + (Math.random() - 0.5) * 2 * deviation)
 
     if (monochromatic) {
         let random = Math.random()
-        nr = Math.round(r + (random - 0.5) * 2 * deviation)
-        ng = Math.round(g + (random - 0.5) * 2 * deviation)
-        nb = Math.round(b + (random - 0.5) * 2 * deviation)
+        nr = Math.round(r * 255 + (random - 0.5) * 2 * deviation)
+        ng = Math.round(g * 255 + (random - 0.5) * 2 * deviation)
+        nb = Math.round(b * 255 + (random - 0.5) * 2 * deviation)
     }
 
     nr = nr > 255 ? 255 : nr
@@ -38,9 +36,7 @@ export const generateSimilarColor = (
     ng = ng < 0 ? 0 : ng
     nb = nb < 0 ? 0 : nb
 
-    threeColor.r = nr / 255
-    threeColor.g = ng / 255
-    threeColor.b = nb / 255
+    threeColor.setRGB(nr / 255, ng / 255, nb / 255, SRGBColorSpace)
 
     return threeColor.getHex()
 }
@@ -52,17 +48,13 @@ export const changeColorLightnessSaturation = (
 ) => {
     const threeColor = new Color(color)
 
-    const r = threeColor.r * 255
-    const g = threeColor.g * 255
-    const b = threeColor.b * 255
-
     let hsl: HSL = { h: 0, s: 0, l: 0 }
-    threeColor.getHSL(hsl)
+    threeColor.getHSL(hsl, SRGBColorSpace)
 
     if (lightness) hsl.l = lightness
     if (saturation) hsl.s = saturation
 
-    threeColor.setHSL(hsl.h, hsl.s, hsl.l)
+    threeColor.setHSL(hsl.h, hsl.s, hsl.l, SRGBColorSpace)
 
     return threeColor.getHex()
 }

@@ -20,9 +20,10 @@ import hdrUrl from './textures/bg.jpg'
 const SHADOW_SCALE = 3
 
 export class EnvironmentRenderer extends BasicRenderer {
-    private sun = new DirectionalLight(0xfff2c7, 3.2)
+    // Three.js used to multiply these light intensities by PI.
+    private sun = new DirectionalLight(0xfff2c7, 3.2 * Math.PI)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0xdae6e8, 0.1)
+    private ambient = new AmbientLight(0xdae6e8, 0.1 * Math.PI)
 
     constructor(public game: Game, private scene: Scene, private camera: Camera) {
         super()

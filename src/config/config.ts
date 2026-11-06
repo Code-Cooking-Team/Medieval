@@ -42,9 +42,9 @@ export const { config, resetConfig, saveConfig } = createConfig({
         postprocessingEnabled: true,
 
         bloomEnabled: true,
-        bloomStrength: 1.25,
-        bloomThreshold: 0.45,
-        bloomRadius: 0.45,
+        bloomStrength: 0.12,
+        bloomThreshold: 1.25,
+        bloomRadius: 0.2,
 
         outlineEnabled: true,
         outlineEdgeStrength: 2.0,
@@ -54,10 +54,8 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
         FXAAEnabled: true,
         bokehEnable: true,
-        bokehAperture: 0.002,
-        bokehMaxBlur: 0.01,
-
-        gammaCorrectionShader: true,
+        bokehAperture: 0.0005,
+        bokehMaxBlur: 0.003,
     },
 
     walkableRenderer: {

@@ -1,4 +1,3 @@
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -6,5 +5,5 @@ export default defineConfig({
         globals: true,
         environment: 'happy-dom',
     },
-    plugins: [tsconfigPaths() as any],
+    resolve: { tsconfigPaths: true },
 })

@@ -3,7 +3,7 @@ import { ClockInfo, Renderable } from '+game/types'
 import { normalizeEventKeyName } from '+helpers'
 
 import { MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 const CAMERA_SPEED = config.renderer.tileSize * 2
 
@@ -134,7 +134,6 @@ export class RTSCamera implements Renderable {
             MIDDLE: MOUSE.ROTATE,
             RIGHT: MOUSE.PAN,
         }
-        controls.center
     }
 
     private handleKeyDown = (event: KeyboardEvent) => {

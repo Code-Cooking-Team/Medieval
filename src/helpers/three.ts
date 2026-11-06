@@ -10,7 +10,7 @@ import {
     MeshBasicMaterial,
     Object3D,
 } from 'three'
-import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
 import { multiplyPosition } from './math'
 

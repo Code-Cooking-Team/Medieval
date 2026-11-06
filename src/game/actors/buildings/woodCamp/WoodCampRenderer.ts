@@ -3,7 +3,6 @@ import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
-import { listenerAdded } from 'emittery'
 import { AxesHelper, PointLight } from 'three'
 
 import { WoodCampActor } from './WoodCampActor'

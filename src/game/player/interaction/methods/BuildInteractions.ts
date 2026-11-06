@@ -5,7 +5,7 @@ import { Renderer } from '+game/Renderer'
 import { ActorType, Position } from '+game/types'
 import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
-import { UnsubscribeFn } from 'emittery'
+import { UnsubscribeFunction } from 'emittery'
 import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -34,7 +34,7 @@ export class BuildInteractions {
         this.placeholder.rotation.y = rotationIndexToDeg(rotateNumber)
     }
 
-    private subscriptions: UnsubscribeFn[] = []
+    private subscriptions: UnsubscribeFunction[] = []
 
     public enable() {
         if (this.player.selectedBuilding) {
@@ -42,9 +42,9 @@ export class BuildInteractions {
         }
 
         this.subscriptions = [
-            this.player.emitter.on('selectBuilding', this.setPlaceholder),
+            this.player.emitter.on('selectBuilding', ({ data }) => this.setPlaceholder(data)),
             this.player.emitter.on('unselectBuilding', this.removePlaceholder),
-            this.player.emitter.on('rotateBuilding', this.rotatePlaceholder),
+            this.player.emitter.on('rotateBuilding', ({ data }) => this.rotatePlaceholder(data)),
         ]
 
         this.el.addEventListener('click', this.handleClick)

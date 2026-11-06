@@ -90,7 +90,7 @@ function App() {
         game.emitter.on('started', started)
         game.emitter.on('stopped', stopped)
 
-        const selectBuilding = (building: ActorType) => setSelectedBuilding(building)
+        const selectBuilding = ({ data }: { data: ActorType }) => setSelectedBuilding(data)
         const unselectBuilding = () => setSelectedBuilding(undefined)
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)

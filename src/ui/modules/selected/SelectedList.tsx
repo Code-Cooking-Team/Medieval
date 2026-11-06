@@ -27,7 +27,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
     }, [selectedActors])
 
     useEffect(() => {
-        const selectActors = (actor: Actor[]) => setSelectedActors(actor)
+        const selectActors = ({ data }: { data: Actor[] }) => setSelectedActors(data)
         const unselectActors = () => setSelectedActors([])
 
         humanPlayer.emitter.on('selectActors', selectActors)

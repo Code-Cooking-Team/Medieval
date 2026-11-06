@@ -5,7 +5,7 @@ import { useState } from 'react'
 export const useLocalStorage = <T>(key: string, initial?: T, compressed = false) => {
     const lib = compressed ? compressedLocalStorageKey : localStorageKey
     const openStorage = lib<T>(key, initial)
-    const [items, setItems] = useState<T>(() => openStorage.get())
+    const [items, setItems] = useState<T | undefined>(() => openStorage.get())
 
     return [
         items,
@@ -15,7 +15,7 @@ export const useLocalStorage = <T>(key: string, initial?: T, compressed = false)
         },
         () => {
             openStorage.remove()
-            setItems(initial!)
+            setItems(initial)
         },
     ] as const
 }

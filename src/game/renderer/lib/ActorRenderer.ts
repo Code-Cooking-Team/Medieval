@@ -116,11 +116,11 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return Array.from(this.actorInteractionShapeMap.keys())
     }
 
-    private handleActorAdded = (actor: Actor) => {
+    private handleActorAdded = ({ data: actor }: { data: Actor }) => {
         if (actor.type === this.actorType) this.onAddActor(actor as TActor)
     }
 
-    private handleActorRemoved = (actor: Actor) => {
+    private handleActorRemoved = ({ data: actor }: { data: Actor }) => {
         if (actor.type === this.actorType) this.onRemoveActor(actor as TActor)
     }
 

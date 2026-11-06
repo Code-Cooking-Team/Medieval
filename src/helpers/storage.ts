@@ -1,7 +1,7 @@
 import { compress, decompress } from 'lz-string'
 
 export const localStorageKey = <T>(key: string, defaultValue?: T) => ({
-    get: (): T => {
+    get: (): T | undefined => {
         const value = localStorage.getItem(key)
         return value ? JSON.parse(value) : defaultValue
     },
@@ -12,7 +12,7 @@ export const localStorageKey = <T>(key: string, defaultValue?: T) => ({
 })
 
 export const compressedLocalStorageKey = <T>(key: string, defaultValue?: T) => ({
-    get: (): T => {
+    get: (): T | undefined => {
         const value = localStorage.getItem(key)
         const decompressed = typeof value === 'string' ? decompress(value) : undefined
         return typeof decompressed === 'string' ? JSON.parse(decompressed) : defaultValue

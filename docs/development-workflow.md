@@ -1,6 +1,6 @@
 # Development workflow
 
-Use the pnpm version pinned in [package.json](../package.json) with a compatible Node version. Install with `pnpm install`.
+Use Node.js 24 LTS and the pnpm version pinned in [package.json](../package.json). Install with `pnpm install --frozen-lockfile`. The browser needs WebGL 2.
 
 | Goal | Command |
 | --- | --- |

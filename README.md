@@ -19,7 +19,7 @@ Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
 
 ## Tech Stack
 
-- React 18
+- React 19
 - TypeScript
 - Vite
 - Three.js
@@ -31,8 +31,8 @@ Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
 
 ### Prerequisites
 
-- Node.js v16+
-- pnpm (https://pnpm.io)
+- Node.js 24 LTS
+- pnpm (see `packageManager` in `package.json`)
 
 ### Installation
 
@@ -44,7 +44,7 @@ pnpm install
 
 ```bash
 pnpm run dev
-# opens http://localhost:3333/
+# opens http://localhost:3333/Medieval/
 ```
 
 ### Building for Production
@@ -200,7 +200,7 @@ export class WoodcutterProfession extends Profession {
 Place unit tests next to the code using the `.test.ts` suffix:
 
 ```bash
-pnpm run test src/algorithm/squareFloodFill.test.ts
+pnpm test --run src/game/algorithm/squareFloodFill.test.ts
 ```
 
 ## Contributing

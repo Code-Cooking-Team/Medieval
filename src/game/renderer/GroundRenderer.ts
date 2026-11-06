@@ -6,6 +6,7 @@ import {
     BufferAttribute,
     Color,
     DoubleSide,
+    LinearSRGBColorSpace,
     Mesh,
     MeshStandardMaterial,
     RepeatWrapping,
@@ -60,6 +61,7 @@ export class GroundRenderer extends BasicRenderer {
                 texture.wrapT = RepeatWrapping
                 texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
                 this.groundMaterial.map = texture
+                this.groundMaterial.needsUpdate = true
             })
             // loader.load(normalUrl, (texture) => {
             //     texture.wrapS = RepeatWrapping
@@ -74,6 +76,7 @@ export class GroundRenderer extends BasicRenderer {
                 texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
                 this.groundMaterial.bumpMap = texture
                 this.groundMaterial.bumpScale = 0.005
+                this.groundMaterial.needsUpdate = true
             })
             // loader.load(aoUrl, (texture) => {
             //     texture.wrapS = RepeatWrapping
@@ -145,7 +148,8 @@ export class GroundRenderer extends BasicRenderer {
         for (let i = 0; i < position.count; i++) {
             const tile = this.game.world.getTile(getPositionByIndex(i, wordWidth))
             position.setY(i, tile.height * config.renderer.tileSize)
-            color.setHex(tile.color)
+            // Saved tile palettes were authored as linear RGB.
+            color.setHex(tile.color, LinearSRGBColorSpace)
             colors.setXYZ(i, color.r, color.g, color.b)
             colors.needsUpdate = true
         }
