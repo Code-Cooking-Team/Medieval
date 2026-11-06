@@ -1,8 +1,7 @@
+import { BuildingModel } from '+game/renderer/lib/BuildingModel'
 import { ActorBlueprint } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF, updateScale } from '+helpers'
-
-import { Group, LOD } from 'three'
+import { loadGLTF } from '+helpers'
 
 import url from './models/guildhallv3.gltf'
 
@@ -27,31 +26,18 @@ export class GuildhallBlueprint implements ActorBlueprint {
 
     public height = 6
 
-    private model = this.loadModel().model
+    public readonly buildingModel = new BuildingModel(guildhallModel)
+    private model = this.buildingModel.createModel().model
 
     public getModel() {
         return this.model
     }
 
-    public getPlaceholder() {
-        return this.loadModel()
+    public getPlaceholder(seed?: number) {
+        return this.buildingModel.createModel(seed)
     }
 
     public getGrid() {
         return this.grid
-    }
-
-    private loadModel() {
-        const group = new Group()
-
-        const promise = guildhallModel.then((model) => {
-            model.children.forEach((child, index) => {
-                group.add(child.clone())
-            })
-        })
-
-        updateScale(group)
-
-        return { model: group, promise }
     }
 }

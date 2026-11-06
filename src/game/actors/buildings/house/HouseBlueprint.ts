@@ -1,8 +1,7 @@
+import { BuildingModel } from '+game/renderer/lib/BuildingModel'
 import { ActorBlueprint, Position } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF, updateScale } from '+helpers/three'
-
-import { LOD } from 'three'
+import { loadGLTF } from '+helpers/three'
 
 import houseUrl from './models/house.gltf'
 
@@ -28,30 +27,17 @@ export class HouseBlueprint implements ActorBlueprint {
         spawnPoint: [3, 4] as Position,
     }
 
-    private model = this.loadModel().model
-    public getModel() {
-        return this.model
-    }
+    public readonly buildingModel = new BuildingModel(houseModel, [
+        { node: 'lod1', distanceInTiles: 0 },
+        { node: 'lod2', distanceInTiles: 100 },
+        { node: 'lod3', distanceInTiles: 160 },
+    ])
 
-    public getPlaceholder() {
-        return this.loadModel()
+    public getPlaceholder(seed?: number) {
+        return this.buildingModel.createModel(seed)
     }
 
     public getGrid() {
         return this.grid
-    }
-
-    private loadModel() {
-        const lod = new LOD()
-
-        const promise = houseModel.then((model) => {
-            model.children.forEach((child, index) => {
-                lod.addLevel(child.clone(), (model.children.length - index - 1) * 80)
-            })
-        })
-
-        updateScale(lod)
-
-        return { model: lod, promise }
     }
 }

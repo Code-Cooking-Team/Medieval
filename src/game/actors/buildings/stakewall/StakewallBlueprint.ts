@@ -1,8 +1,7 @@
+import { BuildingModel } from '+game/renderer/lib/BuildingModel'
 import { ActorBlueprint } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF, updateScale } from '+helpers'
-
-import { Group } from 'three'
+import { loadGLTF, seededRandom } from '+helpers'
 
 import stakewallUrl from './models/wall.gltf'
 
@@ -17,32 +16,23 @@ export class StakewallBlueprint implements ActorBlueprint {
 
     public height = 4
 
-    private model = this.loadModel().model
+    public readonly buildingModel = new BuildingModel(stakewallModel, undefined, (seed) => {
+        const random = seededRandom(seed)
+        const yaw = random(0, Math.PI * 2)
+        const height = random(0.94, 1.06)
+        const optional = Array.from({ length: 11 }, () => random() < 0.5)
+        return (node) => {
+        if (node.name === 'Main') {
+            node.rotateY(yaw)
+            node.scale.y *= height
+            return node
+        }
+        if (optional[Number(node.name.slice(3)) - 1]) return node
+        }
+    })
 
-    private loadModel() {
-        const group = new Group()
-
-        const promise = stakewallModel.then((model) => {
-            model.children.forEach((child) => {
-                if (!child.name.includes('alt') || Math.random() > 0.5) {
-                    group.add(child.clone())
-                }
-            })
-        })
-
-        updateScale(group)
-
-        group.rotateY(Math.random() * Math.PI)
-
-        return { model: group, promise }
-    }
-
-    public getModel() {
-        return this.model
-    }
-
-    public getPlaceholder() {
-        return this.loadModel()
+    public getPlaceholder(seed?: number) {
+        return this.buildingModel.createModel(seed)
     }
 
     public getGrid() {

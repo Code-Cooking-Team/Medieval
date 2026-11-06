@@ -7,7 +7,10 @@ import { Position } from '+game/types'
 import { Raycaster, Vector2 } from 'three'
 
 export class RaycastFinder {
-    constructor(public game: Game, public renderer: Renderer) {}
+    constructor(
+        public game: Game,
+        public renderer: Renderer,
+    ) {}
 
     public findPositionByMouseEvent = (event: MouseEvent): Position | undefined => {
         const rayCaster = new Raycaster()
@@ -15,6 +18,7 @@ export class RaycastFinder {
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1,
         )
+        this.renderer.rtsCamera.camera.updateMatrixWorld()
         rayCaster.setFromCamera(pointer, this.renderer.rtsCamera.camera)
 
         const intersects = rayCaster.intersectObjects(this.renderer.getGroundChildren())
@@ -37,10 +41,12 @@ export class RaycastFinder {
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1,
         )
+        this.renderer.rtsCamera.camera.updateMatrixWorld()
         rayCaster.setFromCamera(pointer, this.renderer.rtsCamera.camera)
 
         const interactionObjectList = this.renderer.getInteractionObjectList()
 
+        interactionObjectList.forEach((object) => object.updateWorldMatrix(true, false))
         const intersects = rayCaster.intersectObjects(interactionObjectList, false)
 
         const intersectActors = intersects

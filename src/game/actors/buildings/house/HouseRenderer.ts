@@ -1,20 +1,23 @@
 import { config } from '+config'
-import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
+import { actorByType } from '+game/actors'
+import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight } from 'three'
 
 import { HouseActor } from './HouseActor'
+import { HouseBlueprint } from './HouseBlueprint'
 
-export class HouseRenderer extends ActorRenderer<HouseActor> {
+export class HouseRenderer extends InstancedBuildingRenderer<HouseActor> {
     public actorType = ActorType.House
+
+    protected get buildingModel() {
+        return (actorByType[ActorType.House].blueprint as HouseBlueprint).buildingModel
+    }
 
     public createActorModel(actor: HouseActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
-
-        const model = actor.blueprint.getModel()
-        group.add(model.clone())
 
         const ts = config.renderer.tileSize
 

@@ -8,7 +8,7 @@ import { Player } from '+game/player/types'
 import { Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
-import { Object3D } from 'three'
+import { Scene } from 'three'
 import { SelectionBox } from 'three/addons/interactive/SelectionBox.js'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -19,6 +19,7 @@ const RIGHT_MOUSE_BUTTON = 2
 export class SelectInteractions {
     private finder: RaycastFinder
     private selectionBox: SelectionBox
+    private selectionTargets = new Scene()
     private selectionDiv: SelectionDiv
     private el: HTMLCanvasElement
 
@@ -32,7 +33,7 @@ export class SelectInteractions {
         this.finder = new RaycastFinder(game, renderer)
         this.selectionBox = new SelectionBox(
             this.renderer.rtsCamera.camera,
-            this.renderer.scene,
+            this.selectionTargets,
         )
     }
 
@@ -47,6 +48,7 @@ export class SelectInteractions {
     public disable() {
         this.el.removeEventListener('contextmenu', this.handleContextmenu)
         this.el.removeEventListener('pointerdown', this.handlePointerDown)
+        this.el.removeEventListener('dblclick', this.handleDoubleClick)
         document.removeEventListener('pointermove', this.handlePointerMove)
         document.removeEventListener('pointerup', this.handlePointerUp)
     }
@@ -56,7 +58,8 @@ export class SelectInteractions {
 
     private handlePointerDown = (event: PointerEvent) => {
         const selectedBuilding = this.player.selectedBuilding
-        this.down = true
+        this.down = !selectedBuilding
+        this.distance = 0
 
         if (event.button !== LEFT_MOUSE_BUTTON || selectedBuilding) return
 
@@ -173,7 +176,12 @@ export class SelectInteractions {
 
     private boxSelect(add = false) {
         const currentSelected = this.player.selectedActors
+        const targets = this.renderer.getInteractionObjectList()
+        targets.forEach((target) => target.updateWorldMatrix(true, false))
+        // Borrow the proxies without reparenting them out of the live scene.
+        this.selectionTargets.children = targets
         const selectedMeshes = this.selectionBox.select()
+        this.selectionTargets.children = []
 
         const newSelected = selectedMeshes
             .map((item) => item.userData.actor)

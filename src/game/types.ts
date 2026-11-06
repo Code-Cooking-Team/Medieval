@@ -42,8 +42,7 @@ export interface ClockInfo {
 }
 
 export interface ActorBlueprint {
-    getModel(): Group | LOD
-    getPlaceholder(): { model: Group | LOD; promise: Promise<void> }
+    getPlaceholder(seed?: number): { model: Group | LOD; promise: Promise<void> }
     getGrid(): TileCodeGrid
     height: number
     config?: { [key: string]: unknown }

@@ -120,6 +120,7 @@ export class Game {
         player: Player,
         position: Position,
         rotation: number = 0,
+        seed?: number,
     ): T | undefined {
         const actor = new ActorClass(this, player, position)
 
@@ -153,6 +154,7 @@ export class Game {
             })
         }
 
+        if (seed !== undefined) actor.seed = seed
         this.addActor(actor)
 
         return actor

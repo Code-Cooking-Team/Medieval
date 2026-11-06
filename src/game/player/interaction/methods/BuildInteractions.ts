@@ -3,7 +3,7 @@ import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
 import { ActorType, Position } from '+game/types'
-import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
+import { randomSeed, rotationIndexToDeg, updateObjectPosition } from '+helpers'
 
 import { UnsubscribeFunction } from 'emittery'
 import { Group, LOD, Mesh, MeshBasicMaterial, Object3D } from 'three'
@@ -14,6 +14,7 @@ export class BuildInteractions {
     private finder: RaycastFinder
     private placeholder = new Object3D()
     private placeholderModel?: LOD | Group
+    private placeholderSeed?: number
     private el: HTMLCanvasElement
     private placeHolderMaterial = new MeshBasicMaterial({
         color: 0x5eff64,
@@ -68,14 +69,18 @@ export class BuildInteractions {
 
         if (!actorBlueprint) return
 
-        const { model, promise } = actorBlueprint.getPlaceholder()
+        this.placeholderSeed = type === ActorType.Stakewall ? randomSeed() : undefined
+        const { model, promise } = actorBlueprint.getPlaceholder(this.placeholderSeed)
+        this.rotatePlaceholder(this.player.selectedBuildingRotation)
 
         this.placeholderModel = model
         this.placeholder.add(this.placeholderModel)
 
         await promise
 
-        this.placeholderModel?.traverse((object) => {
+        if (this.placeholderModel !== model) return
+
+        model.traverse((object) => {
             if (object instanceof Mesh) {
                 object.castShadow = false
                 object.receiveShadow = false
@@ -101,12 +106,16 @@ export class BuildInteractions {
 
         const ActorClass = actorByType[selectedBuilding].actorClass
 
-        this.game.spawnActor(
+        const actor = this.game.spawnActor(
             ActorClass,
             this.player,
             position,
             this.player.selectedBuildingRotation,
+            this.placeholderSeed,
         )
+        if (actor && selectedBuilding === ActorType.Stakewall) {
+            void this.setPlaceholder(selectedBuilding)
+        }
     }
 
     private handleMove = (event: PointerEvent) => {

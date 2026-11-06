@@ -97,11 +97,6 @@ export class Renderer {
         window.addEventListener('focus', this.handleWindowFocus)
         window.addEventListener('blur', this.handleWindowBlur)
 
-        this.player.emitter.on(
-            ['selectActors', 'unselectActors'],
-            this.handleSelectChange,
-        )
-
         const anyWindow = window as any
 
         anyWindow.logStats = () => {
@@ -114,11 +109,6 @@ export class Renderer {
     }
 
     public destroy() {
-        this.player.emitter.off(
-            ['selectActors', 'unselectActors'],
-            this.handleSelectChange,
-        )
-
         this.actorRendererList.forEach((renderer) => {
             renderer.destroy()
         })
@@ -153,12 +143,6 @@ export class Renderer {
         return this.actorRendererList.flatMap((renderer) =>
             renderer.getInteractionShapes(),
         )
-    }
-
-    private handleSelectChange = () => {
-        if (this.outlinePass) {
-            this.outlinePass.selectedObjects = this.getSelectedGroupList()
-        }
     }
 
     private handleWindowFocus = () => {
@@ -343,9 +327,15 @@ export class Renderer {
         const clockInfo: ClockInfo = { deltaTime, elapsedTime }
 
         this.basicRendererList.forEach((renderer) => renderer.render(clockInfo))
-        this.actorRendererList.forEach((renderer) => renderer.render(clockInfo))
-
         this.rtsCamera.render(clockInfo)
+        this.actorRendererList.forEach((renderer) =>
+            renderer.render(clockInfo, this.rtsCamera.camera),
+        )
+        if (this.outlinePass) {
+            this.outlinePass.selectedObjects = this.player.selectedActors.length
+                ? this.getSelectedGroupList()
+                : []
+        }
 
         if (config.postProcessing.postprocessingEnabled) {
             if (this.bokehPass) {

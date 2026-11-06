@@ -9,6 +9,7 @@ import { multiplyPosition, rotationIndexToDeg, updateObjectPosition } from '+hel
 
 import {
     BoxGeometry,
+    Camera,
     CircleGeometry,
     EdgesGeometry,
     Group,
@@ -37,7 +38,10 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
     protected actorGroupMap = new Map<TActor, Group>()
     private actorInteractionShapeMap = new Map<Mesh, TActor>()
 
-    constructor(public game: Game, public player: HumanPlayer) {
+    constructor(
+        public game: Game,
+        public player: HumanPlayer,
+    ) {
         super()
     }
 
@@ -96,7 +100,7 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return { group, interactionShape }
     }
 
-    public render(clockInfo: ClockInfo) {
+    public render(clockInfo: ClockInfo, camera?: Camera) {
         this.updatePosition(clockInfo)
         this.updateHP()
         this.updateSelect()
@@ -134,13 +138,19 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         this.group.add(group)
     }
 
-    private onRemoveActor(actor: TActor) {
+    protected onRemoveActor(actor: TActor) {
         const group = this.actorGroupMap.get(actor)
 
         if (!group) {
             throw new Error(`[ActorRenderer] Unable to remove actor ${actor.id}`)
         }
 
+        for (const [shape, owner] of this.actorInteractionShapeMap) {
+            if (owner === actor) {
+                this.actorInteractionShapeMap.delete(shape)
+                break
+            }
+        }
         this.group.remove(group)
         this.actorGroupMap.delete(actor)
     }
