@@ -4,6 +4,7 @@ import { distanceBetweenPoints, removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
 import { actorFromJSON } from './actors'
+import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { BuildingActor } from './core/BuildingActor'
@@ -24,11 +25,15 @@ export class Game {
         tick: undefined
         actorAdded: Actor
         actorRemoved: Actor
+        woodStockChanged: WoodCampActor
         started: undefined
         stopped: undefined
     }>('Game')
 
-    constructor(public world: World, public players: Player[]) {
+    constructor(
+        public world: World,
+        public players: Player[],
+    ) {
         this.pf = new Pathfinding(world)
     }
 

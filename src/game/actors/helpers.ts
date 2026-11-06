@@ -1,7 +1,9 @@
 import { Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor } from '+game/core/WalkableActor'
+import { ActorType } from '+game/types'
 
+import type { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
 import { HumanActor } from './units/human/HumanActor'
 
 export const isHumanActor = (actor: Actor): actor is HumanActor => {
@@ -14,3 +16,6 @@ export const isBuildingActor = (actor: Actor): actor is BuildingActor => {
 
 export const isWalkableActor = (actor: Actor): actor is WalkableActor =>
     actor instanceof WalkableActor
+
+export const isWoodCampActor = (actor: Actor): actor is WoodCampActor =>
+    actor.type === ActorType.WoodCamp

@@ -1,5 +1,5 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { Actor } from '+game/core/Actor'
+import { isWoodCampActor } from '+game/actors/helpers'
 import { Game, GameJSON } from '+game/Game'
 // Island, TestMap, TestMapBig, de_grass
 import map from '+game/maps/de_river'
@@ -22,7 +22,7 @@ import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 
 import styled from '@emotion/styled'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 const gameRootEl = document.getElementById('game-root') as HTMLElement
 
@@ -90,7 +90,8 @@ function App() {
         game.emitter.on('started', started)
         game.emitter.on('stopped', stopped)
 
-        const selectBuilding = ({ data }: { data: ActorType }) => setSelectedBuilding(data)
+        const selectBuilding = ({ data }: { data: ActorType }) =>
+            setSelectedBuilding(data)
         const unselectBuilding = () => setSelectedBuilding(undefined)
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)
@@ -117,6 +118,8 @@ function App() {
 
     return (
         <>
+            <SettlementStatus game={game} humanPlayer={humanPlayer} />
+            <SelectedList humanPlayer={humanPlayer} buildingsOnly />
             <Right>
                 <Box
                     p={3}
@@ -160,6 +163,7 @@ function App() {
                                 label="New"
                                 onClick={() => {
                                     setToLoadJSON(undefined)
+                                    forceReload()
                                 }}
                             />
                         </Box>
@@ -182,6 +186,59 @@ function App() {
     )
 }
 
+const SettlementStatus = ({
+    game,
+    humanPlayer,
+}: {
+    game: Game
+    humanPlayer: HumanPlayer
+}) => {
+    const subscribe = useCallback(
+        (refresh: () => void) =>
+            game.emitter.on(
+                ['actorAdded', 'actorRemoved', 'started', 'woodStockChanged'],
+                refresh,
+            ),
+        [game],
+    )
+    const population = useSyncExternalStore(
+        subscribe,
+        () =>
+            game
+                .findActorsByType(ActorType.Human)
+                .filter((actor) => actor.player === humanPlayer).length,
+    )
+
+    const wood = useSyncExternalStore(subscribe, () =>
+        game.actors.reduce((total, actor) => {
+            if (isWoodCampActor(actor) && actor.player === humanPlayer) {
+                return total + actor.woodStock
+            }
+            return total
+        }, 0),
+    )
+
+    return (
+        <SettlementStatusBox p={2} px={3} display="flex" columnGap={3}>
+            <span>Population: {population}</span>
+            <span>Wood: {wood}</span>
+        </SettlementStatusBox>
+    )
+}
+
+const SettlementStatusBox = styled(Box)({
+    position: 'fixed',
+    zIndex: 10,
+    top: 12,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    backdropFilter: 'blur(15px)',
+    borderRadius: 8,
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+})
+
 const Right = styled(Box)({
     position: 'absolute',
     zIndex: 10,
@@ -193,6 +250,7 @@ const Right = styled(Box)({
     backdropFilter: 'blur(15px)',
     maxWidth: 280,
     width: '90%',
+    '@media (max-width: 800px)': { top: 72 },
 })
 
 export default App

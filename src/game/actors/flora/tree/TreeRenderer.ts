@@ -13,9 +13,15 @@ import {
     MeshStandardMaterial,
     Object3D,
     SphereGeometry,
+    Vector3,
 } from 'three'
 
 import { TreeActor } from './TreeActor'
+
+// The crown props up the fallen trunk.
+const fallenAngle = (80 * Math.PI) / 180
+const fallDamage = 10
+const fallDuration = 0.95
 
 export class TreeRenderer implements Renderable {
     public actorType: ActorType = ActorType.Tree
@@ -38,6 +44,10 @@ export class TreeRenderer implements Renderable {
 
     public group = new Group()
     private dummy = new Object3D()
+    private falls = new WeakMap<
+        TreeActor,
+        { axis: Vector3; twist: number; fallTime: number }
+    >()
     private capacity = 0
     private meshes: InstancedMesh[] = []
 
@@ -116,6 +126,10 @@ export class TreeRenderer implements Renderable {
                     Math.sin(phaseZ + time * 0.2 * phaseZ * Math.PI) * swayAngle
             }
 
+            if (tree.maxHp - tree.hp >= fallDamage || tree.hp <= 0) {
+                this.applyFall(tree, clockInfo.deltaTime)
+            }
+
             dummy.updateMatrix()
             for (const mesh of this.meshes) mesh.setMatrixAt(index, dummy.matrix)
         }
@@ -128,5 +142,26 @@ export class TreeRenderer implements Renderable {
                 mesh.instanceMatrix.needsUpdate = true
             }
         }
+    }
+
+    private applyFall(tree: TreeActor, deltaTime: number) {
+        let fall = this.falls.get(tree)
+        if (!fall) {
+            const rnd = seededRandom(tree.seed ^ 0x6a09e667)
+            const direction = rnd(0, Math.PI * 2)
+            fall = {
+                axis: new Vector3(Math.sin(direction), 0, Math.cos(direction)),
+                twist: rnd(-0.35, 0.35),
+                fallTime: 0,
+            }
+            this.falls.set(tree, fall)
+        }
+
+        fall.fallTime = Math.min(fall.fallTime + deltaTime, fallDuration)
+        const progress = (fall.fallTime / fallDuration) ** 2
+        this.dummy.rotation.x *= 1 - progress
+        this.dummy.rotation.z *= 1 - progress
+        this.dummy.rotateOnWorldAxis(fall.axis, fallenAngle * progress)
+        this.dummy.rotateY(fall.twist * progress)
     }
 }

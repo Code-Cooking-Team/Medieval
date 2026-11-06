@@ -58,6 +58,6 @@ export abstract class BuildingActor extends Actor {
     }
 }
 
-interface BuildingActorJSON extends ActorJSON {
+export interface BuildingActorJSON extends ActorJSON {
     traits: BuildingTraitJSON[]
 }
