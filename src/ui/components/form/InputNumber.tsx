@@ -1,3 +1,5 @@
+import type { Ref } from 'react'
+
 import { InputStyleProps, StyledInput } from './Input'
 
 interface NumberInputProps extends InputStyleProps {
@@ -8,6 +10,7 @@ interface NumberInputProps extends InputStyleProps {
     placeholder?: string
     onBlur?(): void
     autoFocus?: boolean
+    inputRef?: Ref<HTMLInputElement>
 }
 
 export const NumberInput = ({
@@ -18,12 +21,14 @@ export const NumberInput = ({
     placeholder,
     onBlur,
     autoFocus,
+    inputRef,
     ...props
 }: NumberInputProps) => {
     const val = Number.isNaN(value) ? '' : value
 
     return (
         <StyledInput
+            ref={inputRef}
             value={val}
             onChange={({ target }) => {
                 onChange(parseFloat(target.value))

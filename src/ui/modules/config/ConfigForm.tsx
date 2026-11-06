@@ -31,17 +31,16 @@ export const ConfigForm = () => {
                                 label={categoryKey}
                             >
                                 {entries(category).map(([key, definition]) => (
-                                    <div key={key}>
-                                        {key}
-                                        <ConfigItem
-                                            value={configCategory[key]}
-                                            definition={definition}
-                                            onChange={(value) => {
-                                                configCategory[key] = value
-                                                render()
-                                            }}
-                                        />
-                                    </div>
+                                    <ConfigItem
+                                        key={key}
+                                        name={key}
+                                        value={configCategory[key]}
+                                        definition={definition}
+                                        onChange={(value) => {
+                                            configCategory[key] = value
+                                            render()
+                                        }}
+                                    />
                                 ))}
                             </AccordionItem>
                         )

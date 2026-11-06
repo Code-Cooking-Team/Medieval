@@ -12,7 +12,7 @@ interface SliderProps {
 export const Slider = ({ value, min, max, onChange, step = 1 }: SliderProps) => {
     return (
         <StyledSlider
-            defaultValue={[value]}
+            value={[value]}
             min={min}
             max={max}
             step={step}
