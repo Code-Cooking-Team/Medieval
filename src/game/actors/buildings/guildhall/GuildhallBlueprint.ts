@@ -26,12 +26,10 @@ export class GuildhallBlueprint implements ActorBlueprint {
 
     public height = 6
 
-    public readonly buildingModel = new BuildingModel(guildhallModel)
-    private model = this.buildingModel.createModel().model
-
-    public getModel() {
-        return this.model
-    }
+    public readonly buildingModel = new BuildingModel(guildhallModel, [
+        { node: 'lod_near', distanceInTiles: 0 },
+        { node: 'lod_far', distanceInTiles: 100 },
+    ])
 
     public getPlaceholder(seed?: number) {
         return this.buildingModel.createModel(seed)

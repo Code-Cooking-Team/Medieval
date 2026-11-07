@@ -14,19 +14,24 @@ export class StakewallBlueprint implements ActorBlueprint {
 
     public readonly buildingModel = new BuildingModel(
         stakewallModel,
-        undefined,
+        [
+            { node: 'lod_near', distanceInTiles: 0 },
+            { node: 'lod_far', distanceInTiles: 100 },
+            { node: 'lod_very_far', distanceInTiles: 160 },
+        ],
         (seed) => {
             const random = seededRandom(seed)
             const yaw = random(0, Math.PI * 2)
             const height = random(0.94, 1.06)
             const optional = Array.from({ length: 11 }, () => random() < 0.5)
             return (node) => {
-                if (node.name === 'Main') {
+                const name = node.name.replace(/_(?:very_)?far$/, '')
+                if (name === 'Main') {
                     node.rotateY(yaw)
                     node.scale.y *= height
-                    return node
+                    return true
                 }
-                if (optional[Number(node.name.slice(3)) - 1]) return node
+                return optional[Number(name.slice(3)) - 1] ?? false
             }
         },
     )

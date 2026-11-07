@@ -25,12 +25,10 @@ export class WoodCampBlueprint implements ActorBlueprint {
         deliveryPoint: [2, 5] as Position,
     }
 
-    public readonly buildingModel = new BuildingModel(woodCampModel)
-    private model = this.buildingModel.createModel().model
-
-    public getModel() {
-        return this.model
-    }
+    public readonly buildingModel = new BuildingModel(woodCampModel, [
+        { node: 'lod_near', distanceInTiles: 0 },
+        { node: 'lod_far', distanceInTiles: 100 },
+    ])
 
     public getPlaceholder(seed?: number) {
         return this.buildingModel.createModel(seed)

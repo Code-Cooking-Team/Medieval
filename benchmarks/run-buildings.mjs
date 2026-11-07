@@ -131,19 +131,18 @@ try {
     async function runBenchmark() {
         await mkdir(output, { recursive: true })
         for (const [layout, view, selected] of [
-            ['house', 'near', false],
-            ['house', 'far', false],
-            ['stakewall', 'near', false],
-            ['stakewall', 'far', false],
+            ...['house', 'stakewall', 'barracks', 'guildhall', 'woodCamp'].flatMap(
+                (layout) => ['near', 'far'].map((view) => [layout, view, false]),
+            ),
             ['mixed', 'mixed', true],
         ]) {
-            await evaluate(
-                `buildingBenchmark.screenshot(${JSON.stringify(layout)}, ${JSON.stringify(view)}, ${selected})`,
-            )
-            const { data } = await send('Page.captureScreenshot', { format: 'png' })
+            const png = await evaluate(`(async () => {
+                await buildingBenchmark.screenshot(${JSON.stringify(layout)}, ${JSON.stringify(view)}, ${selected})
+                return document.querySelector('canvas').toDataURL('image/png').split(',')[1]
+            })()`)
             await writeFile(
                 join(output, `${layout}-${view}.png`),
-                Buffer.from(data, 'base64'),
+                Buffer.from(png, 'base64'),
             )
         }
         console.log(`Measuring ${samples} samples per case`)

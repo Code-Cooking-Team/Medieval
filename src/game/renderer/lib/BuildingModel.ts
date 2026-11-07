@@ -21,9 +21,7 @@ export class BuildingModel {
     constructor(
         model: Promise<Group>,
         public readonly levels: readonly BuildingLevel[] = [{ distanceInTiles: 0 }],
-        private readonly configureVariant?: (
-            seed: number,
-        ) => (node: Object3D) => Object3D | undefined,
+        private readonly configureVariant?: (seed: number) => (node: Object3D) => boolean,
     ) {
         this.ready = model.then((root) => {
             this.source = levels.map(({ node }) => {
@@ -36,13 +34,14 @@ export class BuildingModel {
     }
 
     private createLevel(level: number, seed: number) {
-        const source = this.source![level]!
-        if (!this.configureVariant) return source.clone()
-        const root = source.clone(false)
-        const configure = this.configureVariant(seed)
-        for (const child of source.children) {
-            const piece = configure(child.clone())
-            if (piece) root.add(piece)
+        const root = this.source![level]!.clone()
+        if (this.configureVariant) {
+            const pieces =
+                this.levels[level]!.node === undefined ? root : root.children[0]!
+            const configure = this.configureVariant(seed)
+            for (const child of [...pieces.children]) {
+                if (!configure(child)) pieces.remove(child)
+            }
         }
         return root
     }
@@ -78,6 +77,7 @@ export class BuildingModel {
             this.levels.forEach(({ distanceInTiles }, index) => {
                 const level = this.createLevel(index, seed)
                 model.addLevel(level, distanceInTiles * config.renderer.tileSize, 0.1)
+                level.visible = index === 0
             })
         })
         return { model, promise }

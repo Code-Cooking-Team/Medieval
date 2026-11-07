@@ -1,20 +1,24 @@
 import { config } from '+config'
-import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
+import { actorByType } from '+game/actors'
+import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight, PointLightHelper } from 'three'
 
 import { GuildhallActor } from './GuildhallActor'
+import { GuildhallBlueprint } from './GuildhallBlueprint'
 
-export class GuildhallRenderer extends ActorRenderer<GuildhallActor> {
+export class GuildhallRenderer extends InstancedBuildingRenderer<GuildhallActor> {
     public actorType = ActorType.Guildhall
+
+    protected get buildingModel() {
+        return (actorByType[ActorType.Guildhall].blueprint as GuildhallBlueprint)
+            .buildingModel
+    }
 
     public createActorModel(actor: GuildhallActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
-
-        const model = actor.blueprint.getModel()
-        group.add(model.clone())
 
         const ts = config.renderer.tileSize
 
