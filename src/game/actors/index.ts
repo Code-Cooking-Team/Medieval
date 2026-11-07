@@ -14,6 +14,9 @@ import { GuildhallRenderer } from './buildings/guildhall/GuildhallRenderer'
 import { HouseActor } from './buildings/house/HouseActor'
 import { HouseBlueprint } from './buildings/house/HouseBlueprint'
 import { HouseRenderer } from './buildings/house/HouseRenderer'
+import { HunterHutActor } from './buildings/hunterHut/HunterHutActor'
+import { HunterHutBlueprint } from './buildings/hunterHut/HunterHutBlueprint'
+import { HunterHutRenderer } from './buildings/hunterHut/HunterHutRenderer'
 import { StakewallActor } from './buildings/stakewall/StakewallActor'
 import { StakewallBlueprint } from './buildings/stakewall/StakewallBlueprint'
 import { StakewallRenderer } from './buildings/stakewall/StakewallRenderer'
@@ -35,6 +38,7 @@ export const actorRenderers = [
     HouseRenderer,
     HumanRenderer,
     WoodCampRenderer,
+    HunterHutRenderer,
     BarracksRenderer,
     StakewallRenderer,
     BoarRenderer,
@@ -60,6 +64,10 @@ export const actorByType: Record<
     [ActorType.House]: {
         actorClass: HouseActor,
         blueprint: new HouseBlueprint(),
+    },
+    [ActorType.HunterHut]: {
+        actorClass: HunterHutActor,
+        blueprint: new HunterHutBlueprint(),
     },
     [ActorType.WoodCamp]: {
         actorClass: WoodCampActor,

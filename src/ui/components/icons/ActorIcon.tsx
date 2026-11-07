@@ -18,6 +18,7 @@ const icons = {
     [ActorType.Guildhall]: Landmark,
     [ActorType.House]: House,
     [ActorType.WoodCamp]: Warehouse,
+    [ActorType.HunterHut]: House,
     [ActorType.Barracks]: Castle,
     [ActorType.Stakewall]: Fence,
     [ActorType.ConstructionSite]: Hammer,
