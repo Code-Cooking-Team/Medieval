@@ -18,6 +18,8 @@ import { StakewallRenderer } from './buildings/stakewall/StakewallRenderer'
 import { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
 import { WoodCampBlueprint } from './buildings/woodCamp/WoodCampBlueprint'
 import { WoodCampRenderer } from './buildings/woodCamp/WoodCampRenderer'
+import { BushActor } from './flora/bush/BushActor'
+import { BushRenderer } from './flora/bush/BushRenderer'
 import { TreeActor } from './flora/tree/TreeActor'
 import { TreeRenderer } from './flora/tree/TreeRenderer'
 import { BoarActor } from './units/boars/BoarActor'
@@ -38,7 +40,7 @@ export const actorRenderers = [
     DeerRenderer,
 ]
 
-export const basicRenderers = [TreeRenderer]
+export const basicRenderers = [TreeRenderer, BushRenderer]
 
 const emptyActor = () => {
     throw new Error(`[actorByType] Don't use empty actor`)
@@ -74,6 +76,9 @@ export const actorByType: Record<
     },
     [ActorType.Tree]: {
         actorClass: TreeActor,
+    },
+    [ActorType.Bush]: {
+        actorClass: BushActor,
     },
     [ActorType.Boar]: {
         actorClass: BoarActor,

@@ -5,6 +5,7 @@ import { Emitter } from '+lib/Emitter'
 
 import { actorFromJSON } from './actors'
 import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
+import { BushActor } from './actors/flora/bush/BushActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
 import type { HumanActor } from './actors/units/human/HumanActor'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
@@ -158,6 +159,7 @@ export class Game {
         const currTail = this.world.getTile(position)
 
         if (isWalkableActor(actor) && !currTail.canWalk) return
+        if (actor.type === ActorType.Bush && !BushActor.growsOn(currTail.type)) return
 
         if (isBuildingActor(actor)) {
             actor.setRotation(rotation)

@@ -5,9 +5,9 @@ import { InstancedMesh, Matrix4, Vector3 } from 'three'
 
 import { TreeRenderer } from './TreeRenderer'
 
-test('wind moves the crown around a trunk base fixed at ground level', () => {
+test.each([0, 3, 7, 11])('tree %i sways around a fixed trunk base', (seed) => {
     const game = {
-        findActorsByType: () => [{ position: [2, 3], seed: 42 }],
+        findActorsByType: () => [{ position: [2, 3], seed }],
         world: { getTile: () => ({ height: 1 }) },
     } as unknown as Game
     const renderer = new TreeRenderer(game)
@@ -21,10 +21,10 @@ test('wind moves the crown around a trunk base fixed at ground level', () => {
         const crownPositionAt = (elapsedTime: number) => {
             renderer.render({ elapsedTime, deltaTime: 0 })
             renderer.group.updateMatrixWorld(true)
-            const [trunk, crown] = renderer.group.children as [
-                InstancedMesh,
-                InstancedMesh,
-            ]
+            const meshes = renderer.group.children as InstancedMesh[]
+            const activeMeshes = meshes.filter((mesh) => mesh.count > 0)
+            expect(activeMeshes).toHaveLength(2)
+            const [trunk, crown] = activeMeshes as [InstancedMesh, InstancedMesh]
             trunk.geometry.computeBoundingBox()
             const base = new Vector3(0, trunk.geometry.boundingBox!.min.y, 0)
             trunk.getMatrixAt(0, matrix)
@@ -45,7 +45,7 @@ test('wind moves the crown around a trunk base fixed at ground level', () => {
 })
 
 test('trees fall after losing ten HP and stay propped up while being chopped', () => {
-    const trees = [42, 73].map((seed) => ({
+    const trees = [9, 21].map((seed) => ({
         position: [2, 3],
         seed,
         hp: 100,
@@ -61,7 +61,9 @@ test('trees fall after losing ten HP and stay propped up while being chopped', (
     try {
         config.renderer.treeWaving = false
         const trunkAxis = (index: number) => {
-            const trunk = renderer.group.children[0] as InstancedMesh
+            const trunk = renderer.group.children.find(
+                (child) => (child as InstancedMesh).count === trees.length,
+            ) as InstancedMesh
             const matrix = new Matrix4()
             trunk.getMatrixAt(index, matrix)
             return new Vector3(0, 1, 0).transformDirection(matrix)

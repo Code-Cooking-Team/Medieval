@@ -17,6 +17,7 @@ export enum ActorType {
     Stakewall = 'Stakewall',
 
     Tree = 'Tree',
+    Bush = 'Bush',
     Boar = 'Boar',
     Deer = 'Deer',
 }
@@ -30,7 +31,7 @@ export const actorTypesByCategory = {
         ActorType.Barracks,
         ActorType.Stakewall,
     ],
-    Other: [ActorType.Tree],
+    Other: [ActorType.Tree, ActorType.Bush],
 }
 
 export const allActorTypes = Object.values(ActorType).filter(

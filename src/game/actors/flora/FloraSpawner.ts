@@ -1,26 +1,33 @@
+import { BushActor } from '+game/actors/flora/bush/BushActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { Game } from '+game/Game'
 import { NaturePlayer } from '+game/player/NaturePlayer'
-import { Position } from '+game/types'
+import { ActorType, Position } from '+game/types'
 import { OvergrownTile, Tile } from '+game/world/Tile'
+import { TileType } from '+game/world/types'
 import { seededRandom } from '+helpers'
 
 export class FloraSpawner {
     private rng = seededRandom()
 
-    constructor(public game: Game, public player: NaturePlayer) {}
+    constructor(
+        public game: Game,
+        public player: NaturePlayer,
+    ) {}
 
-    public bulkSpawnTrees() {
+    public bulkSpawnPlants() {
         const tilePositions: Position[] = []
 
         this.game.world.forEachTile((tile, position) => {
-            const shouldSpawn = this.shouldSpawnTree(tile, position)
-            if (!shouldSpawn) return
-
-            tilePositions.push(position)
-
-            const actor = new TreeActor(this.game, this.player, position)
-            this.game.addActor(actor)
+            if (this.shouldSpawnTree(tile, position)) {
+                tilePositions.push(position)
+                this.game.addActor(new TreeActor(this.game, this.player, position))
+            } else if (BushActor.growsOn(tile.type)) {
+                const chance = tile.type === TileType.Forest ? 0.035 : 0.008
+                if (this.rng() < chance) {
+                    this.game.addActor(new BushActor(this.game, this.player, position))
+                }
+            }
         })
 
         this.game.world.setMultipleTiles((set, get) => {
@@ -44,9 +51,8 @@ export class FloraSpawner {
         // Randomly by tree chance from tile
         if (this.rng() > tile.treeChance) return false
 
-        // Check if is a tree or other actor already here
-        if (this.game.findActorsByPosition(position, 1).length > 0) return false
-
-        return true
+        return !this.game
+            .findActorsByPosition(position, 1)
+            .some((actor) => actor.type !== ActorType.Bush)
     }
 }

@@ -6,6 +6,7 @@ import {
     House,
     Landmark,
     PawPrint,
+    Sprout,
     TreePine,
     UserRound,
     Warehouse,
@@ -20,6 +21,7 @@ const icons = {
     [ActorType.Barracks]: Castle,
     [ActorType.Stakewall]: Fence,
     [ActorType.Tree]: TreePine,
+    [ActorType.Bush]: Sprout,
     [ActorType.Boar]: PawPrint,
     [ActorType.Deer]: PawPrint,
 } satisfies Record<ActorType, typeof UserRound | null>
