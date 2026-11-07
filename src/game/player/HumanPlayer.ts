@@ -1,4 +1,5 @@
 import { config } from '+config'
+import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { ActorType } from '+game/types'
 import { uuid } from '+helpers'
@@ -13,9 +14,12 @@ export class HumanPlayer implements Player {
 
     public selectedActors: Actor[] = []
     public selectedBuilding?: ActorType
+    public constructionBuilder?: HumanActor
+    public removingBuildings = false
     public selectedBuildingRotation = 0
 
     public emitter = new Emitter<{
+        removalModeChanged: undefined
         selectBuilding: ActorType
         unselectBuilding: ActorType
         selectActors: Actor[]
@@ -37,15 +41,25 @@ export class HumanPlayer implements Player {
         this.selectedActors = []
     }
 
-    public selectBuilding(actorType: ActorType) {
-        this.emitter.emit('selectBuilding', actorType)
+    public selectBuilding(actorType: ActorType, builder?: HumanActor) {
+        this.setBuildingRemoval(false)
+        this.constructionBuilder = builder
         this.selectedBuilding = actorType
+        this.emitter.emit('selectBuilding', actorType)
     }
 
     public unselectBuilding() {
         if (!this.selectedBuilding) return
         this.emitter.emit('unselectBuilding', this.selectedBuilding)
         this.selectedBuilding = undefined
+        this.constructionBuilder = undefined
+    }
+
+    public setBuildingRemoval(enabled: boolean) {
+        if (this.removingBuildings === enabled) return
+        this.removingBuildings = enabled
+        if (enabled) this.unselectBuilding()
+        this.emitter.emit('removalModeChanged')
     }
 
     public rotateBuilding() {

@@ -1,4 +1,6 @@
 import { actorByType } from '+game/actors'
+import { isConstructionType } from '+game/actors/buildings/construction/costs'
+import { isBuildingActor } from '+game/actors/helpers'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { Renderer } from '+game/Renderer'
@@ -19,6 +21,7 @@ interface Preview {
 export class BuildInteractions {
     private finder: RaycastFinder
     private preview?: Preview
+    private hoverPosition?: Position
     private previews = new Object3D()
     private wallPreviews: Preview[] = []
     private wallDrag?: { pointerId: number; start: Position; end: Position }
@@ -48,6 +51,9 @@ export class BuildInteractions {
         for (const preview of [this.preview, ...this.wallPreviews]) {
             if (preview) preview.root.rotation.y = rotationIndexToDeg(rotation)
         }
+        if (this.wallDrag)
+            this.showWallLine(snapWallLine(this.wallDrag.start, this.wallDrag.end))
+        else this.updateHover(this.hoverPosition)
     }
 
     private subscriptions: UnsubscribeFunction[] = []
@@ -84,6 +90,7 @@ export class BuildInteractions {
         this.subscriptions = []
         this.removePlaceholder()
 
+        this.ignoreClick = false
         this.el.removeEventListener('click', this.handleClick)
         this.el.removeEventListener('pointerdown', this.handleDown)
         this.el.removeEventListener('pointermove', this.handleMove)
@@ -138,6 +145,7 @@ export class BuildInteractions {
         this.clearWallDrag()
         this.previews.clear()
         this.preview = undefined
+        this.hoverPosition = undefined
     }
 
     private clearWallDrag() {
@@ -150,10 +158,48 @@ export class BuildInteractions {
         this.wallPreviews = []
     }
 
-    private canBuild(position: Position) {
+    private canBuild(positions: Position[]) {
+        const type = this.player.selectedBuilding
+        const blueprint = type && actorByType[type].blueprint
         return (
-            this.game.world.hasTile(position) &&
-            this.game.world.getTile(position).canBuild
+            !!blueprint &&
+            this.game.canPlaceBuildings(
+                blueprint,
+                positions,
+                this.player.selectedBuildingRotation,
+            )
+        )
+    }
+
+    private place(positions: Position[], previews: (Preview | undefined)[]) {
+        const type = this.player.selectedBuilding
+        if (!type) return false
+        const rotation = this.player.selectedBuildingRotation
+        const builder = this.player.constructionBuilder
+        if (builder) {
+            return (
+                isConstructionType(type) &&
+                this.game.placeConstructionSites(
+                    builder,
+                    type,
+                    positions.map((position, index) => ({
+                        position,
+                        seed: previews[index]?.seed,
+                    })),
+                    rotation,
+                )
+            )
+        }
+        if (actorByType[type].blueprint && !this.canBuild(positions)) return false
+        return positions.every(
+            (position, index) =>
+                !!this.game.spawnActor(
+                    actorByType[type].actorClass,
+                    this.player,
+                    position,
+                    rotation,
+                    previews[index]?.seed,
+                ),
         )
     }
 
@@ -173,7 +219,7 @@ export class BuildInteractions {
 
     private showWallLine(positions: Position[]) {
         if (!this.preview) return
-        const valid = positions.every((position) => this.canBuild(position))
+        const valid = this.canBuild(positions)
         this.showPreview(this.preview, positions[0]!, valid)
 
         for (let i = 1; i < positions.length; i++) {
@@ -209,19 +255,7 @@ export class BuildInteractions {
         const end = this.finder.findPositionByMouseEvent(event)
         if (end && this.player.selectedBuilding === ActorType.Stakewall) {
             const positions = snapWallLine(drag.start, end)
-            if (positions.every((position) => this.canBuild(position))) {
-                const rotation = this.player.selectedBuildingRotation
-                positions.forEach((position, index) => {
-                    const preview =
-                        index === 0 ? this.preview : this.wallPreviews[index - 1]
-                    this.game.spawnActor(
-                        actorByType[ActorType.Stakewall].actorClass,
-                        this.player,
-                        position,
-                        rotation,
-                        preview?.seed ?? randomSeed(),
-                    )
-                })
+            if (this.place(positions, [this.preview, ...this.wallPreviews])) {
                 this.setPlaceholder(ActorType.Stakewall)
             }
         }
@@ -237,6 +271,16 @@ export class BuildInteractions {
 
     private handleClick = (event: MouseEvent) => {
         event.preventDefault()
+        if (event.button !== 0) return
+
+        if (this.player.removingBuildings) {
+            const building = this.finder
+                .findActorsByMouseEvent(event)
+                .find(isBuildingActor)
+            if (building) this.game.removeActor(building)
+            return
+        }
+
         if (this.ignoreClick) {
             this.ignoreClick = false
             return
@@ -248,22 +292,19 @@ export class BuildInteractions {
         const position = this.finder.findPositionByMouseEvent(event)
         if (!position || !this.game.world.hasTile(position)) return
 
-        const actor = this.game.spawnActor(
-            actorByType[selectedBuilding].actorClass,
-            this.player,
-            position,
-            this.player.selectedBuildingRotation,
-            this.preview?.seed,
-        )
-        if (actor && selectedBuilding === ActorType.Stakewall) {
+        if (
+            this.place([position], [this.preview]) &&
+            selectedBuilding === ActorType.Stakewall
+        ) {
             this.setPlaceholder(selectedBuilding)
-            this.updateHover(position)
         }
+        this.updateHover(position)
     }
 
     private updateHover(position?: Position) {
+        this.hoverPosition = position
         if (!this.preview) return
-        if (position) this.showPreview(this.preview, position, this.canBuild(position))
+        if (position) this.showPreview(this.preview, position, this.canBuild([position]))
         else this.preview.root.visible = false
     }
 
@@ -286,6 +327,7 @@ export class BuildInteractions {
     private handleContextmenu = (event: MouseEvent) => {
         event.preventDefault()
         this.clearWallDrag()
+        this.player.setBuildingRemoval(false)
         this.player.unselectBuilding()
     }
 }

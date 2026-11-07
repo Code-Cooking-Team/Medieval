@@ -1,5 +1,5 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { Actor } from '+game/core/Actor'
+import { isWoodCampActor } from '+game/actors/helpers'
 import { Game, GameJSON } from '+game/Game'
 // Island, TestMap, TestMapBig, de_grass
 import map from '+game/maps/de_river'
@@ -14,6 +14,7 @@ import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
 import { World } from '+game/world/World'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
+import { WoodIcon } from '+ui/components/icons/WoodIcon'
 import { Tab } from '+ui/components/tabs/Tab'
 import { Tabs } from '+ui/components/tabs/Tabs'
 import { useLocalStorage } from '+ui/hooks/useLocalStorage'
@@ -22,7 +23,8 @@ import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 
 import styled from '@emotion/styled'
-import { useEffect, useMemo, useState } from 'react'
+import { FilePlus, FolderOpen, Save, Users } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 const gameRootEl = document.getElementById('game-root') as HTMLElement
 
@@ -90,7 +92,8 @@ function App() {
         game.emitter.on('started', started)
         game.emitter.on('stopped', stopped)
 
-        const selectBuilding = ({ data }: { data: ActorType }) => setSelectedBuilding(data)
+        const selectBuilding = ({ data }: { data: ActorType }) =>
+            setSelectedBuilding(data)
         const unselectBuilding = () => setSelectedBuilding(undefined)
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)
@@ -117,6 +120,8 @@ function App() {
 
     return (
         <>
+            <SettlementStatus game={game} humanPlayer={humanPlayer} />
+            <SelectedList humanPlayer={humanPlayer} />
             <Right>
                 <Box
                     p={3}
@@ -141,31 +146,33 @@ function App() {
                             display="flex"
                             alignItems="center"
                             justifyContent="center"
+                            flexWrap="wrap"
                             columnGap={2}
+                            rowGap={2}
                         >
-                            <Button
+                            <GameActionButton
                                 label="Save"
+                                icon={<Save size={14} aria-hidden="true" />}
                                 onClick={() => setSavedJson(game.toJSON())}
                             />
                             {savedJson && (
-                                <Button
+                                <GameActionButton
                                     label="Load"
+                                    icon={<FolderOpen size={14} aria-hidden="true" />}
                                     onClick={() => {
                                         setToLoadJSON(savedJson)
                                         forceReload()
                                     }}
                                 />
                             )}
-                            <Button
+                            <GameActionButton
                                 label="New"
+                                icon={<FilePlus size={14} aria-hidden="true" />}
                                 onClick={() => {
                                     setToLoadJSON(undefined)
+                                    forceReload()
                                 }}
                             />
-                        </Box>
-
-                        <Box p={3} display="flex" flexDirection="column" rowGap={3}>
-                            <SelectedList humanPlayer={humanPlayer} />
                         </Box>
                     </Tab>
 
@@ -182,6 +189,69 @@ function App() {
     )
 }
 
+const SettlementStatus = ({
+    game,
+    humanPlayer,
+}: {
+    game: Game
+    humanPlayer: HumanPlayer
+}) => {
+    const subscribe = useCallback(
+        (refresh: () => void) =>
+            game.emitter.on(
+                ['actorAdded', 'actorRemoved', 'started', 'woodStockChanged'],
+                refresh,
+            ),
+        [game],
+    )
+    const population = useSyncExternalStore(
+        subscribe,
+        () =>
+            game
+                .findActorsByType(ActorType.Human)
+                .filter((actor) => actor.player === humanPlayer).length,
+    )
+
+    const wood = useSyncExternalStore(subscribe, () =>
+        game.actors.reduce((total, actor) => {
+            if (isWoodCampActor(actor) && actor.player === humanPlayer) {
+                return total + actor.woodStock
+            }
+            return total
+        }, 0),
+    )
+
+    return (
+        <SettlementStatusBox p={2} px={3} display="flex" columnGap={3}>
+            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
+                <Users size={16} aria-hidden="true" />
+                Population: {population}
+            </Box>
+            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
+                <WoodIcon />
+                Wood: {wood}
+            </Box>
+        </SettlementStatusBox>
+    )
+}
+
+const SettlementStatusBox = styled(Box)({
+    position: 'fixed',
+    zIndex: 10,
+    top: 12,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    backdropFilter: 'blur(15px)',
+    borderRadius: 8,
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+})
+
+const GameActionButton = styled(Button)({
+    paddingInline: 10,
+})
+
 const Right = styled(Box)({
     position: 'absolute',
     zIndex: 10,
@@ -193,6 +263,7 @@ const Right = styled(Box)({
     backdropFilter: 'blur(15px)',
     maxWidth: 280,
     width: '90%',
+    '@media (max-width: 800px)': { top: 72 },
 })
 
 export default App

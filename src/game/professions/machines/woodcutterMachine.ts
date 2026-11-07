@@ -10,6 +10,10 @@ export const woodcutterMachine =
                 'on': {
                     'TICK': [
                         {
+                            'cond': 'campFull',
+                            'target': 'HaveWood',
+                        },
+                        {
                             'cond': 'isFull',
                             'target': 'HaveWood',
                         },
@@ -22,6 +26,10 @@ export const woodcutterMachine =
             'ChoppingTree': {
                 'on': {
                     'TICK': [
+                        {
+                            'cond': 'campFull',
+                            'target': 'HaveWood',
+                        },
                         {
                             'cond': 'isFull',
                             'target': 'Idle',
@@ -68,6 +76,10 @@ export const woodcutterMachine =
                 'on': {
                     'TICK': [
                         {
+                            'cond': 'campFull',
+                            'target': 'HaveWood',
+                        },
+                        {
                             'cond': 'hasPath',
                             'target': 'Walking',
                         },
@@ -86,11 +98,21 @@ export const woodcutterMachine =
                 'on': {
                     'TICK': [
                         {
+                            'cond': 'hasPath',
+                            'target': 'Walking',
+                        },
+                        {
+                            'cond': 'waitingAtFullCamp',
+                        },
+                        {
                             'cond': 'isEmpty',
                             'target': 'Idle',
                         },
                         {
+                            'cond': 'nearCamp',
                             'actions': 'gatherWood',
+                        },
+                        {
                             'target': 'HaveWood',
                         },
                     ],

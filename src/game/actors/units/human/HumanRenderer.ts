@@ -1,5 +1,6 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
+import { BuilderProfession } from '+game/professions/BuilderProfession'
 import { Profession } from '+game/professions/Profession'
 import { ProfessionType } from '+game/professions/types'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
@@ -92,12 +93,16 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         super.render(clockInfo)
         this.actorGroupMap.forEach((group, actor) => {
             if (actor.animationMixer && this.animationList) {
-                if (actor.hasPath() && actor.actorAnimationState != 'walking') {
+                const walking =
+                    actor.hasPath() ||
+                    (actor.profession instanceof BuilderProfession &&
+                        actor.profession.isWalking())
+                if (walking && actor.actorAnimationState != 'walking') {
                     actor.animationMixer.stopAllAction()
                     actor.animationMixer.clipAction(this.animationList[1]!).play()
                     actor.actorAnimationState = 'walking'
                 }
-                if (!actor.hasPath() && actor.actorAnimationState != 'idle') {
+                if (!walking && actor.actorAnimationState != 'idle') {
                     actor.animationMixer.stopAllAction()
                     actor.animationMixer.clipAction(this.animationList[0]!).play()
                     actor.actorAnimationState = 'idle'

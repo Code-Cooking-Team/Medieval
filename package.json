@@ -23,6 +23,7 @@
     "easystarjs": "^0.4.4",
     "emittery": "^2.2.0",
     "lodash": "^4.18.1",
+    "lucide-react": "^1.69.0",
     "lz-string": "^1.5.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

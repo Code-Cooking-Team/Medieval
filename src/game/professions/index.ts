@@ -1,3 +1,4 @@
+import { BuilderProfession } from './BuilderProfession'
 import { GuardianProfession } from './GuardianProfession'
 import { ProfessionClass, ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
@@ -9,6 +10,7 @@ const emptyProfession = () => {
 
 export const professionByType: Record<ProfessionType, ProfessionClass> = {
     [ProfessionType.Empty]: emptyProfession as any,
+    [ProfessionType.Builder]: BuilderProfession,
     [ProfessionType.Guardian]: GuardianProfession,
     [ProfessionType.Woodcutter]: WoodcutterProfession,
 }

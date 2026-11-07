@@ -5,7 +5,7 @@ import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
-import { isSamePosition, maxValue } from '+helpers'
+import { isSamePosition } from '+helpers'
 
 import {
     Mesh,
@@ -34,7 +34,6 @@ export class WoodcutterProfession extends Profession {
         move: this.move.bind(this),
         findTree: this.findTree.bind(this),
         chopTree: this.chopTree.bind(this),
-        putWood: this.putWood.bind(this),
         findCamp: this.findCamp.bind(this),
         gatherWood: this.gatherWood.bind(this),
     }
@@ -43,6 +42,8 @@ export class WoodcutterProfession extends Profession {
         hasPath: this.hasPath.bind(this),
         isEmpty: this.isEmpty.bind(this),
         isFull: this.isFull.bind(this),
+        campFull: this.campFull.bind(this),
+        waitingAtFullCamp: () => this.nearCamp() && this.campFull(),
         nearTree: this.nearTree.bind(this),
         nearCamp: this.nearCamp.bind(this),
         reachedCamp: this.reachedCamp.bind(this),
@@ -50,7 +51,10 @@ export class WoodcutterProfession extends Profession {
 
     private machine = new MachineInterpreter(woodcutterMachine, this.actions, this.guards)
 
-    constructor(public game: Game, public actor: HumanActor) {
+    constructor(
+        public game: Game,
+        public actor: HumanActor,
+    ) {
         super(game, actor)
     }
 
@@ -60,6 +64,10 @@ export class WoodcutterProfession extends Profession {
 
     public async tick() {
         super.tick()
+        if (!this.getCamp()) {
+            this.move()
+            return
+        }
         await this.machine.send('TICK')
     }
 
@@ -155,24 +163,18 @@ export class WoodcutterProfession extends Profession {
         this.collectedTreeHP += tree.hit(damage)
     }
 
-    private putWood() {
-        const camp = this.getCamp()
-        if (!camp) return
-        const value = maxValue(this.collectedTreeHP, config.woodcutter.gatheringSpeed)
-        this.collectedTreeHP -= value
-        camp.collectTree(value)
-    }
-
     private findCamp() {
         const camp = this.getCamp()
         if (!camp) return
-        this.actor.setPathTo(camp.getDeliveryPosition())
+        return this.actor.setPathTo(camp.getDeliveryPosition())
     }
 
     private gatherWood() {
-        const speed = config.woodcutter.gatheringSpeed
-        const amount = this.collectedTreeHP < speed ? this.collectedTreeHP : speed
-        this.collectedTreeHP -= amount
+        const camp = this.getCamp()
+        if (!camp || camp.isDead()) return
+
+        const amount = Math.min(this.collectedTreeHP, config.woodcutter.gatheringSpeed)
+        this.collectedTreeHP -= camp.collectTree(amount)
     }
 
     private hasPath() {
@@ -189,6 +191,10 @@ export class WoodcutterProfession extends Profession {
 
     private isFull() {
         return this.collectedTreeHP >= config.woodcutter.capacity
+    }
+
+    private campFull() {
+        return this.getCamp()?.getFreeWoodStorage() === 0
     }
 
     private nearTree() {
