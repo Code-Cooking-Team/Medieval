@@ -9,12 +9,11 @@ import { ActorRenderer } from './ActorRenderer'
 export abstract class WalkableActorRenderer<
     TActor extends WalkableActor,
 > extends ActorRenderer<TActor> {
-    public render(clockInfo: ClockInfo) {
-        super.render(clockInfo)
-        this.updateRotation(clockInfo)
-    }
+    private readonly rotationUp = new Vector3(0, 1, 0)
+    private readonly targetHeading = new Quaternion()
 
     protected updatePosition(clockInfo: ClockInfo) {
+        this.updateRotation(clockInfo)
         this.actorGroupMap.forEach((group, actor) => {
             const speed = Math.min(
                 clockInfo.deltaTime * config.walkableRenderer.movementSmoothness,
@@ -33,33 +32,17 @@ export abstract class WalkableActorRenderer<
         })
     }
 
-    protected updateRotation(clockInfo: ClockInfo) {
-        this.actorGroupMap.forEach((group, actor) => {
-            const [x, y] = actor.position
+    protected updateRotation({ deltaTime }: ClockInfo) {
+        const tileSize = config.renderer.tileSize
+        const step = deltaTime * config.walkableRenderer.rotationSmoothness
 
-            const tile = this.game.world.getTile(actor.position)
-            const tileX = x * config.renderer.tileSize
-            const tileY = y * config.renderer.tileSize
-            const actorPosition = group.position
-            const targetPosition = new Vector3(tileX, tile.height, tileY)
+        for (const [actor, group] of this.actorGroupMap) {
+            const x = actor.position[0] * tileSize - group.position.x
+            const z = actor.position[1] * tileSize - group.position.z
+            if (Math.hypot(x, z) < tileSize * 0.025) continue
 
-            const distance = targetPosition.distanceTo(actorPosition)
-
-            if (distance > 0.1) {
-                const direction = targetPosition.clone().sub(actorPosition)
-                const rotation = direction.angleTo(new Vector3(0, 0, 1))
-                let newRotation = direction.x > 0 ? rotation : rotation * -1
-
-                const targetQuaternion = new Quaternion().setFromAxisAngle(
-                    new Vector3(0, 1, 0),
-                    newRotation,
-                )
-                if (!group.quaternion.equals(targetQuaternion)) {
-                    const step =
-                        clockInfo.deltaTime * config.walkableRenderer.rotationSmoothness
-                    group.quaternion.rotateTowards(targetQuaternion, step)
-                }
-            }
-        })
+            this.targetHeading.setFromAxisAngle(this.rotationUp, Math.atan2(x, z))
+            group.quaternion.rotateTowards(this.targetHeading, step)
+        }
     }
 }
