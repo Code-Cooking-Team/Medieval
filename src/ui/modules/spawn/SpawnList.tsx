@@ -2,6 +2,7 @@ import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ActorType, actorTypesByCategory } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
+import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
 import { useEffect, useState } from 'react'
 
@@ -58,6 +59,7 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
                     {actorTypes.map((actorType) => (
                         <Button
                             key={actorType}
+                            icon={<ActorIcon type={actorType} />}
                             label={
                                 selectedBuilding === actorType
                                     ? `✓ ${actorType}`
