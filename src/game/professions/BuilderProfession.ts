@@ -1,12 +1,14 @@
 import type { ConstructionSiteActor } from '+game/actors/buildings/construction/ConstructionSiteActor'
 import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { isWoodCampActor } from '+game/actors/helpers'
+import type { ItemId } from '+game/actors/units/human/equipment'
 import { ActorType, Path } from '+game/types'
 
 import { Profession, ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
 
 const carryCapacity = 150
+const woodPerTick = 2
 const retryTicks = 4
 
 type Job = {
@@ -18,6 +20,7 @@ type Job = {
 
 export class BuilderProfession extends Profession {
     public type = ProfessionType.Builder
+    public readonly defaultHeldItem: ItemId = 'hammer'
     public queue: string[] = []
     public carriedWood = 0
 
@@ -42,6 +45,11 @@ export class BuilderProfession extends Profession {
         return !!this.job?.path.length
     }
 
+    public get isBuilding() {
+        const job = this.job
+        return !!job?.site && !job.camp && job.path.length === 0
+    }
+
     public reset() {
         super.reset()
         this.job = undefined
@@ -53,11 +61,7 @@ export class BuilderProfession extends Profession {
 
         if (this.actor.isFindingPath || this.actor.hasPath()) {
             this.job = undefined
-            if (!this.actor.isFindingPath) {
-                const { x, y } = this.actor.path[0]!
-                if (this.game.pf.canStep(this.actor.position, [x, y])) this.actor.move()
-                else this.actor.cancelPath()
-            }
+            if (!this.actor.isFindingPath) this.actor.move()
             return
         }
 
@@ -79,14 +83,19 @@ export class BuilderProfession extends Profession {
             return
         }
 
-        this.job = undefined
-        if (!this.isCurrent(job)) return
         const { site, camp } = job
+        if (site && !camp) {
+            const delivered = site.deliver(this, Math.min(this.carriedWood, woodPerTick))
+            this.carriedWood -= delivered
+            if (delivered > 0) this.actor.recordAction('build', site)
+            if (!this.carriedWood) this.job = undefined
+            return
+        }
+
+        this.job = undefined
         if (camp && site) {
             const amount = Math.min(carryCapacity - this.carriedWood, site.remainingWood)
             this.carriedWood += camp.withdrawWood(amount)
-        } else if (site) {
-            this.carriedWood -= site.deliver(this, this.carriedWood)
         } else if (camp) {
             this.carriedWood -= camp.collectTree(this.carriedWood)
         }
@@ -99,9 +108,7 @@ export class BuilderProfession extends Profession {
                 (actor): actor is ConstructionSiteActor =>
                     actor?.type === ActorType.ConstructionSite && !actor.isDead(),
             )
-            .filter(
-                (site) => site.assignedBuilder === this.actor && site.remainingWood > 0,
-            )
+            .filter((site) => site.isAssignedTo(this) && site.remainingWood > 0)
         this.queue = sites.map(({ id }) => id)
 
         const tileRevision = this.game.world.tileRevision
@@ -150,7 +157,7 @@ export class BuilderProfession extends Profession {
 
     private isCurrent({ site, camp, tileRevision }: Job) {
         if (tileRevision !== this.game.world.tileRevision) return false
-        if (site && (site.assignedBuilder !== this.actor || site.remainingWood <= 0)) {
+        if (site && (!site.isAssignedTo(this) || site.remainingWood <= 0)) {
             return false
         }
         if (!camp) return true

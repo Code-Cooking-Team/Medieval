@@ -81,7 +81,9 @@ export class Game {
 
         if (actor instanceof ConstructionSiteActor) actor.unassign()
         if (isBuildingActor(actor)) {
-            this.restoreBuildingTerrain(actor, index)
+            if (!(actor instanceof ConstructionSiteActor)) {
+                this.restoreBuildingTerrain(actor, index)
+            }
             for (const unit of this.actors.filter(isHumanActor)) {
                 if (unit.home === actor) unit.home = undefined
                 if (unit.target === actor) {
@@ -169,7 +171,7 @@ export class Game {
         if (isBuildingActor(actor)) {
             if (!this.canPlaceBuildings(actor.blueprint, [position], rotation)) return
             actor.setRotation(rotation)
-            this.placeBuildings([actor])
+            this.placeBuilding(actor)
         }
         if (seed !== undefined) actor.seed = seed
         this.addActor(actor)
@@ -231,7 +233,6 @@ export class Game {
             if (seed !== undefined) site.seed = seed
             return site
         })
-        this.placeBuildings(sites)
         for (const site of sites) {
             this.addActor(site)
             site.assign(builder)
@@ -244,12 +245,14 @@ export class Game {
         if (index === -1 || site.remainingWood > 0) return
         const { actorClass } = actorByType[site.buildingType]
         const building = new actorClass(this, site.player, site.position)
+        if (!isBuildingActor(building))
+            throw new Error(`Invalid construction type: ${site.buildingType}`)
         building.setRotation(site.rotation)
         building.seed = site.seed
 
         site.unassign()
-        // The site's terrain is already the final footprint. Keep it in place.
         this.actors[index] = building
+        this.placeBuilding(building)
         this.emitter.emit('actorRemoved', site)
         this.emitter.emit('actorAdded', building)
         for (const player of this.players) {
@@ -277,19 +280,17 @@ export class Game {
         return positions
     }
 
-    private placeBuildings(buildings: BuildingActor[]) {
+    private placeBuilding(actor: BuildingActor) {
         this.world.setMultipleTiles((set, get) => {
-            for (const actor of buildings) {
-                const { height } = get(actor.position)
-                for (const [position, TileClass] of this.buildingTiles(
-                    actor.blueprint,
-                    actor.position,
-                    actor.rotation,
-                )) {
-                    const tile = new TileClass(get(position))
-                    tile.height = height
-                    set(position, tile)
-                }
+            const { height } = get(actor.position)
+            for (const [position, TileClass] of this.buildingTiles(
+                actor.blueprint,
+                actor.position,
+                actor.rotation,
+            )) {
+                const tile = new TileClass(get(position))
+                tile.height = height
+                set(position, tile)
             }
         })
         if (!this.loop) this.pf.update()
@@ -349,6 +350,7 @@ export class Game {
     public toJSON(): GameJSON {
         return {
             world: this.world.toJSON(),
+            constructionTerrainDeferred: true,
             players: this.players.map((player) => player.toJSON()),
             actors: this.actors.map((actor) => actor.toJSON()),
         }
@@ -368,6 +370,16 @@ export class Game {
             return actorFromJSON(actorJson, game, player)
         })
 
+        if (!json.constructionTerrainDeferred) {
+            // Older saves applied the finished terrain when the site was placed.
+            game.actors.forEach((actor, index) => {
+                if (actor instanceof ConstructionSiteActor) {
+                    game.restoreBuildingTerrain(actor, index)
+                }
+            })
+            if (world.tileRevision) game.pf.update()
+        }
+
         return game
     }
 
@@ -378,6 +390,7 @@ export class Game {
 
 export interface GameJSON {
     world: WordJSON
+    constructionTerrainDeferred?: true
     players: PlayerJSON[]
     actors: ActorJSON[]
 }

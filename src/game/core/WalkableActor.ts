@@ -51,9 +51,14 @@ export abstract class WalkableActor extends Actor {
     public move() {
         const next = this.path.shift()
 
-        if (next) {
-            this.position = [next.x, next.y]
+        if (!next) return
+
+        const position: Position = [next.x, next.y]
+        if (!this.game.pf.canStep(this.position, position)) {
+            this.cancelPath()
+            return
         }
+        this.position = position
     }
 
     public toJSON(): WalkableActorJSON {

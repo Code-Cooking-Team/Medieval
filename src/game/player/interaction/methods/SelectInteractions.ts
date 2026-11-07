@@ -142,9 +142,7 @@ export class SelectInteractions {
     private handleRightClick = (event: MouseEvent) => {
         event.preventDefault()
         const currentSelected = this.player.selectedActors
-        const position = this.finder.findPositionByMouseEvent(event)
-
-        if (!position || !currentSelected.length) return
+        if (!currentSelected.length) return
 
         const interactionActor = this.finder.findActorsByMouseEvent(event)
 
@@ -152,6 +150,9 @@ export class SelectInteractions {
             const interactionHappened = actor.interact(currentSelected)
             if (interactionHappened) return
         }
+
+        const position = this.finder.findPositionByMouseEvent(event)
+        if (!position) return
 
         const walkableActors = currentSelected.filter(isWalkableActor)
 

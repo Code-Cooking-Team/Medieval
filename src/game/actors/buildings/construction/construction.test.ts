@@ -80,7 +80,18 @@ test('reserves the rotated footprint and completes a house after partial deliver
     expect(game.findActorsByType(ActorType.ConstructionSite)).toEqual([house])
 
     const builder = human.profession as BuilderProfession
+    expect(human.getEquippedItem('Hands')).toBe('hammer')
     camp.collectTree(200)
+    tickUntil(game, () => builder.carriedWood === 150)
+    expect(camp.woodStock).toBe(50)
+    tickUntil(game, () => house.deliveredWood > 0)
+    expect(house.deliveredWood).toBe(2)
+    expect(builder.carriedWood).toBe(148)
+    expect(human.lastAction).toMatchObject({ kind: 'build', target: house.position })
+    expect(house.hp).toBe(house.maxHp)
+    game.tick()
+    expect(house.deliveredWood).toBe(4)
+    expect(builder.carriedWood).toBe(146)
     tickUntil(game, () => house.deliveredWood === 150)
     tickUntil(game, () => house.deliveredWood === 200)
     expect(camp.woodStock).toBe(0)
@@ -93,7 +104,7 @@ test('reserves the rotated footprint and completes a house after partial deliver
     const loadedHouse = loaded.getActorById(house.id) as ConstructionSiteActor
     expect(loadedBuilder.queue).toEqual([house.id])
     expect(loadedBuilder.carriedWood).toBe(100)
-    expect(loadedHouse.assignedBuilder).toBe(loadedHuman)
+    expect(loadedHouse.isAssignedTo(loadedBuilder)).toBe(true)
     expect(loadedHouse.deliveredWood).toBe(200)
     expect((loaded.getActorById(camp.id) as WoodCampActor).woodStock).toBe(75)
     tickUntil(loaded, () => loadedBuilder.queue.length === 0)
@@ -133,13 +144,13 @@ test('reassigns existing progress and returns a load after the last site is remo
     const [site] = sites(ActorType.House, [[24, 20]]) as [ConstructionSiteActor]
     camp.collectTree(150)
     tickUntil(game, () => site.deliveredWood === 150)
+    const previousBuilder = human.profession as BuilderProfession
     human.setProfession(new GuardianProfession(game, human))
-    expect(site.assignedBuilder).toBeUndefined()
+    expect(site.isAssignedTo(previousBuilder)).toBe(false)
 
     const replacement = game.spawnActor(HumanActor, player, [16, 23])!
     expect(site.interact([replacement])).toBe(true)
-    expect(site.interact([human])).toBe(false)
-    expect(site.assignedBuilder).toBe(replacement)
+    expect(site.isAssignedTo(replacement.profession as BuilderProfession)).toBe(true)
     expect(site.deliveredWood).toBe(150)
     camp.collectTree(150)
     const builder = replacement.profession as BuilderProfession
@@ -150,4 +161,69 @@ test('reassigns existing progress and returns a load after the last site is remo
     tickUntil(game, () => builder.carriedWood === 0)
     expect(camp.woodStock).toBe(150)
     expect(game.findActorsByType(ActorType.House)).toHaveLength(0)
+})
+
+test('two builders can share a site without duplicating it in either queue', () => {
+    const { game, player, human, sites } = fixture()
+    const [site] = sites(ActorType.Stakewall, [[19, 20]]) as [ConstructionSiteActor]
+    human.position = [18, 20]
+    const second = game.spawnActor(HumanActor, player, [20, 20])!
+    expect(site.interact([second])).toBe(true)
+    expect(site.interact([second])).toBe(true)
+    const firstBuilder = human.profession as BuilderProfession
+    const secondBuilder = second.profession as BuilderProfession
+    expect(firstBuilder.queue).toEqual([site.id])
+    expect(secondBuilder.queue).toEqual([site.id])
+
+    firstBuilder.carriedWood = 15
+    secondBuilder.carriedWood = 15
+    game.tick()
+    expect(site.deliveredWood).toBe(4)
+    tickUntil(game, () => !game.getActorById(site.id))
+    expect(firstBuilder.queue).toEqual([])
+    expect(secondBuilder.queue).toEqual([])
+})
+
+test('a stakewall site reserves its footprint while keeping the tile walkable', () => {
+    const { game, player, human, sites } = fixture()
+    const position: Position = [19, 20]
+    const terrain = game.world.getTile(position)
+    const [site] = sites(ActorType.Stakewall, [position]) as [ConstructionSiteActor]
+    expect(game.world.getTile(position)).toBe(terrain)
+    expect(game.world.getTile(position).canWalk).toBe(true)
+    expect(game.canPlaceBuildings(site.blueprint, [position], 0)).toBe(false)
+
+    const walker = game.spawnActor(HumanActor, player, [18, 20])!
+    walker.path = [
+        { x: 19, y: 20 },
+        { x: 20, y: 20 },
+    ]
+    walker.move()
+    walker.move()
+    expect(walker.position).toEqual([20, 20])
+
+    const builder = human.profession as BuilderProfession
+    expect(site.deliver(builder, 30)).toBe(30)
+    expect(game.world.getTile(position).canWalk).toBe(false)
+    walker.path = [{ x: 19, y: 20 }]
+    walker.move()
+    expect(walker.position).toEqual([20, 20])
+})
+
+test('loads unfinished legacy footprints as walkable terrain', () => {
+    const { game, human, sites } = fixture()
+    const [site] = sites(ActorType.Stakewall, [[19, 20]]) as [ConstructionSiteActor]
+    const snapshot = game.toJSON()
+    delete snapshot.constructionTerrainDeferred
+    snapshot.world.tiles[20]![19] = new WallTile(
+        game.world.getTile(site.position),
+    ).toJSON()
+
+    const loaded = Game.fromJSON(snapshot)
+    const loadedSite = loaded.getActorById(site.id) as ConstructionSiteActor
+    const builder = (loaded.getActorById(human.id) as HumanActor)
+        .profession as BuilderProfession
+    expect(loaded.world.getTile(site.position).canWalk).toBe(true)
+    expect(loadedSite.isAssignedTo(builder)).toBe(true)
+    expect(loaded.canPlaceBuildings(loadedSite.blueprint, [site.position], 0)).toBe(false)
 })

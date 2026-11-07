@@ -10,7 +10,7 @@ import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { Equipment, EquipmentSlot, ItemId, items } from './equipment'
 
-type HumanAction = 'attack' | 'chop'
+type HumanAction = 'attack' | 'chop' | 'build'
 
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human

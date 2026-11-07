@@ -233,7 +233,8 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         if (!animation || !action || !isSamePosition(actor.position, action.origin))
             return
 
-        if (animation.lastAction !== action || animation[action.kind].isRunning()) {
+        const swing = action.kind === 'attack' ? animation.attack : animation.chop
+        if (animation.lastAction !== action || swing.isRunning()) {
             return action.target
         }
     }
@@ -269,17 +270,23 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                 }
             }
             const action = actor.lastAction
+            const swing = action?.kind === 'attack' ? animation.attack : animation.chop
+            const atOrigin = action && isSamePosition(actor.position, action.origin)
             if (animation.lastAction !== action) {
+                // Deliveries can tick faster than a swing. Let the hammer reach the site.
+                const finishingSwing =
+                    atOrigin &&
+                    action.kind === 'build' &&
+                    animation.lastAction?.kind === 'build' &&
+                    swing.isRunning()
                 animation.lastAction = action
-                animation.attack.stop()
-                animation.chop.stop()
-                if (action && isSamePosition(actor.position, action.origin)) {
-                    animation[action.kind].reset().play()
+                if (!finishingSwing) {
+                    animation.attack.stop()
+                    animation.chop.stop()
+                    if (atOrigin) swing.reset().play()
                 }
             }
-            if (action && !isSamePosition(actor.position, action.origin)) {
-                animation[action.kind].stop()
-            }
+            if (action && !atOrigin) swing.stop()
             animation.mixer.update(deltaTime)
             animation.handVisual = this.getHandVisual(actor, animation)
             if (animation.handVisual === 'carriedLog') {
@@ -297,15 +304,18 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
     ): EquipmentVisual {
         const equipped = actor.getEquippedItem('Hands')
         if (animation.attack.isRunning()) return equipped
-        if (animation.chop.isRunning()) return 'hatchet'
+        if (animation.chop.isRunning()) {
+            return animation.lastAction?.kind === 'build' ? 'hammer' : 'hatchet'
+        }
 
         const profession = actor.profession
         if (profession instanceof WoodcutterProfession) {
             if (profession.isChopping) return 'hatchet'
             if (profession.hasWood) return 'carriedLog'
         }
-        if (profession instanceof BuilderProfession && profession.carriedWood > 0) {
-            return 'carriedLog'
+        if (profession instanceof BuilderProfession) {
+            if (profession.isBuilding) return 'hammer'
+            if (profession.carriedWood > 0) return 'carriedLog'
         }
         return equipped
     }

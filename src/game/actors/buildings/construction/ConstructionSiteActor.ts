@@ -1,6 +1,5 @@
 import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
-import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { BuildingActor, BuildingActorJSON } from '+game/core/BuildingActor'
 import { BuilderProfession } from '+game/professions/BuilderProfession'
@@ -22,13 +21,13 @@ export class ConstructionSiteActor extends BuildingActor {
         return constructionCosts[this.buildingType] - this.deliveredWood
     }
 
-    public get assignedBuilder() {
-        return this.game.actors.find(
-            (actor): actor is HumanActor =>
-                isHumanActor(actor) &&
-                !actor.isDead() &&
-                actor.profession instanceof BuilderProfession &&
-                actor.profession.queue.includes(this.id),
+    public isAssignedTo(builder: BuilderProfession) {
+        const { actor } = builder
+        return (
+            actor.profession === builder &&
+            actor.player === this.player &&
+            !actor.isDead() &&
+            builder.queue.includes(this.id)
         )
     }
 
@@ -37,7 +36,6 @@ export class ConstructionSiteActor extends BuildingActor {
             !isHumanActor(actor) ||
             actor.isDead() ||
             actor.player !== this.player ||
-            this.assignedBuilder ||
             this.game.getActorById(this.id) !== this
         )
             return false
@@ -47,21 +45,30 @@ export class ConstructionSiteActor extends BuildingActor {
                 ? actor.profession
                 : new BuilderProfession(this.game, actor)
         if (builder !== actor.profession) actor.setProfession(builder)
-        builder.enqueue(this.id)
+        if (!builder.queue.includes(this.id)) builder.enqueue(this.id)
         return true
     }
 
     public unassign() {
-        const builder = this.assignedBuilder?.profession
-        if (builder instanceof BuilderProfession) builder.removeSite(this.id)
+        for (const actor of this.game.actors.filter(isHumanActor)) {
+            const builder = actor.profession
+            if (builder instanceof BuilderProfession && this.isAssignedTo(builder)) {
+                builder.removeSite(this.id)
+            }
+        }
     }
 
     public interact(actors: Actor[]) {
-        return actors.length === 1 && this.assign(actors[0]!)
+        let assigned = false
+        for (const actor of actors) {
+            if (this.assign(actor)) assigned = true
+        }
+        return assigned
     }
 
     public deliver(builder: BuilderProfession, amount: number) {
-        if (this.assignedBuilder !== builder.actor) return 0
+        if (!this.isAssignedTo(builder) || this.game.getActorById(this.id) !== this)
+            return 0
         const accepted = Math.min(this.remainingWood, amount)
         if (accepted <= 0) return 0
         this.deliveredWood += accepted

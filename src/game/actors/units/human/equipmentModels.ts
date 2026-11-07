@@ -55,6 +55,9 @@ hatchet.add(
     part(steel, [8, 20, 4], [-17, 56, 0]),
 )
 
+const hammer = new Group()
+hammer.add(part(wood, [4, 48, 4], [0, 16, 0]), part(steel, [24, 12, 10], [0, 36, 0]))
+
 const grip = {
     bone: 'mixamorig:RightHand',
     position: [-8, 2, 0] as Vector,
@@ -65,6 +68,7 @@ const grip = {
 export const equipmentModels: Partial<Record<ItemId, EquipmentModel>> = {
     sword: { ...grip, model: sword },
     hatchet: { ...grip, model: hatchet },
+    hammer: { ...grip, model: hammer },
 }
 
 const log = new Group()

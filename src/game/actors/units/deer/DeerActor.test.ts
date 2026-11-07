@@ -11,7 +11,7 @@ test.each([ActorType.Human, ActorType.Boar])(
         const findActorsByPosition = vi.fn(() => [{ type, position: [0, 10] }])
         const game = {
             findActorsByPosition,
-            pf: { findPath },
+            pf: { findPath, canStep: () => true },
             world: { hasTile: () => true, getTile: () => ({ canWalk: true }) },
         } as unknown as Game
         const deer = new DeerActor(game, {} as Player, [10, 10])
@@ -32,7 +32,7 @@ test('a deer escapes along the riverbank when the land across the river is unrea
     const findPath = vi.fn(async () => undefined)
     const game = {
         findActorsByPosition: () => [{ type: ActorType.Human, position: [5, 10] }],
-        pf: { findPath },
+        pf: { findPath, canStep: () => true },
         world: {
             hasTile: ([x, y]: Position) => x >= 0 && x <= 25 && y >= 0 && y <= 25,
             getTile: ([x]: Position) => ({ canWalk: x < 11 || x > 13 }),
