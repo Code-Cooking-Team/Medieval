@@ -1,5 +1,6 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
+import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { Actor } from '+game/core/Actor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
@@ -104,6 +105,10 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         this.updatePosition(clockInfo)
         this.updateHP()
         this.updateSelect()
+    }
+
+    public getPortraitModel(actor: TActor) {
+        return this.actorGroupMap.get(actor)?.getObjectByName(ACTOR_MODEL_OBJECT3D_NAME)
     }
 
     public getSelectedGroups() {

@@ -11,6 +11,7 @@ import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ProfessionType } from '+game/professions/types'
+import type { Renderer } from '+game/Renderer'
 import { ActorType } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
@@ -21,13 +22,16 @@ import { groupBy } from 'lodash'
 import { Axe } from 'lucide-react'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
+import { SelectionPortrait } from './SelectionPortrait'
+
 interface SelectedListProps {
+    renderer?: Renderer
     humanPlayer: HumanPlayer
 }
 
 const noProfession = 'No profession'
 
-export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
+export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
     const subscribe = useCallback(
         (refresh: () => void) =>
             humanPlayer.emitter.on(['selectActors', 'unselectActors'], refresh),
@@ -51,7 +55,16 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
 
     if (singleActor) {
         return (
-            <ActorDetails>
+            <ActorDetails
+                style={{ overflow: 'visible', paddingLeft: 152, minHeight: 48 }}
+            >
+                {renderer && (
+                    <SelectionPortrait
+                        key={singleActor.id}
+                        actor={singleActor}
+                        renderer={renderer}
+                    />
+                )}
                 <Box as="strong" display="inline-flex" alignItems="center" columnGap={2}>
                     {singleActor instanceof ConstructionSiteActor ? (
                         <>

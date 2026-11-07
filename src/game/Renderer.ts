@@ -27,6 +27,7 @@ import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { ActorRenderer } from './renderer/lib/ActorRenderer'
 import { BasicRenderer } from './renderer/lib/BasicRenderer'
+import { SelectionPortraitRenderer } from './renderer/SelectionPortraitRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
 import { ClockInfo } from './types'
 
@@ -108,7 +109,22 @@ export class Renderer {
         }
     }
 
+    private portrait?: { view: SelectionPortraitRenderer; actor: Actor }
+
+    public attachPortrait(canvas: HTMLCanvasElement, actor: Actor) {
+        this.portrait?.view.destroy()
+        const view = new SelectionPortraitRenderer(canvas, actor)
+        this.portrait = { view, actor }
+        return () => {
+            if (this.portrait?.view !== view) return
+            view.destroy()
+            this.portrait = undefined
+        }
+    }
+
     public destroy() {
+        this.portrait?.view.destroy()
+        this.portrait = undefined
         this.actorRendererList.forEach((renderer) => {
             renderer.destroy()
         })
@@ -331,6 +347,19 @@ export class Renderer {
         this.actorRendererList.forEach((renderer) =>
             renderer.render(clockInfo, this.rtsCamera.camera),
         )
+        if (this.portrait) {
+            const { view, actor } = this.portrait
+            const source = this.actorRendererList
+                .find((renderer) => renderer.actorType === actor.type)
+                ?.getPortraitModel(actor)
+            view.render(
+                source,
+                this.webGLRenderer,
+                this.scene,
+                this.environment.sun,
+                this.environment.ambient,
+            )
+        }
         if (this.outlinePass) {
             this.outlinePass.selectedObjects = this.player.selectedActors.length
                 ? this.getSelectedGroupList()

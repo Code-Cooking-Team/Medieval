@@ -1,4 +1,5 @@
 import { config } from '+config'
+import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
 import { ActorType, ClockInfo } from '+game/types'
 import { Tile } from '+game/world/Tile'
@@ -41,6 +42,7 @@ export class BoarRenderer extends WalkableActorRenderer<BoarActor> {
     public createActorModel(actor: BoarActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
         const actorModel = new SkinnedMesh(this.model.geometry, this.material)
+        actorModel.name = ACTOR_MODEL_OBJECT3D_NAME
         const body = new Bone()
         body.name = 'body'
 

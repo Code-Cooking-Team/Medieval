@@ -21,11 +21,15 @@ const SHADOW_SCALE = 3
 
 export class EnvironmentRenderer extends BasicRenderer {
     // Three.js used to multiply these light intensities by PI.
-    private sun = new DirectionalLight(0xfff2c7, 3.2 * Math.PI)
+    public readonly sun = new DirectionalLight(0xfff2c7, 3.2 * Math.PI)
     private sunTarget = new Object3D()
-    private ambient = new AmbientLight(0xdae6e8, 0.1 * Math.PI)
+    public readonly ambient = new AmbientLight(0xdae6e8, 0.1 * Math.PI)
 
-    constructor(public game: Game, private scene: Scene, private camera: Camera) {
+    constructor(
+        public game: Game,
+        private scene: Scene,
+        private camera: Camera,
+    ) {
         super()
 
         if (config.renderer.fog) {

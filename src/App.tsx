@@ -30,6 +30,7 @@ const gameRootEl = document.getElementById('game-root') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
+    const [renderer, setRenderer] = useState<Renderer>()
     const [started, setStarted] = useState(false)
 
     const [forceReloadCount, setForceReloadCount] = useState(0)
@@ -84,6 +85,7 @@ function App() {
         const interactions = new InteractionsManager(game, renderer, humanPlayer)
 
         renderer.init()
+        setRenderer(renderer)
         interactions.init()
 
         const started = () => setStarted(true)
@@ -121,7 +123,7 @@ function App() {
     return (
         <>
             <SettlementStatus game={game} humanPlayer={humanPlayer} />
-            <SelectedList humanPlayer={humanPlayer} />
+            <SelectedList humanPlayer={humanPlayer} renderer={renderer} />
             <Right>
                 <Box
                     p={3}
