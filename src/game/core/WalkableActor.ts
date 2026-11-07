@@ -7,16 +7,28 @@ export abstract class WalkableActor extends Actor {
     public selectImportance = 4
     public path: Path = []
 
+    private pathRequest = 0
+    public isFindingPath = false
+
     public async setPathTo(position: Position, clip = false) {
-        const pathSearch = await this.game.pf.findPath(this.position, position)
-        if (pathSearch) {
-            this.path = pathSearch
+        const request = ++this.pathRequest
+        this.isFindingPath = true
+        try {
+            const path = await this.game.pf.findPath(this.position, position)
+            if (request !== this.pathRequest) return
+            if (path) {
+                this.path = path
+                if (clip) this.clipPath()
+            }
+            return path
+        } finally {
+            if (request === this.pathRequest) this.isFindingPath = false
         }
-        if (clip) this.clipPath()
-        return pathSearch
     }
 
     public cancelPath() {
+        this.pathRequest++
+        this.isFindingPath = false
         this.path = []
     }
 
@@ -47,13 +59,13 @@ export abstract class WalkableActor extends Actor {
     public toJSON(): WalkableActorJSON {
         return {
             ...super.toJSON(),
-            path: this.path,
+            path: [...this.path],
         }
     }
 
     public fromJSON({ path, ...json }: WalkableActorJSON) {
         super.fromJSON(json)
-        this.path = path
+        this.path = [...path]
     }
 }
 

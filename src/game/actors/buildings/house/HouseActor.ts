@@ -21,6 +21,12 @@ export class HouseActor extends BuildingActor {
         }),
     ]
 
+    public setRotation(rotation: number) {
+        super.setRotation(rotation)
+        const residence = this.traits.find((trait) => trait instanceof ResidenceTrait)
+        residence?.setSpawnPosition(this.getSpawnPosition())
+    }
+
     public getSpawnPosition() {
         return this.getGlobalPositionOfLocalPoint(this.blueprint.config.spawnPoint)
     }

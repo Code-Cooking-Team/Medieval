@@ -24,11 +24,13 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
     useEffect(() => {
         const updateRemovalMode = () =>
             setRemovingBuildings(humanPlayer.removingBuildings)
-        setSelectedBuilding(humanPlayer.selectedBuilding)
+        setSelectedBuilding(
+            humanPlayer.constructionBuilder ? undefined : humanPlayer.selectedBuilding,
+        )
         updateRemovalMode()
         humanPlayer.emitter.on('removalModeChanged', updateRemovalMode)
         const selectBuilding = ({ data }: { data: ActorType }) =>
-            setSelectedBuilding(data)
+            setSelectedBuilding(humanPlayer.constructionBuilder ? undefined : data)
         const unselectBuilding = () => setSelectedBuilding(undefined)
 
         humanPlayer.emitter.on('selectBuilding', selectBuilding)

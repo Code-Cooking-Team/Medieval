@@ -26,6 +26,10 @@ export class ResidenceTrait implements BuildingTrait {
         private config: HouseActorConfig = defaultConfig,
     ) {}
 
+    public setSpawnPosition(position: Position) {
+        this.config = { ...this.config, spawnPosition: position }
+    }
+
     public tick() {
         this.newHumanCountdown--
         if (this.newHumanCountdown <= 0) {

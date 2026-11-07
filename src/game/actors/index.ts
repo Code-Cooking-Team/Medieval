@@ -6,6 +6,8 @@ import { ActorBlueprint, ActorType } from '+game/types'
 import { BarracksActor } from './buildings/barracks/BarracksActor'
 import { BarracksBlueprint } from './buildings/barracks/BarracksBlueprint'
 import { BarracksRenderer } from './buildings/barracks/BarracksRenderer'
+import { ConstructionSiteActor } from './buildings/construction/ConstructionSiteActor'
+import { ConstructionSiteRenderer } from './buildings/construction/ConstructionSiteRenderer'
 import { GuildhallActor } from './buildings/guildhall/GuildhallActor'
 import { GuildhallBlueprint } from './buildings/guildhall/GuildhallBlueprint'
 import { GuildhallRenderer } from './buildings/guildhall/GuildhallRenderer'
@@ -28,6 +30,7 @@ import { HumanActor } from './units/human/HumanActor'
 import { HumanRenderer } from './units/human/HumanRenderer'
 
 export const actorRenderers = [
+    ConstructionSiteRenderer,
     GuildhallRenderer,
     HouseRenderer,
     HumanRenderer,
@@ -49,6 +52,7 @@ export const actorByType: Record<
     { actorClass: ActorClass; blueprint?: ActorBlueprint }
 > = {
     [ActorType.Empty]: emptyActor as any,
+    [ActorType.ConstructionSite]: { actorClass: ConstructionSiteActor },
     [ActorType.Guildhall]: {
         actorClass: GuildhallActor,
         blueprint: new GuildhallBlueprint(),

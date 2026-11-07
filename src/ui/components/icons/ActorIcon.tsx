@@ -3,6 +3,7 @@ import { ActorType } from '+game/types'
 import {
     Castle,
     Fence,
+    Hammer,
     House,
     Landmark,
     PawPrint,
@@ -19,6 +20,7 @@ const icons = {
     [ActorType.WoodCamp]: Warehouse,
     [ActorType.Barracks]: Castle,
     [ActorType.Stakewall]: Fence,
+    [ActorType.ConstructionSite]: Hammer,
     [ActorType.Tree]: TreePine,
     [ActorType.Boar]: PawPrint,
     [ActorType.Deer]: PawPrint,

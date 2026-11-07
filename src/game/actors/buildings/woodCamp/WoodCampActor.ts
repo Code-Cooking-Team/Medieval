@@ -31,6 +31,15 @@ export class WoodCampActor extends BuildingActor {
         return accepted
     }
 
+    public withdrawWood(amount: number): number {
+        const withdrawn = Math.min(this.woodStock, amount)
+        if (withdrawn <= 0) return 0
+
+        this.woodStock -= withdrawn
+        this.game.emitter.emit('woodStockChanged', this)
+        return withdrawn
+    }
+
     public toJSON(): WoodCampJSON {
         return { ...super.toJSON(), woodStock: this.woodStock }
     }
