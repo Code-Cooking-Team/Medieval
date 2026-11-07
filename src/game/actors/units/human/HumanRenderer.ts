@@ -1,5 +1,6 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
+import { BuilderProfession } from '+game/professions/BuilderProfession'
 import { Profession } from '+game/professions/Profession'
 import { ProfessionType } from '+game/professions/types'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
@@ -302,6 +303,9 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         if (profession instanceof WoodcutterProfession) {
             if (profession.isChopping) return 'hatchet'
             if (profession.hasWood) return 'carriedLog'
+        }
+        if (profession instanceof BuilderProfession && profession.carriedWood > 0) {
+            return 'carriedLog'
         }
         return equipped
     }
