@@ -6,6 +6,7 @@ import { Emitter } from '+lib/Emitter'
 import { actorFromJSON } from './actors'
 import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
+import type { HumanActor } from './actors/units/human/HumanActor'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { BuildingActor } from './core/BuildingActor'
 import { Pathfinding } from './core/Pathfinding'
@@ -25,6 +26,7 @@ export class Game {
         tick: undefined
         actorAdded: Actor
         actorRemoved: Actor
+        equipmentChanged: HumanActor
         woodStockChanged: WoodCampActor
         started: undefined
         stopped: undefined

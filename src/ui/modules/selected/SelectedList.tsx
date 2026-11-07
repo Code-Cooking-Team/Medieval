@@ -1,8 +1,10 @@
 import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { isHumanActor, isWoodCampActor } from '+game/actors/helpers'
+import { EquipmentSlot, items } from '+game/actors/units/human/equipment'
+import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
-import { ProfessionType } from '+game/professions/types'
 import { HumanPlayer } from '+game/player/HumanPlayer'
+import { ProfessionType } from '+game/professions/types'
 import { ActorType } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
@@ -49,7 +51,12 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
                     {singleActor.type}
                 </Box>
                 {isHumanActor(singleActor) && (
-                    <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
+                    <Box
+                        as="span"
+                        display="inline-flex"
+                        alignItems="center"
+                        columnGap={2}
+                    >
                         {singleActor.profession?.type === ProfessionType.Woodcutter && (
                             <Axe size={16} aria-hidden="true" />
                         )}
@@ -59,6 +66,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
                 <span>
                     {singleActor.hp}/{singleActor.maxHp} HP
                 </span>
+                {isHumanActor(singleActor) && <EquippedSlots actor={singleActor} />}
                 {isWoodCampActor(singleActor) && <CampStock camp={singleActor} />}
             </ActorDetails>
         )
@@ -122,6 +130,27 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
     function selectActorsByType(type: ActorType) {
         humanPlayer.selectActors(selectedActors.filter((actor) => actor.type === type))
     }
+}
+
+const equipmentSlots: EquipmentSlot[] = ['Hands', 'Armor']
+
+const EquippedSlots = ({ actor }: { actor: HumanActor }) => {
+    const subscribe = useCallback(
+        (refresh: () => void) =>
+            actor.game.emitter.on('equipmentChanged', ({ data }) => {
+                if (data === actor) refresh()
+            }),
+        [actor],
+    )
+    const description = useSyncExternalStore(subscribe, () =>
+        equipmentSlots
+            .flatMap((slot) => {
+                const id = actor.getEquippedItem(slot)
+                return id ? [`${slot}: ${items[id].name}`] : []
+            })
+            .join(' · '),
+    )
+    return description ? <span>{description}</span> : null
 }
 
 const CampStock = ({ camp }: { camp: WoodCampActor }) => {

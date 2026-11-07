@@ -13,13 +13,23 @@ import {
 } from '+helpers'
 
 import {
+    AdditiveAnimationBlendMode,
     AnimationAction,
+    AnimationClip,
     AnimationMixer,
+    LoopOnce,
     MathUtils,
     MeshStandardMaterial,
+    Object3D,
+    PropertyBinding,
+    Quaternion,
+    QuaternionKeyframeTrack,
     SkinnedMesh,
+    Vector3,
 } from 'three'
 
+import { EquipmentSlot, ItemId } from './equipment'
+import { equipmentModels } from './equipmentModels'
 import { HumanActor } from './HumanActor'
 import humanModelUrl from './models/human.gltf'
 
@@ -27,14 +37,38 @@ interface HumanLocomotion {
     mixer: AnimationMixer
     idle: AnimationAction
     walk: AnimationAction
+    attack: AnimationAction
+    attackCount: number
     x: number
     z: number
     blend: number
 }
 
+function createAttackClip() {
+    const arm = PropertyBinding.sanitizeNodeName('mixamorig:RightArm')
+    const axis = new Vector3(0, 0, 1)
+    const values = [0, -0.55, 0.9, 0].flatMap((angle) =>
+        new Quaternion().setFromAxisAngle(axis, angle).toArray(),
+    )
+    return new AnimationClip(
+        'swing',
+        0.35,
+        [new QuaternionKeyframeTrack(`${arm}.quaternion`, [0, 0.09, 0.19, 0.35], values)],
+        AdditiveAnimationBlendMode,
+    )
+}
+
+const attackClip = createAttackClip()
+const equipmentSlots: EquipmentSlot[] = ['Hands', 'Armor']
+
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
     public actorType = ActorType.Human
     private locomotion = new WeakMap<HumanActor, HumanLocomotion>()
+
+    private attachments = new WeakMap<
+        Object3D,
+        Map<EquipmentSlot, { id: ItemId | null; model?: Object3D }>
+    >()
 
     public destroy() {
         super.destroy()
@@ -63,10 +97,20 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                 const mixer = new AnimationMixer(gltf.scene)
                 const idle = mixer.clipAction(idleClip).play()
                 const walk = mixer.clipAction(walkClip).setEffectiveWeight(0).play()
+                const attack = mixer.clipAction(attackClip).setLoop(LoopOnce, 1)
                 mixer.update(0)
 
                 const { x, z } = group.position
-                this.locomotion.set(actor, { mixer, idle, walk, x, z, blend: 0 })
+                this.locomotion.set(actor, {
+                    mixer,
+                    idle,
+                    walk,
+                    attack,
+                    attackCount: actor.attackCount,
+                    x,
+                    z,
+                    blend: 0,
+                })
             }
 
             if (gltf.scene) {
@@ -129,6 +173,10 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
     public render(clockInfo: ClockInfo): void {
         super.render(clockInfo)
         this.updateProfession()
+        for (const [actor, group] of this.actorGroupMap) {
+            const model = group.getObjectByName(ACTOR_MODEL_OBJECT3D_NAME)
+            if (model) this.updateEquipment(actor, model)
+        }
     }
 
     protected updatePosition(clockInfo: ClockInfo) {
@@ -154,7 +202,44 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
             animation.walk.setEffectiveWeight(animation.blend)
             // Keep the stride advancing as the walk fades into idle.
             animation.walk.setEffectiveTimeScale(MathUtils.clamp(speed / 2, 0.5, 1.5))
+            if (animation.attackCount !== actor.attackCount) {
+                animation.attackCount = actor.attackCount
+                animation.attack.reset().play()
+            }
             animation.mixer.update(deltaTime)
+        }
+    }
+
+    private updateEquipment(actor: HumanActor, skeletonRoot: Object3D) {
+        let attachments = this.attachments.get(skeletonRoot)
+        if (!attachments) {
+            attachments = new Map()
+            this.attachments.set(skeletonRoot, attachments)
+        }
+
+        for (const slot of equipmentSlots) {
+            const id = actor.getEquippedItem(slot)
+            const previous = attachments.get(slot)
+            if (previous?.id === id) continue
+            previous?.model?.removeFromParent()
+
+            const visual = id ? equipmentModels[id] : undefined
+            const bone =
+                visual &&
+                skeletonRoot.getObjectByName(
+                    PropertyBinding.sanitizeNodeName(visual.bone),
+                )
+            if (visual && bone) {
+                const model = visual.model.clone()
+                model.name = id!
+                model.position.set(...visual.position)
+                model.rotation.set(...visual.rotation)
+                model.scale.set(...visual.scale)
+                bone.add(model)
+                attachments.set(slot, { id, model })
+            } else {
+                attachments.set(slot, { id })
+            }
         }
     }
 
@@ -162,7 +247,8 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
 
     protected updateProfession() {
         this.actorGroupMap.forEach((group, actor) => {
-            if (!actor.profession) return
+            if (!actor.profession || !group.getObjectByName(ACTOR_MODEL_OBJECT3D_NAME))
+                return
             if (this.actorPreviousProfession.get(actor) === actor.profession) return
             this.actorPreviousProfession.set(actor, actor.profession)
             this.swapToProfessionActorModel(actor)

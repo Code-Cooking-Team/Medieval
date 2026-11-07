@@ -21,6 +21,7 @@ import { ProfessionType } from './types'
 
 export class WoodcutterProfession extends Profession {
     public type = ProfessionType.Woodcutter
+    public readonly defaultHeldItem = 'hatchet'
     public selectImportance = 4
 
     public treeId?: string

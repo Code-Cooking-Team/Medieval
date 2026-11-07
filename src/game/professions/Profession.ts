@@ -1,3 +1,4 @@
+import type { ItemId } from '+game/actors/units/human/equipment'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { Game } from '+game/Game'
@@ -9,10 +10,14 @@ import { ProfessionType } from './types'
 
 export abstract class Profession {
     public type = ProfessionType.Empty
+    public readonly defaultHeldItem: ItemId | null = null
     public selectImportance = 4
     public isPristine = true
 
-    constructor(public game: Game, public actor: HumanActor) {}
+    constructor(
+        public game: Game,
+        public actor: HumanActor,
+    ) {}
 
     public getAttackDamage(): number {
         return 0

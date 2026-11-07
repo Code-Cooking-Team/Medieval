@@ -7,9 +7,13 @@ import { Profession, ProfessionJSON } from '+game/professions/Profession'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
+import { Equipment, EquipmentSlot, ItemId, items } from './equipment'
+
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
+    private equipment: Equipment = { Hands: null, Armor: null }
+    public attackCount = 0
     public profession?: Profession
     public target?: Actor
     public home?: BuildingActor
@@ -34,6 +38,26 @@ export class HumanActor extends WalkableActor {
     public setProfession(profession: Profession) {
         this.profession = profession
         this.selectImportance = profession.selectImportance
+        this.equip('Hands', profession.defaultHeldItem)
+    }
+
+    public getEquippedItem(slot: EquipmentSlot) {
+        return this.equipment[slot]
+    }
+
+    public equip(slot: EquipmentSlot, id: ItemId | null) {
+        if (id !== null && items[id]?.slot !== slot) return
+
+        const previous = this.equipment[slot]
+        this.equipment[slot] = id
+
+        if (slot === 'Armor') {
+            this.maxHp +=
+                (id ? items[id].healthBonus : 0) -
+                (previous ? items[previous].healthBonus : 0)
+            this.hp = Math.min(this.hp, this.maxHp)
+        }
+        if (previous !== id) this.game.emitter.emit('equipmentChanged', this)
     }
 
     public setTarget(target: Actor) {
@@ -53,7 +77,8 @@ export class HumanActor extends WalkableActor {
             const professionDamage = this.profession.getAttackDamage()
             damage += professionDamage
         }
-        return damage
+        const heldItem = this.equipment.Hands
+        return damage + (heldItem ? items[heldItem].damageBonus : 0)
     }
 
     public setPathTo(position: Position, cancelTarget = true, clip = false) {
@@ -75,20 +100,32 @@ export class HumanActor extends WalkableActor {
 
         return {
             ...json,
+            equipment: { ...this.equipment },
             profession: this.profession?.toJSON(),
         }
     }
 
-    public fromJSON(json: HumanActorJSON) {
+    public fromJSON({ profession, equipment, ...json }: HumanActorJSON) {
         super.fromJSON(json)
+        this.equipment = { Hands: null, Armor: null }
 
-        if (json.profession) {
-            const Profession = professionByType[json.profession.type]
+        if (profession) {
+            const Profession = professionByType[profession.type]
 
             const instance = new Profession(this.game, this)
-            instance.fromJSON(json.profession)
+            instance.fromJSON(profession)
 
             this.setProfession(instance)
+        }
+
+        if (equipment) {
+            this.equip('Hands', equipment.Hands)
+            const armor = equipment.Armor
+            // Actor snapshots store the effective maximum, including armor.
+            if (armor && items[armor]?.slot === 'Armor') {
+                this.maxHp -= items[armor].healthBonus
+                this.equip('Armor', armor)
+            }
         }
     }
 
@@ -121,6 +158,7 @@ export class HumanActor extends WalkableActor {
         if (distance < config.human.attackDistance) {
             this.cancelPath()
             const damage = this.getAttackDamage()
+            this.attackCount++
             this.target.hit(damage, this)
             if (this.target.isDead()) {
                 this.target = undefined
@@ -133,5 +171,6 @@ export class HumanActor extends WalkableActor {
 }
 
 export interface HumanActorJSON extends WalkableActorJSON {
+    equipment?: Equipment
     profession?: ProfessionJSON
 }

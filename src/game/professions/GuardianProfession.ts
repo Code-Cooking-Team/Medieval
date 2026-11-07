@@ -7,6 +7,7 @@ import { ProfessionType } from './types'
 
 export class GuardianProfession extends Profession {
     public type = ProfessionType.Guardian
+    public readonly defaultHeldItem = 'sword'
     public selectImportance = 5
 
     protected material = new MeshStandardMaterial({ color: config.guardian.color })

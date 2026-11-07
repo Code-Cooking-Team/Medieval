@@ -158,20 +158,17 @@ export class RTSCamera implements Renderable {
             delta += this.camera.position.y * 0.01
         }
 
-        // Calculate where the camera would move
-        const direction = new Vector3(0, 0, 1)
-        direction.applyQuaternion(this.camera.quaternion)
-        const potentialNewPosition = this.camera.position.clone()
-        potentialNewPosition.add(direction.multiplyScalar(delta))
-
-        // Check if the movement would violate height limits
-        const wouldExceedLimits =
-            potentialNewPosition.y < config.camera.minHeight ||
-            potentialNewPosition.y > config.camera.maxHeight
-
-        // Only apply the translation if it stays within limits
-        if (!wouldExceedLimits) {
-            this.camera.translateZ(delta)
+        const direction = new Vector3(0, 0, 1).applyQuaternion(this.camera.quaternion)
+        const currentHeight = this.camera.position.y
+        const nextHeight = currentHeight + direction.y * delta
+        const clampedHeight = Math.max(
+            config.camera.minHeight,
+            Math.min(config.camera.maxHeight, nextHeight),
+        )
+        if (Math.abs(direction.y) > 1e-6 && nextHeight !== clampedHeight) {
+            delta = (clampedHeight - currentHeight) / direction.y
         }
+
+        this.camera.translateZ(delta)
     }
 }
