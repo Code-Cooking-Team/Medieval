@@ -3,15 +3,18 @@ import { Player, PlayerJSON } from '+game/player/types'
 import { distanceBetweenPoints, removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
-import { actorFromJSON } from './actors'
+import { actorByType, actorFromJSON } from './actors'
+import { ConstructionSiteActor } from './actors/buildings/construction/ConstructionSiteActor'
+import { ConstructionType } from './actors/buildings/construction/costs'
 import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
+import type { HumanActor } from './actors/units/human/HumanActor'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { BuildingActor } from './core/BuildingActor'
 import { Pathfinding } from './core/Pathfinding'
 import { playerFromJSON } from './player'
 import { HumanPlayer } from './player/HumanPlayer'
-import { ActorType, Position } from './types'
+import { ActorBlueprint, ActorType, Position } from './types'
 import { TileClass } from './world/Tile'
 import { applyTileGrid } from './world/tileCodes'
 import { WordJSON, World } from './world/World'
@@ -26,6 +29,8 @@ export class Game {
         actorAdded: Actor
         actorRemoved: Actor
         woodStockChanged: WoodCampActor
+        constructionProgress: ConstructionSiteActor
+        professionChanged: HumanActor
         started: undefined
         stopped: undefined
     }>('Game')
@@ -72,6 +77,7 @@ export class Game {
         const index = this.actors.indexOf(actor)
         if (index === -1) return
 
+        if (actor instanceof ConstructionSiteActor) actor.unassign()
         if (isBuildingActor(actor)) {
             this.restoreBuildingTerrain(actor, index)
             for (const unit of this.actors.filter(isHumanActor)) {
@@ -86,6 +92,7 @@ export class Game {
         removeArrayItem(this.actors, actor)
         for (const player of this.players) {
             if (player instanceof HumanPlayer && player.selectedActors.includes(actor)) {
+                if (player.constructionBuilder === actor) player.unselectBuilding()
                 player.selectActors(
                     player.selectedActors.filter((selected) => selected !== actor),
                 )
@@ -151,73 +158,188 @@ export class Game {
         rotation: number = 0,
         seed?: number,
     ): T | undefined {
+        const tile = this.world.hasTile(position)
+        if (!tile) return
+
         const actor = new ActorClass(this, player, position)
-
-        const currTail = this.world.getTile(position)
-
-        if (isWalkableActor(actor) && !currTail.canWalk) return
-
+        if (isWalkableActor(actor) && !tile.canWalk) return
         if (isBuildingActor(actor)) {
+            if (!this.canPlaceBuildings(actor.blueprint, [position], rotation)) return
             actor.setRotation(rotation)
-
-            if (!currTail.canBuild) return // TODO check entire grid
-
-            this.world.setMultipleTiles((set, get) => {
-                this.forEachBuildingTile(actor, (position, TileClass) => {
-                    const tile = new TileClass(get(position))
-                    tile.height = currTail.height
-                    set(position, tile)
-                })
-            })
+            this.placeBuildings([actor])
         }
-
         if (seed !== undefined) actor.seed = seed
         this.addActor(actor)
-
         return actor
     }
 
-    private forEachBuildingTile(
-        actor: BuildingActor,
-        callback: (position: Position, tileClass: TileClass) => void,
+    public canPlaceBuildings(
+        blueprint: ActorBlueprint,
+        positions: Position[],
+        rotation: number,
     ) {
-        const [x, y] = actor.position
+        const proposed = new Set<string>()
+        for (const position of positions) {
+            for (const [tilePosition] of this.buildingTiles(
+                blueprint,
+                position,
+                rotation,
+            )) {
+                const key = tilePosition.join(',')
+                if (proposed.has(key) || !this.world.hasTile(tilePosition)?.canBuild) {
+                    return false
+                }
+                proposed.add(key)
+            }
+        }
+
+        // Some footprint tiles, including those in old saves, are buildable paths.
+        return !this.actors
+            .filter(isBuildingActor)
+            .some((actor) =>
+                this.buildingTiles(actor.blueprint, actor.position, actor.rotation).some(
+                    ([position]) => proposed.has(position.join(',')),
+                ),
+            )
+    }
+
+    public placeConstructionSites(
+        builder: HumanActor,
+        type: ConstructionType,
+        placements: { position: Position; seed?: number }[],
+        rotation: number,
+    ) {
+        if (builder.isDead() || this.getActorById(builder.id) !== builder) return false
+        const blueprint = actorByType[type].blueprint!
+        if (
+            !this.canPlaceBuildings(
+                blueprint,
+                placements.map(({ position }) => position),
+                rotation,
+            )
+        ) {
+            return false
+        }
+
+        const sites = placements.map(({ position, seed }) => {
+            const site = new ConstructionSiteActor(this, builder.player, position)
+            site.setBuildingType(type)
+            site.setRotation(rotation)
+            if (seed !== undefined) site.seed = seed
+            return site
+        })
+        this.placeBuildings(sites)
+        for (const site of sites) {
+            this.addActor(site)
+            site.assign(builder)
+        }
+        return true
+    }
+
+    public completeConstruction(site: ConstructionSiteActor) {
+        const index = this.actors.indexOf(site)
+        if (index === -1 || site.remainingWood > 0) return
+        const { actorClass } = actorByType[site.buildingType]
+        const building = new actorClass(this, site.player, site.position)
+        building.setRotation(site.rotation)
+        building.seed = site.seed
+
+        site.unassign()
+        // The site's terrain is already the final footprint. Keep it in place.
+        this.actors[index] = building
+        this.emitter.emit('actorRemoved', site)
+        this.emitter.emit('actorAdded', building)
+        for (const player of this.players) {
+            if (player instanceof HumanPlayer && player.selectedActors.includes(site)) {
+                player.selectActors(
+                    player.selectedActors.map((actor) =>
+                        actor === site ? building : actor,
+                    ),
+                )
+            }
+        }
+    }
+
+    public getBuildingApproaches(actor: BuildingActor) {
+        const tiles = this.buildingTiles(actor.blueprint, actor.position, actor.rotation)
+        const [[left, top]] = tiles[0]!
+        const [[right, bottom]] = tiles[tiles.length - 1]!
+        const positions: Position[] = []
+        for (let x = left; x <= right; x++) {
+            positions.push([x, top - 1], [x, bottom + 1])
+        }
+        for (let y = top; y <= bottom; y++) {
+            positions.push([left - 1, y], [right + 1, y])
+        }
+        return positions
+    }
+
+    private placeBuildings(buildings: BuildingActor[]) {
+        this.world.setMultipleTiles((set, get) => {
+            for (const actor of buildings) {
+                const { height } = get(actor.position)
+                for (const [position, TileClass] of this.buildingTiles(
+                    actor.blueprint,
+                    actor.position,
+                    actor.rotation,
+                )) {
+                    const tile = new TileClass(get(position))
+                    tile.height = height
+                    set(position, tile)
+                }
+            }
+        })
+        if (!this.loop) this.pf.update()
+    }
+
+    private buildingTiles(blueprint: ActorBlueprint, [x, y]: Position, rotation: number) {
+        const tiles: [Position, TileClass][] = []
         applyTileGrid(
-            actor.blueprint.getGrid(),
+            blueprint.getGrid(),
             ([localX, localY], TileClass, [centerX, centerY]) => {
-                callback([x + localX - centerX, y + localY - centerY], TileClass)
+                tiles.push([[x + localX - centerX, y + localY - centerY], TileClass])
             },
-            actor.rotation,
+            rotation,
         )
+        return tiles
     }
 
     private restoreBuildingTerrain(actor: BuildingActor, index: number) {
         // Later buildings may have placed their own tiles over this footprint.
         const layersAbove = new Map<string, number>()
         for (const building of this.actors.slice(index + 1).filter(isBuildingActor)) {
-            this.forEachBuildingTile(building, (position) => {
+            for (const [position] of this.buildingTiles(
+                building.blueprint,
+                building.position,
+                building.rotation,
+            )) {
                 const key = position.join(',')
                 layersAbove.set(key, (layersAbove.get(key) ?? 0) + 1)
-            })
+            }
         }
 
         this.world.setMultipleTiles((set, get) => {
-            this.forEachBuildingTile(actor, (position, TileClass) => {
-                if (!this.world.hasTile(position)) return
+            for (const [position, TileClass] of this.buildingTiles(
+                actor.blueprint,
+                actor.position,
+                actor.rotation,
+            )) {
+                if (!this.world.hasTile(position)) continue
                 let tile = get(position)
                 let above: typeof tile | undefined
                 const depth = layersAbove.get(position.join(',')) ?? 0
 
-                for (let layer = 0; layer < depth; layer++) {
-                    if (!tile.previousTile) return
+                let layer = 0
+                for (; layer < depth && tile.previousTile; layer++) {
                     above = tile
                     tile = tile.previousTile
                 }
 
-                if (!(tile instanceof TileClass) || !tile.previousTile) return
+                if (layer !== depth || !(tile instanceof TileClass) || !tile.previousTile)
+                    continue
                 if (above) above.previousTile = tile.previousTile
                 else set(position, tile.previousTile)
-            })
+            }
         })
     }
 

@@ -1,8 +1,15 @@
+import { ConstructionSiteActor } from '+game/actors/buildings/construction/ConstructionSiteActor'
+import {
+    constructionCosts,
+    ConstructionType,
+    isConstructionType,
+} from '+game/actors/buildings/construction/costs'
 import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { isHumanActor, isWoodCampActor } from '+game/actors/helpers'
+import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
-import { ProfessionType } from '+game/professions/types'
 import { HumanPlayer } from '+game/player/HumanPlayer'
+import { ProfessionType } from '+game/professions/types'
 import { ActorType } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
@@ -11,7 +18,7 @@ import { ActorIcon } from '+ui/components/icons/ActorIcon'
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
 import { Axe } from 'lucide-react'
-import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 interface SelectedListProps {
     humanPlayer: HumanPlayer
@@ -45,16 +52,27 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
         return (
             <ActorDetails>
                 <Box as="strong" display="inline-flex" alignItems="center" columnGap={2}>
-                    <ActorIcon type={singleActor.type} />
-                    {singleActor.type}
+                    {singleActor instanceof ConstructionSiteActor ? (
+                        <>
+                            <ActorIcon type={singleActor.buildingType} />
+                            {buildingName(singleActor.buildingType)} Construction Site
+                        </>
+                    ) : (
+                        <>
+                            <ActorIcon type={singleActor.type} />
+                            {singleActor.type}
+                        </>
+                    )}
                 </Box>
                 {isHumanActor(singleActor) && (
-                    <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
-                        {singleActor.profession?.type === ProfessionType.Woodcutter && (
-                            <Axe size={16} aria-hidden="true" />
-                        )}
-                        {singleActor.profession?.type || noProfession}
-                    </Box>
+                    <HumanDetails
+                        key={singleActor.id}
+                        human={singleActor}
+                        player={humanPlayer}
+                    />
+                )}
+                {singleActor instanceof ConstructionSiteActor && (
+                    <SiteProgress site={singleActor} />
                 )}
                 <span>
                     {singleActor.hp}/{singleActor.maxHp} HP
@@ -122,6 +140,80 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
     function selectActorsByType(type: ActorType) {
         humanPlayer.selectActors(selectedActors.filter((actor) => actor.type === type))
     }
+}
+
+const buildOptions = Object.keys(constructionCosts) as ConstructionType[]
+
+function buildingName(type: ConstructionType) {
+    return type === ActorType.WoodCamp ? 'Wood Camp' : type
+}
+
+const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlayer }) => {
+    const [showPicker, setShowPicker] = useState(false)
+    const subscribeProfession = useCallback(
+        (refresh: () => void) => human.game.emitter.on('professionChanged', refresh),
+        [human],
+    )
+    const profession = useSyncExternalStore(subscribeProfession, () => human.profession)
+    const subscribePlacement = useCallback(
+        (refresh: () => void) =>
+            player.emitter.on(['selectBuilding', 'unselectBuilding'], refresh),
+        [player],
+    )
+    const placing = useSyncExternalStore(subscribePlacement, () =>
+        player.constructionBuilder === human ? player.selectedBuilding : undefined,
+    )
+
+    return (
+        <>
+            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
+                {profession?.type === ProfessionType.Woodcutter && (
+                    <Axe size={16} aria-hidden="true" />
+                )}
+                {profession?.type || noProfession}
+            </Box>
+            {human.player === player && !human.isDead() && (
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    flexWrap="wrap"
+                    columnGap={2}
+                    rowGap={2}
+                    style={{ pointerEvents: 'auto' }}
+                >
+                    <Button label="Build" onClick={() => setShowPicker(!showPicker)} />
+                    {showPicker &&
+                        buildOptions.map((type) => (
+                            <Button
+                                key={type}
+                                icon={<ActorIcon type={type} />}
+                                label={buildingName(type)}
+                                onClick={() => {
+                                    player.selectBuilding(type, human)
+                                    setShowPicker(false)
+                                }}
+                            />
+                        ))}
+                    {placing && isConstructionType(placing) && (
+                        <span>{buildingName(placing)} · R to rotate · Esc to exit</span>
+                    )}
+                </Box>
+            )}
+        </>
+    )
+}
+
+const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
+    const subscribe = useCallback(
+        (refresh: () => void) => site.game.emitter.on('constructionProgress', refresh),
+        [site],
+    )
+    const wood = useSyncExternalStore(subscribe, () => site.deliveredWood)
+    return (
+        <span>
+            Wood {wood} / {constructionCosts[site.buildingType]}
+        </span>
+    )
 }
 
 const CampStock = ({ camp }: { camp: WoodCampActor }) => {

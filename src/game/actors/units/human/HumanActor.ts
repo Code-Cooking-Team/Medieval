@@ -4,6 +4,7 @@ import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor, WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
 import { Profession, ProfessionJSON } from '+game/professions/Profession'
+import { ProfessionType } from '+game/professions/types'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
@@ -32,8 +33,16 @@ export class HumanActor extends WalkableActor {
     }
 
     public setProfession(profession: Profession) {
+        if (
+            this.profession &&
+            (this.profession.type === ProfessionType.Builder ||
+                profession.type === ProfessionType.Builder)
+        ) {
+            this.cancelPath()
+        }
         this.profession = profession
         this.selectImportance = profession.selectImportance
+        this.game.emitter.emit('professionChanged', this)
     }
 
     public setTarget(target: Actor) {
@@ -79,14 +88,14 @@ export class HumanActor extends WalkableActor {
         }
     }
 
-    public fromJSON(json: HumanActorJSON) {
+    public fromJSON({ profession, ...json }: HumanActorJSON) {
         super.fromJSON(json)
 
-        if (json.profession) {
-            const Profession = professionByType[json.profession.type]
+        if (profession) {
+            const Profession = professionByType[profession.type]
 
             const instance = new Profession(this.game, this)
-            instance.fromJSON(json.profession)
+            instance.fromJSON(profession)
 
             this.setProfession(instance)
         }

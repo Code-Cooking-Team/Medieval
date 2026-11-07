@@ -10,6 +10,7 @@ export interface WordJSON {
 }
 
 export class World {
+    public tileRevision = 0
     public emitter = new Emitter<{ tailUpdate: undefined }>('Word')
 
     constructor(public tiles: TileGrid) {}
@@ -71,5 +72,6 @@ export class World {
         const currentTile = this.tiles?.[y]?.[x]
         if (!currentTile) throw new Error(`[Word:setTile] No tile at ${x}, ${y}`)
         this.tiles[y]![x] = tile
+        this.tileRevision++
     }
 }

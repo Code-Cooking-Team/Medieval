@@ -38,7 +38,7 @@ export class KeyboardInteractions {
                 break
 
             case 'Escape':
-                this.player.unselectActor()
+                if (!this.player.constructionBuilder) this.player.unselectActor()
                 this.player.setBuildingRemoval(false)
                 this.player.unselectBuilding()
                 break

@@ -15,6 +15,7 @@ export enum ActorType {
     WoodCamp = 'WoodCamp',
     Barracks = 'Barracks',
     Stakewall = 'Stakewall',
+    ConstructionSite = 'ConstructionSite',
 
     Tree = 'Tree',
     Boar = 'Boar',
