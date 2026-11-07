@@ -1,4 +1,14 @@
-import { BoxGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
+import { TREE_BARK_COLOR } from '+game/const'
+
+import {
+    BoxGeometry,
+    Color,
+    CylinderGeometry,
+    Group,
+    LinearSRGBColorSpace,
+    Mesh,
+    MeshStandardMaterial,
+} from 'three'
 
 import { ItemId } from './equipment'
 
@@ -55,4 +65,23 @@ const grip = {
 export const equipmentModels: Partial<Record<ItemId, EquipmentModel>> = {
     sword: { ...grip, model: sword },
     hatchet: { ...grip, model: hatchet },
+}
+
+const log = new Group()
+const bark = new MeshStandardMaterial({
+    color: new Color().setHex(TREE_BARK_COLOR, LinearSRGBColorSpace),
+    metalness: 0.8,
+    roughness: 1,
+    flatShading: true,
+})
+const endGrain = new MeshStandardMaterial({ color: 0xb2a08b })
+const trunk = new Mesh(new CylinderGeometry(11, 13, 124, 6), [bark, endGrain, endGrain])
+trunk.castShadow = true
+trunk.receiveShadow = true
+log.add(trunk)
+
+export const carriedLogModel: EquipmentModel = {
+    ...grip,
+    model: log,
+    position: [-9, 0, 5],
 }

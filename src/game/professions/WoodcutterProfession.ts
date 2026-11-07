@@ -59,6 +59,24 @@ export class WoodcutterProfession extends Profession {
         super(game, actor)
     }
 
+    public get hasWood(): boolean {
+        return this.collectedTreeHP > 0
+    }
+
+    public get isChopping(): boolean {
+        const state = this.machine.currentState
+        // The machine visits WoodNeeded between successive swings at the same tree.
+        return (
+            (state === 'ChoppingTree' || state === 'WoodNeeded') &&
+            !this.actor.target &&
+            !this.hasPath() &&
+            !this.isFull() &&
+            this.getCamp() !== undefined &&
+            !this.campFull() &&
+            this.nearTree()
+        )
+    }
+
     public getAttackDamage(): number {
         return config.woodcutter.attackDamage
     }
@@ -188,7 +206,7 @@ export class WoodcutterProfession extends Profession {
      */
 
     private isEmpty() {
-        return this.collectedTreeHP === 0
+        return !this.hasWood
     }
 
     private isFull() {

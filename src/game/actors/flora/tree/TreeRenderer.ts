@@ -1,4 +1,5 @@
 import { config } from '+config'
+import { TREE_BARK_COLOR } from '+game/const'
 import { Game } from '+game/Game'
 import { ActorType, ClockInfo, Renderable } from '+game/types'
 import { seededRandom, updateObjectPosition } from '+helpers'
@@ -85,7 +86,7 @@ export class TreeRenderer implements Renderable {
     // Both meshes share a pivot at the base of the trunk.
     private models = [0, 1, 2, 3].map(createTreeModel)
     private boughMaterial = new MeshStandardMaterial({
-        color: new Color().setHex(0x2e2625, LinearSRGBColorSpace),
+        color: new Color().setHex(TREE_BARK_COLOR, LinearSRGBColorSpace),
         metalness: 0.8,
         roughness: 1,
     })
