@@ -3,6 +3,8 @@ import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 import { createConfig } from './lib/createConfig'
 import { colorInput } from './lib/definitions'
 
+const CLOSE_CAMERA_HEIGHT = 0.65
+
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 250,
@@ -13,7 +15,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         fov: 60,
         far: 350,
         near: 0.1,
-        minHeight: 2.0,
+        minHeight: CLOSE_CAMERA_HEIGHT,
         maxHeight: 8.0,
     },
 
@@ -111,13 +113,16 @@ export const { config, resetConfig, saveConfig } = createConfig({
         choppingDamage: 20,
         gatheringSpeed: 30,
         capacity: 50,
-        attackDamage: 15,
+        attackDamage: 10,
         color: colorInput(0x134714),
     },
 
     guardian: {
         hp: 100,
-        attackDamage: 25,
+        attackDamage: 15,
         color: colorInput(0x225c43),
     },
 })
+
+// Existing settings can still contain the previous default.
+if (config.camera.minHeight === 2) config.camera.minHeight = CLOSE_CAMERA_HEIGHT

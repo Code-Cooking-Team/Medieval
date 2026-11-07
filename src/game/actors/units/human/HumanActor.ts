@@ -8,9 +8,15 @@ import { ProfessionType } from '+game/professions/types'
 import { ActorType, Position } from '+game/types'
 import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
+import { Equipment, EquipmentSlot, ItemId, items } from './equipment'
+
+type HumanAction = 'attack' | 'chop'
+
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
+    private equipment: Equipment = { Hands: null, Armor: null }
+    public lastAction?: { kind: HumanAction; origin: Position; target: Position }
     public profession?: Profession
     public target?: Actor
     public home?: BuildingActor
@@ -28,6 +34,15 @@ export class HumanActor extends WalkableActor {
         }
     }
 
+    public recordAction(kind: HumanAction, target: Actor) {
+        // Keep the strike direction available even if the hit removes the target.
+        this.lastAction = {
+            kind,
+            origin: [...this.position],
+            target: [...target.position],
+        }
+    }
+
     public setHome(home: BuildingActor) {
         this.home = home
     }
@@ -42,7 +57,27 @@ export class HumanActor extends WalkableActor {
         }
         this.profession = profession
         this.selectImportance = profession.selectImportance
+        this.equip('Hands', profession.defaultHeldItem)
         this.game.emitter.emit('professionChanged', this)
+    }
+
+    public getEquippedItem(slot: EquipmentSlot) {
+        return this.equipment[slot]
+    }
+
+    public equip(slot: EquipmentSlot, id: ItemId | null) {
+        if (id !== null && items[id]?.slot !== slot) return
+
+        const previous = this.equipment[slot]
+        this.equipment[slot] = id
+
+        if (slot === 'Armor') {
+            this.maxHp +=
+                (id ? items[id].healthBonus : 0) -
+                (previous ? items[previous].healthBonus : 0)
+            this.hp = Math.min(this.hp, this.maxHp)
+        }
+        if (previous !== id) this.game.emitter.emit('equipmentChanged', this)
     }
 
     public setTarget(target: Actor) {
@@ -62,7 +97,8 @@ export class HumanActor extends WalkableActor {
             const professionDamage = this.profession.getAttackDamage()
             damage += professionDamage
         }
-        return damage
+        const heldItem = this.equipment.Hands
+        return damage + (heldItem ? items[heldItem].damageBonus : 0)
     }
 
     public setPathTo(position: Position, cancelTarget = true, clip = false) {
@@ -84,12 +120,14 @@ export class HumanActor extends WalkableActor {
 
         return {
             ...json,
+            equipment: { ...this.equipment },
             profession: this.profession?.toJSON(),
         }
     }
 
-    public fromJSON({ profession, ...json }: HumanActorJSON) {
+    public fromJSON({ profession, equipment, ...json }: HumanActorJSON) {
         super.fromJSON(json)
+        this.equipment = { Hands: null, Armor: null }
 
         if (profession) {
             const Profession = professionByType[profession.type]
@@ -98,6 +136,16 @@ export class HumanActor extends WalkableActor {
             instance.fromJSON(profession)
 
             this.setProfession(instance)
+        }
+
+        if (equipment) {
+            this.equip('Hands', equipment.Hands)
+            const armor = equipment.Armor
+            // Actor snapshots store the effective maximum, including armor.
+            if (armor && items[armor]?.slot === 'Armor') {
+                this.maxHp -= items[armor].healthBonus
+                this.equip('Armor', armor)
+            }
         }
     }
 
@@ -130,6 +178,7 @@ export class HumanActor extends WalkableActor {
         if (distance < config.human.attackDistance) {
             this.cancelPath()
             const damage = this.getAttackDamage()
+            this.recordAction('attack', this.target)
             this.target.hit(damage, this)
             if (this.target.isDead()) {
                 this.target = undefined
@@ -142,5 +191,6 @@ export class HumanActor extends WalkableActor {
 }
 
 export interface HumanActorJSON extends WalkableActorJSON {
+    equipment?: Equipment
     profession?: ProfessionJSON
 }

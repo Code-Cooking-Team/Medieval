@@ -1,4 +1,6 @@
 import { config } from '+config'
+import { actorByType } from '+game/actors'
+import { BuildingActor } from '+game/core/BuildingActor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
@@ -15,10 +17,13 @@ import {
     DirectionalLight,
     Group,
     InstancedMesh,
+    LOD,
     Matrix4,
     Mesh,
     MeshStandardMaterial,
+    Object3D,
     PlaneGeometry,
+    PointLight,
     Sphere,
     Vector2,
     Vector3,
@@ -34,8 +39,26 @@ const { HouseRenderer } = await import('+game/actors/buildings/house/HouseRender
 const { StakewallRenderer } =
     await import('+game/actors/buildings/stakewall/StakewallRenderer')
 
-type HouseActor = InstanceType<typeof HouseActor>
-type StakewallActor = InstanceType<typeof StakewallActor>
+const { BarracksActor } = await import('+game/actors/buildings/barracks/BarracksActor')
+const { GuildhallActor } = await import('+game/actors/buildings/guildhall/GuildhallActor')
+const { WoodCampActor } = await import('+game/actors/buildings/woodCamp/WoodCampActor')
+const { BarracksRenderer } =
+    await import('+game/actors/buildings/barracks/BarracksRenderer')
+const { GuildhallRenderer } =
+    await import('+game/actors/buildings/guildhall/GuildhallRenderer')
+const { WoodCampRenderer } =
+    await import('+game/actors/buildings/woodCamp/WoodCampRenderer')
+
+const buildings = {
+    house: [HouseActor, HouseRenderer],
+    stakewall: [StakewallActor, StakewallRenderer],
+    barracks: [BarracksActor, BarracksRenderer],
+    guildhall: [GuildhallActor, GuildhallRenderer],
+    woodCamp: [WoodCampActor, WoodCampRenderer],
+} as const
+type BuildingLayout = keyof typeof buildings
+const buildingLayouts = Object.keys(buildings) as BuildingLayout[]
+type FixtureActor = InstanceType<(typeof buildings)[BuildingLayout][0]>
 
 const tileSize = config.renderer.tileSize
 config.renderer.light = false
@@ -89,10 +112,9 @@ outline.hiddenEdgeColor.setHex(0x5eff64)
 composer.addPass(outline)
 composer.addPass(new OutputPass())
 
-const actorRenderers = [
-    new HouseRenderer(game, player),
-    new StakewallRenderer(game, player),
-]
+const actorRenderers = Object.values(buildings).map(
+    ([, Renderer]) => new Renderer(game, player),
+)
 for (const actors of actorRenderers) {
     actors.group.position.set(-8, 0, -8)
     actors.init()
@@ -101,7 +123,7 @@ renderer.getInteractionObjectList = () =>
     actorRenderers.flatMap((item) => item.getInteractionShapes())
 renderer.getGroundChildren = () => [ground]
 
-type Layout = 'empty' | 'house' | 'stakewall' | 'mixed'
+type Layout = 'empty' | BuildingLayout | 'mixed'
 type View = 'near' | 'mixed' | 'far'
 type Mode = 'clones' | 'instances'
 
@@ -109,10 +131,10 @@ const clones = new Group()
 clones.position.set(-8, 0, -8)
 scene.add(clones)
 const models = new Map<
-    HouseActor | StakewallActor,
-    ReturnType<HouseActor['blueprint']['getPlaceholder']>['model']
+    FixtureActor,
+    ReturnType<FixtureActor['blueprint']['getPlaceholder']>['model']
 >()
-let actors: (HouseActor | StakewallActor)[] = []
+let actors: FixtureActor[] = []
 
 async function load(layout: Layout) {
     player.unselectActor()
@@ -122,10 +144,11 @@ async function load(layout: Layout) {
     clones.clear()
     const pending: Promise<void>[] = []
     for (let index = 0; index < (layout === 'empty' ? 0 : 100); index++) {
+        if (layout === 'empty') break
         const Actor =
-            layout === 'house' || (layout === 'mixed' && index % 2 === 0)
-                ? HouseActor
-                : StakewallActor
+            buildings[
+                layout === 'mixed' ? (index % 2 === 0 ? 'house' : 'stakewall') : layout
+            ][0]
         const actor = new Actor(game, player, [
             26 + (index % 10) * 12,
             26 + Math.floor(index / 10) * 12,
@@ -150,6 +173,14 @@ async function load(layout: Layout) {
         pending.push(promise)
     }
     await Promise.all(pending)
+    // Keep the fixture light rig identical across all building types.
+    const lights: PointLight[] = []
+    for (const { group } of actorRenderers) {
+        group.traverse((object) => {
+            if (object instanceof PointLight) lights.push(object)
+        })
+    }
+    lights.forEach((light) => light.removeFromParent())
 }
 
 function aim(view: View, offset = 0) {
@@ -243,10 +274,90 @@ function batches(visibleOnly = true) {
     )
 }
 
-function signature(actor: HouseActor | StakewallActor) {
+function signature(actor: FixtureActor, level = 0) {
     return actor.blueprint.buildingModel
-        .getPrimitives(0, actor.seed)
-        .map(({ mesh, matrix }) => [mesh.geometry.id, matrix.elements])
+        .getPrimitives(level, actor.seed)
+        .map(({ mesh, matrix }) => [mesh.geometry.id, matrix.elements] as const)
+}
+
+function checkActiveLevels() {
+    const expected = new Map<string, number>()
+    const pose = new Object3D()
+    const matrix = new Matrix4()
+    const center = new Vector3()
+    const mapOffset = new Vector3(8, 0, 8)
+    const key = (geometry: number) =>
+        `${geometry}:${matrix.elements.map(Math.fround).join(',')}`
+    for (const actor of actors) {
+        updateObjectPosition(
+            pose,
+            actor.position,
+            game.world.getTile(actor.position).height,
+        )
+        pose.rotation.y = rotationIndexToDeg(actor.rotation)
+        pose.updateMatrix()
+        const distance = camera.position.distanceTo(
+            center.copy(pose.position).sub(mapOffset),
+        )
+        const model = actor.blueprint.buildingModel
+        const level = model.levels.findLastIndex(
+            ({ distanceInTiles }) => distance >= distanceInTiles * tileSize,
+        )
+        for (const primitive of model.getPrimitives(level, actor.seed)) {
+            matrix.multiplyMatrices(pose.matrix, primitive.matrix)
+            const id = key(primitive.mesh.geometry.id)
+            expected.set(id, (expected.get(id) ?? 0) + 1)
+        }
+    }
+    for (const batch of batches()) {
+        for (let slot = 0; slot < batch.count; slot++) {
+            batch.getMatrixAt(slot, matrix)
+            const id = key(batch.geometry.id)
+            expected.set(id, (expected.get(id) ?? 0) - 1)
+        }
+        assert(batch.castShadow && batch.receiveShadow, 'Building shadows are disabled')
+    }
+    assert(
+        [...expected.values()].every((count) => count === 0),
+        'Incorrect active LOD slots',
+    )
+}
+
+function checkThresholds(target: FixtureActor) {
+    const [x, y] = target.position
+    const height = game.world.getTile(target.position).height
+    const center = new Vector3(x * tileSize - 8, height * tileSize, y * tileSize - 8)
+    const { levels } = target.blueprint.buildingModel
+    const expectLevel = (distance: number, level: number) => {
+        camera.position.copy(center).add(new Vector3(0, distance * tileSize, 0.01))
+        camera.lookAt(center)
+        camera.updateMatrixWorld()
+        actorRenderers.forEach((renderer) => renderer.render(clock, camera))
+        const expected = signature(target, level)
+            .map(([geometry]) => geometry)
+            .sort()
+        const actual = actorRenderers
+            .flatMap((renderer) =>
+                renderer
+                    .getSelectedGroups()
+                    .flatMap((batch) =>
+                        Array.from({ length: batch.count }, () => batch.geometry.id),
+                    ),
+            )
+            .sort()
+        assert(
+            JSON.stringify(actual) === JSON.stringify(expected),
+            'Selected LOD mismatch',
+        )
+    }
+    for (let level = 1; level < levels.length; level++) {
+        const distance = levels[level]!.distanceInTiles
+        expectLevel(distance * 0.95, level - 1)
+        expectLevel(distance * 1.01, level)
+        expectLevel(distance * 0.99, level)
+        expectLevel(distance * 0.91, level)
+        expectLevel(distance * 0.89, level - 1)
+    }
 }
 
 function point(position: Vector3) {
@@ -254,10 +365,11 @@ function point(position: Vector3) {
     return { clientX: (position.x + 1) * 400, clientY: (1 - position.y) * 300 }
 }
 
-async function check(layout: 'house' | 'stakewall' | 'mixed') {
+async function check(layout: BuildingLayout | 'mixed') {
     await load(layout)
     aim('near')
     draw('instances')
+    checkActiveLevels()
     const target = actors[44]!
     const position = new Vector3(
         target.position[0] * tileSize - 8,
@@ -295,14 +407,20 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
     const near = draw('instances').triangles
     aim('far')
     const far = draw('instances').triangles
+    checkActiveLevels()
     assert(
         player.selectedActors[0] === target && outline.selectedObjects.length > 0,
         'Selection lost at far view',
     )
-    if (layout !== 'stakewall')
-        assert(far < near, 'Far House LOD must submit fewer triangles')
+    assert(far < near, 'Far LOD must submit fewer triangles')
+    // Reset hysteresis for corner actors before approaching the mixed view.
+    aim('near')
+    camera.position.y = 1
+    camera.updateMatrixWorld()
+    actorRenderers.forEach((renderer) => renderer.render(clock, camera))
     aim('mixed')
     draw('instances')
+    checkActiveLevels()
     if (layout === 'house') {
         const triangleLevels = new Set(
             batches().map(({ geometry }) => (geometry.index?.count ?? 0) / 3),
@@ -312,6 +430,12 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
             'Mixed view must use all three House levels',
         )
     }
+    aim('near')
+    draw('instances')
+    checkThresholds(target)
+    camera.position.set(0, 1, 0)
+    camera.updateMatrixWorld()
+    actorRenderers.forEach((renderer) => renderer.render(clock, camera))
     aim('near')
     draw('instances')
     const boxSelect = () => {
@@ -327,18 +451,21 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
         'Box selection must pick target proxy',
     )
     const before = signature(target)
+    const beforeFar = signature(target, 1)
     const loaded = Game.fromJSON(JSON.parse(JSON.stringify(game.toJSON())))
     const restored = loaded.getActorById(target.id) as typeof target
     assert(
         JSON.stringify(signature(restored)) === JSON.stringify(before),
-        'Variant changed after save/load',
+        'Near variant changed after save/load',
+    )
+    assert(
+        JSON.stringify(signature(restored, 1)) === JSON.stringify(beforeFar),
+        'Far variant changed after save/load',
     )
     const loadedPlayer = loaded.players[0] as HumanPlayer
     loadedPlayer.selectActors([restored])
-    const loadedRenderer =
-        restored instanceof HouseActor
-            ? new HouseRenderer(loaded, loadedPlayer)
-            : new StakewallRenderer(loaded, loadedPlayer)
+    const [Actor, ActorRenderer] = buildings[layout === 'mixed' ? 'house' : layout]
+    const loadedRenderer = new ActorRenderer(loaded, loadedPlayer)
     loadedRenderer.group.position.set(-8, 0, -8)
     loadedRenderer.init()
     await Promise.resolve()
@@ -358,8 +485,9 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
                 ),
             }))
             .sort((a, b) => a.geometry - b.geometry)
-    const sourceRenderer =
-        target instanceof HouseActor ? actorRenderers[0]! : actorRenderers[1]!
+    const sourceRenderer = actorRenderers.find(
+        ({ actorType }) => actorType === target.type,
+    )!
     assert(
         JSON.stringify(snapshot(loadedRenderer.getSelectedGroups())) ===
             JSON.stringify(snapshot(sourceRenderer.getSelectedGroups())),
@@ -383,10 +511,7 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
             beforeCount - before.length,
         'Removed actor left active primitives',
     )
-    const replacement =
-        target instanceof HouseActor
-            ? new HouseActor(game, player, target.position)
-            : new StakewallActor(game, player, target.position)
+    const replacement = new Actor(game, player, target.position)
     replacement.seed = target.seed + 1000
     replacement.rotation = target.rotation
     game.addActor(replacement)
@@ -426,7 +551,16 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
         }
     }
     if (layout === 'stakewall') {
-        const signatures = actors.map(signature)
+        const signatures = actors.map((actor) => signature(actor))
+        for (const actor of actors) {
+            const near = signature(actor)
+            const far = signature(actor, 1)
+            assert(
+                JSON.stringify(near.map(([, matrix]) => matrix)) ===
+                    JSON.stringify(far.map(([, matrix]) => matrix)),
+                'Stakewall variant transforms changed across LODs',
+            )
+        }
         assert(
             signatures.every((value) => value.length >= 2),
             'Missing Main post',
@@ -447,20 +581,21 @@ async function check(layout: 'house' | 'stakewall' | 'mixed') {
     input.disable()
 }
 
-async function checkPreview() {
+async function checkPreview(type: ActorType, view: View) {
     await load('empty')
-    aim('near')
+    aim(view)
     draw('instances')
     const interactions = new InteractionsManager(game, renderer, player)
     interactions.init()
-    player.selectBuilding(ActorType.Stakewall)
+    player.selectBuilding(type)
     await Promise.resolve()
     const preview = scene.children.at(-1)!.children[0]!
-    const model = preview.children[0]!
-    await new StakewallActor(game, player).blueprint.buildingModel.ready
+    const model = preview.children[0] as LOD
+    await actorByType[type].blueprint!.getPlaceholder().promise
     await Promise.resolve()
     player.rotateBuilding()
     await Promise.resolve()
+    const rotation = player.selectedBuildingRotation
     const center = point(new Vector3())
     webgl.domElement.dispatchEvent(new PointerEvent('pointermove', center))
     webgl.domElement.dispatchEvent(
@@ -469,15 +604,16 @@ async function checkPreview() {
     assert(preview.children[0] === model, 'Pointer movement or rotation rerolled preview')
     const expected: number[][] = []
     model.updateWorldMatrix(true, true)
-    model.traverse((object) => {
+    model.update(camera)
+    model.traverseVisible((object) => {
         if (object instanceof Mesh) expected.push(object.matrixWorld.elements.slice())
     })
     webgl.domElement.dispatchEvent(
         new MouseEvent('click', { ...center, clientX: center.clientX + 2 }),
     )
     await Promise.resolve()
-    const placed = game.findActorsByType(ActorType.Stakewall)[0] as StakewallActor
-    assert(placed?.rotation === 1, 'Placement lost gameplay rotation')
+    const placed = game.findActorsByType(type)[0] as BuildingActor
+    assert(placed?.rotation === rotation, 'Placement lost gameplay rotation')
     draw('instances')
     const actual = batches().map((batch) => {
         const matrix = new Matrix4()
@@ -493,7 +629,7 @@ async function checkPreview() {
                     ),
                 ),
             ),
-        'Placement changed preview variant or transform',
+        `Placement changed ${type} preview variant or transform in ${view} view`,
     )
     interactions.destroy()
     player.unselectBuilding()
@@ -504,7 +640,7 @@ Object.assign(window, {
     buildingBenchmark: {
         async run(sampleCount = 24) {
             const rows = []
-            for (const layout of ['empty', 'house', 'stakewall', 'mixed'] as const) {
+            for (const layout of ['empty', ...buildingLayouts, 'mixed'] as const) {
                 for (const view of ['near', 'mixed', 'far'] as const) {
                     for (const mode of ['clones', 'instances'] as const) {
                         await load(layout)
@@ -526,10 +662,13 @@ Object.assign(window, {
             }
         },
         async check() {
-            for (const layout of ['house', 'stakewall', 'mixed'] as const)
+            for (const layout of [...buildingLayouts, 'mixed'] as const)
                 await check(layout)
-            await checkPreview()
-            return 'Click, box, outline, all House LODs, save, removal, replacement, bounds and preview passed'
+            for (const { actorType } of actorRenderers) {
+                await checkPreview(actorType, 'near')
+                await checkPreview(actorType, 'far')
+            }
+            return 'LOD slots, hysteresis, click, box, outline, save, removal, replacement, bounds and previews passed'
         },
         async screenshot(layout: Layout, view: View, selected = false) {
             await load(layout)

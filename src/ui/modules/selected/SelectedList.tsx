@@ -6,6 +6,7 @@ import {
 } from '+game/actors/buildings/construction/costs'
 import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { isHumanActor, isWoodCampActor } from '+game/actors/helpers'
+import { EquipmentSlot, items } from '+game/actors/units/human/equipment'
 import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
 import { HumanPlayer } from '+game/player/HumanPlayer'
@@ -77,6 +78,7 @@ export const SelectedList = ({ humanPlayer }: SelectedListProps) => {
                 <span>
                     {singleActor.hp}/{singleActor.maxHp} HP
                 </span>
+                {isHumanActor(singleActor) && <EquippedSlots actor={singleActor} />}
                 {isWoodCampActor(singleActor) && <CampStock camp={singleActor} />}
             </ActorDetails>
         )
@@ -214,6 +216,27 @@ const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
             Wood {wood} / {constructionCosts[site.buildingType]}
         </span>
     )
+}
+
+const equipmentSlots: EquipmentSlot[] = ['Hands', 'Armor']
+
+const EquippedSlots = ({ actor }: { actor: HumanActor }) => {
+    const subscribe = useCallback(
+        (refresh: () => void) =>
+            actor.game.emitter.on('equipmentChanged', ({ data }) => {
+                if (data === actor) refresh()
+            }),
+        [actor],
+    )
+    const description = useSyncExternalStore(subscribe, () =>
+        equipmentSlots
+            .flatMap((slot) => {
+                const id = actor.getEquippedItem(slot)
+                return id ? [`${slot}: ${items[id].name}`] : []
+            })
+            .join(' · '),
+    )
+    return description ? <span>{description}</span> : null
 }
 
 const CampStock = ({ camp }: { camp: WoodCampActor }) => {

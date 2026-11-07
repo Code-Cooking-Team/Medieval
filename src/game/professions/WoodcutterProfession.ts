@@ -5,7 +5,7 @@ import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
-import { isSamePosition } from '+helpers'
+import { distanceBetweenPoints, isSamePosition } from '+helpers'
 
 import {
     Mesh,
@@ -21,6 +21,7 @@ import { ProfessionType } from './types'
 
 export class WoodcutterProfession extends Profession {
     public type = ProfessionType.Woodcutter
+    public readonly defaultHeldItem = 'hatchet'
     public selectImportance = 4
 
     public treeId?: string
@@ -56,6 +57,24 @@ export class WoodcutterProfession extends Profession {
         public actor: HumanActor,
     ) {
         super(game, actor)
+    }
+
+    public get hasWood(): boolean {
+        return this.collectedTreeHP > 0
+    }
+
+    public get isChopping(): boolean {
+        const state = this.machine.currentState
+        // The machine visits WoodNeeded between successive swings at the same tree.
+        return (
+            (state === 'ChoppingTree' || state === 'WoodNeeded') &&
+            !this.actor.target &&
+            !this.hasPath() &&
+            !this.isFull() &&
+            this.getCamp() !== undefined &&
+            !this.campFull() &&
+            this.nearTree()
+        )
     }
 
     public getAttackDamage(): number {
@@ -157,8 +176,9 @@ export class WoodcutterProfession extends Profession {
 
     private chopTree() {
         const tree = this.getTree()
-        if (!tree) return
+        if (!tree || !this.isWithinChoppingRange(tree)) return
 
+        this.actor.recordAction('chop', tree)
         const damage = Math.round(config.woodcutter.choppingDamage * Math.random())
         this.collectedTreeHP += tree.hit(damage)
     }
@@ -186,7 +206,7 @@ export class WoodcutterProfession extends Profession {
      */
 
     private isEmpty() {
-        return this.collectedTreeHP === 0
+        return !this.hasWood
     }
 
     private isFull() {
@@ -198,8 +218,15 @@ export class WoodcutterProfession extends Profession {
     }
 
     private nearTree() {
-        const actors = this.game.findActorsByPosition(this.actor.position, 1.7)
-        return actors.some((actor) => actor.type === ActorType.Tree)
+        const tree = this.getTree()
+        return tree !== undefined && this.isWithinChoppingRange(tree)
+    }
+
+    private isWithinChoppingRange(tree: TreeActor) {
+        return (
+            !tree.isDead() &&
+            distanceBetweenPoints(this.actor.position, tree.position) <= 1.7
+        )
     }
 
     private nearCamp() {

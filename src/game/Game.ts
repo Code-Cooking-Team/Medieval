@@ -7,6 +7,7 @@ import { actorByType, actorFromJSON } from './actors'
 import { ConstructionSiteActor } from './actors/buildings/construction/ConstructionSiteActor'
 import { ConstructionType } from './actors/buildings/construction/costs'
 import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
+import { BushActor } from './actors/flora/bush/BushActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
 import type { HumanActor } from './actors/units/human/HumanActor'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
@@ -28,6 +29,7 @@ export class Game {
         tick: undefined
         actorAdded: Actor
         actorRemoved: Actor
+        equipmentChanged: HumanActor
         woodStockChanged: WoodCampActor
         constructionProgress: ConstructionSiteActor
         professionChanged: HumanActor
@@ -163,6 +165,7 @@ export class Game {
 
         const actor = new ActorClass(this, player, position)
         if (isWalkableActor(actor) && !tile.canWalk) return
+        if (actor.type === ActorType.Bush && !BushActor.growsOn(tile.type)) return
         if (isBuildingActor(actor)) {
             if (!this.canPlaceBuildings(actor.blueprint, [position], rotation)) return
             actor.setRotation(rotation)

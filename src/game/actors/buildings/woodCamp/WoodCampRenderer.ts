@@ -1,14 +1,21 @@
 import { config } from '+config'
-import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
+import { actorByType } from '+game/actors'
+import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight } from 'three'
 
 import { WoodCampActor } from './WoodCampActor'
+import { WoodCampBlueprint } from './WoodCampBlueprint'
 
-export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
+export class WoodCampRenderer extends InstancedBuildingRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp
+
+    protected get buildingModel() {
+        return (actorByType[ActorType.WoodCamp].blueprint as WoodCampBlueprint)
+            .buildingModel
+    }
 
     public createActorModel(actor: WoodCampActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
@@ -26,9 +33,6 @@ export class WoodCampRenderer extends ActorRenderer<WoodCampActor> {
             const midlePointHelper = new AxesHelper(ts * 5)
             group.add(midlePointHelper)
         }
-
-        const model = actor.blueprint.getModel()
-        group.add(model.clone())
 
         return { group, interactionShape }
     }

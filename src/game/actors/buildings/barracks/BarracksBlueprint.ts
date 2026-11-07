@@ -25,12 +25,10 @@ export class BarracksBlueprint implements ActorBlueprint {
 
     public height = 4
 
-    public readonly buildingModel = new BuildingModel(barracksModel)
-    private model = this.buildingModel.createModel().model
-
-    public getModel() {
-        return this.model
-    }
+    public readonly buildingModel = new BuildingModel(barracksModel, [
+        { node: 'lod_near', distanceInTiles: 0 },
+        { node: 'lod_far', distanceInTiles: 100 },
+    ])
 
     public getPlaceholder(seed?: number) {
         return this.buildingModel.createModel(seed)

@@ -74,7 +74,7 @@ function App() {
         const game = new Game(word, [humanPlayer, naturePlayer])
 
         const floraSpawner = new FloraSpawner(game, naturePlayer)
-        floraSpawner.bulkSpawnTrees()
+        floraSpawner.bulkSpawnPlants()
 
         return { game, humanPlayer }
     }, [toLoadJSON, forceReloadCount])

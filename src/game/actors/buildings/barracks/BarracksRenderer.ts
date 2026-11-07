@@ -1,20 +1,24 @@
 import { config } from '+config'
-import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
+import { actorByType } from '+game/actors'
+import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
 import { ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight } from 'three'
 
 import { BarracksActor } from './BarracksActor'
+import { BarracksBlueprint } from './BarracksBlueprint'
 
-export class BarracksRenderer extends ActorRenderer<BarracksActor> {
+export class BarracksRenderer extends InstancedBuildingRenderer<BarracksActor> {
     public actorType = ActorType.Barracks
+
+    protected get buildingModel() {
+        return (actorByType[ActorType.Barracks].blueprint as BarracksBlueprint)
+            .buildingModel
+    }
 
     public createActorModel(actor: BarracksActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
-
-        const model = actor.blueprint.getModel()
-        group.add(model.clone())
 
         const ts = config.renderer.tileSize
 

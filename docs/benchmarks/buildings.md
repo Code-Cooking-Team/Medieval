@@ -56,4 +56,4 @@ Screenshots show the instanced renderer.
 
 ## Asset follow-up
 
-Stakewall, Barracks, Wood Camp, and Guildhall each have a single authored level. They use the same level definition as House. Barracks, Wood Camp, and Guildhall still use their existing placed-building renderers. Lower-detail meshes and migration of those renderers are separate work.
+The measurements above capture the state of #9. See the [#10 benchmark](buildings-lod.md) for the four additional building LODs and their measurements.

@@ -1,5 +1,4 @@
 import '+game/actors'
-
 import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
@@ -20,7 +19,14 @@ vi.mock('+helpers/three', async (importOriginal) => {
         ...(await importOriginal<typeof import('+helpers/three')>()),
         loadGLTF: async () => {
             const model = new Group()
-            for (const name of ['lod1', 'lod2', 'lod3']) {
+            for (const name of [
+                'lod1',
+                'lod2',
+                'lod3',
+                'lod_near',
+                'lod_far',
+                'lod_very_far',
+            ]) {
                 const level = new Group()
                 level.name = name
                 model.add(level)
