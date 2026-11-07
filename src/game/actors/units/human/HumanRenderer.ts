@@ -8,6 +8,7 @@ import { Tile } from '+game/world/Tile'
 import {
     changeColorLightnessSaturation,
     generateSimilarColor,
+    isSamePosition,
     loadRawGLTF,
     updateScale,
 } from '+helpers'
@@ -38,27 +39,39 @@ interface HumanLocomotion {
     idle: AnimationAction
     walk: AnimationAction
     attack: AnimationAction
-    attackCount: number
+    chop: AnimationAction
+    lastAction: HumanActor['lastAction']
     x: number
     z: number
     blend: number
 }
 
-function createAttackClip() {
+// Placeholder clips share the same action slots as future captured animations.
+function createSwingClip(name: string, axis: Vector3, times: number[], angles: number[]) {
     const arm = PropertyBinding.sanitizeNodeName('mixamorig:RightArm')
-    const axis = new Vector3(0, 0, 1)
-    const values = [0, -0.55, 0.9, 0].flatMap((angle) =>
+    const values = angles.flatMap((angle) =>
         new Quaternion().setFromAxisAngle(axis, angle).toArray(),
     )
     return new AnimationClip(
-        'swing',
-        0.35,
-        [new QuaternionKeyframeTrack(`${arm}.quaternion`, [0, 0.09, 0.19, 0.35], values)],
+        name,
+        times[times.length - 1],
+        [new QuaternionKeyframeTrack(`${arm}.quaternion`, times, values)],
         AdditiveAnimationBlendMode,
     )
 }
 
-const attackClip = createAttackClip()
+const attackClip = createSwingClip(
+    'attack',
+    new Vector3(0, 0, 1),
+    [0, 0.06, 0.13, 0.24],
+    [0, -0.55, 0.9, 0],
+)
+const chopClip = createSwingClip(
+    'chop',
+    new Vector3(1, 0, 0),
+    [0, 0.17, 0.25, 0.44],
+    [0, -1.7, 0.65, 0],
+)
 const equipmentSlots: EquipmentSlot[] = ['Hands', 'Armor']
 
 export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
@@ -98,6 +111,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                 const idle = mixer.clipAction(idleClip).play()
                 const walk = mixer.clipAction(walkClip).setEffectiveWeight(0).play()
                 const attack = mixer.clipAction(attackClip).setLoop(LoopOnce, 1)
+                const chop = mixer.clipAction(chopClip).setLoop(LoopOnce, 1)
                 mixer.update(0)
 
                 const { x, z } = group.position
@@ -106,7 +120,8 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                     idle,
                     walk,
                     attack,
-                    attackCount: actor.attackCount,
+                    chop,
+                    lastAction: actor.lastAction,
                     x,
                     z,
                     blend: 0,
@@ -179,6 +194,17 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         }
     }
 
+    protected getFacingTarget(actor: HumanActor) {
+        const animation = this.locomotion.get(actor)
+        const action = actor.lastAction
+        if (!animation || !action || !isSamePosition(actor.position, action.origin))
+            return
+
+        if (animation.lastAction !== action || animation[action.kind].isRunning()) {
+            return action.target
+        }
+    }
+
     protected updatePosition(clockInfo: ClockInfo) {
         super.updatePosition(clockInfo)
         const { deltaTime } = clockInfo
@@ -202,9 +228,17 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
             animation.walk.setEffectiveWeight(animation.blend)
             // Keep the stride advancing as the walk fades into idle.
             animation.walk.setEffectiveTimeScale(MathUtils.clamp(speed / 2, 0.5, 1.5))
-            if (animation.attackCount !== actor.attackCount) {
-                animation.attackCount = actor.attackCount
-                animation.attack.reset().play()
+            const action = actor.lastAction
+            if (animation.lastAction !== action) {
+                animation.lastAction = action
+                animation.attack.stop()
+                animation.chop.stop()
+                if (action && isSamePosition(actor.position, action.origin)) {
+                    animation[action.kind].reset().play()
+                }
+            }
+            if (action && !isSamePosition(actor.position, action.origin)) {
+                animation[action.kind].stop()
             }
             animation.mixer.update(deltaTime)
         }

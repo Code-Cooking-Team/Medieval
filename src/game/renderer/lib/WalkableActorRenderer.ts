@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { WalkableActor } from '+game/core/WalkableActor'
-import { ClockInfo } from '+game/types'
+import { ClockInfo, Position } from '+game/types'
 
 import { Quaternion, Vector3 } from 'three'
 
@@ -32,17 +32,32 @@ export abstract class WalkableActorRenderer<
         })
     }
 
+    protected getFacingTarget(_actor: TActor): Position | undefined {
+        return undefined
+    }
+
     protected updateRotation({ deltaTime }: ClockInfo) {
         const tileSize = config.renderer.tileSize
         const step = deltaTime * config.walkableRenderer.rotationSmoothness
 
         for (const [actor, group] of this.actorGroupMap) {
-            const x = actor.position[0] * tileSize - group.position.x
-            const z = actor.position[1] * tileSize - group.position.z
+            // A strike faces its target on the ground plane while the mesh settles into place.
+            const target = this.getFacingTarget(actor)
+            const [x, z] = target
+                ? [
+                      (target[0] - actor.position[0]) * tileSize,
+                      (target[1] - actor.position[1]) * tileSize,
+                  ]
+                : [
+                      actor.position[0] * tileSize - group.position.x,
+                      actor.position[1] * tileSize - group.position.z,
+                  ]
             if (Math.hypot(x, z) < tileSize * 0.025) continue
 
             this.targetHeading.setFromAxisAngle(this.rotationUp, Math.atan2(x, z))
-            group.quaternion.rotateTowards(this.targetHeading, step)
+            // Face the target before the swing starts, even after a full turn.
+            if (target) group.quaternion.copy(this.targetHeading)
+            else group.quaternion.rotateTowards(this.targetHeading, step)
         }
     }
 }

@@ -9,11 +9,13 @@ import { addPosition, distanceBetweenPoints, random } from '+helpers'
 
 import { Equipment, EquipmentSlot, ItemId, items } from './equipment'
 
+type HumanAction = 'attack' | 'chop'
+
 export class HumanActor extends WalkableActor {
     public type = ActorType.Human
     public maxHp = config.human.hp
     private equipment: Equipment = { Hands: null, Armor: null }
-    public attackCount = 0
+    public lastAction?: { kind: HumanAction; origin: Position; target: Position }
     public profession?: Profession
     public target?: Actor
     public home?: BuildingActor
@@ -28,6 +30,15 @@ export class HumanActor extends WalkableActor {
             this.profession.tick()
         } else {
             this.walkAround()
+        }
+    }
+
+    public recordAction(kind: HumanAction, target: Actor) {
+        // Keep the strike direction available even if the hit removes the target.
+        this.lastAction = {
+            kind,
+            origin: [...this.position],
+            target: [...target.position],
         }
     }
 
@@ -158,7 +169,7 @@ export class HumanActor extends WalkableActor {
         if (distance < config.human.attackDistance) {
             this.cancelPath()
             const damage = this.getAttackDamage()
-            this.attackCount++
+            this.recordAction('attack', this.target)
             this.target.hit(damage, this)
             if (this.target.isDead()) {
                 this.target = undefined

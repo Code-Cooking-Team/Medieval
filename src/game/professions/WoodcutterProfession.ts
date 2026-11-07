@@ -5,7 +5,7 @@ import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
-import { isSamePosition } from '+helpers'
+import { distanceBetweenPoints, isSamePosition } from '+helpers'
 
 import {
     Mesh,
@@ -158,8 +158,9 @@ export class WoodcutterProfession extends Profession {
 
     private chopTree() {
         const tree = this.getTree()
-        if (!tree) return
+        if (!tree || !this.isWithinChoppingRange(tree)) return
 
+        this.actor.recordAction('chop', tree)
         const damage = Math.round(config.woodcutter.choppingDamage * Math.random())
         this.collectedTreeHP += tree.hit(damage)
     }
@@ -199,8 +200,15 @@ export class WoodcutterProfession extends Profession {
     }
 
     private nearTree() {
-        const actors = this.game.findActorsByPosition(this.actor.position, 1.7)
-        return actors.some((actor) => actor.type === ActorType.Tree)
+        const tree = this.getTree()
+        return tree !== undefined && this.isWithinChoppingRange(tree)
+    }
+
+    private isWithinChoppingRange(tree: TreeActor) {
+        return (
+            !tree.isDead() &&
+            distanceBetweenPoints(this.actor.position, tree.position) <= 1.7
+        )
     }
 
     private nearCamp() {
