@@ -17,6 +17,8 @@ import {
 } from 'three'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 
+import { selectionPortraitLayout } from './selectionPortraitLayout'
+
 /** A transparent, shadow-free view. Geometry/materials remain owned by the game. */
 export class SelectionPortraitRenderer {
     private renderer: WebGLRenderer
@@ -39,7 +41,11 @@ export class SelectionPortraitRenderer {
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true })
         this.renderer.setClearColor(0, 0)
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-        this.renderer.setSize(160, 180, false)
+        this.renderer.setSize(
+            selectionPortraitLayout.width,
+            selectionPortraitLayout.height,
+            false,
+        )
         this.scene.add(this.root, this.sun, this.sun.target, this.ambient)
         if (isBuildingActor(actor)) {
             const { model, promise } = actor.blueprint.getPlaceholder(actor.seed)
@@ -123,8 +129,10 @@ export class SelectionPortraitRenderer {
             : Math.max(height, this.size.length() * 0.8) * 0.62
         this.camera.top = halfHeight
         this.camera.bottom = -halfHeight
-        this.camera.left = (-halfHeight * 160) / 180
-        this.camera.right = (halfHeight * 160) / 180
+        this.camera.left =
+            (-halfHeight * selectionPortraitLayout.width) / selectionPortraitLayout.height
+        this.camera.right =
+            (halfHeight * selectionPortraitLayout.width) / selectionPortraitLayout.height
         this.camera.far = height * 12 + 100
         this.camera.updateProjectionMatrix()
         this.framed = true

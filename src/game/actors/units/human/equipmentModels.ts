@@ -3,6 +3,7 @@ import { TREE_BARK_COLOR } from '+game/const'
 import {
     BoxGeometry,
     Color,
+    ConeGeometry,
     CylinderGeometry,
     Group,
     LinearSRGBColorSpace,
@@ -55,6 +56,16 @@ hatchet.add(
     part(steel, [8, 20, 4], [-17, 56, 0]),
 )
 
+const spear = new Group()
+const shaft = new Mesh(new CylinderGeometry(1.8, 2.2, 150, 7), wood)
+shaft.position.y = 25
+shaft.castShadow = true
+const spearhead = new Mesh(new ConeGeometry(5, 22, 4), steel)
+spearhead.position.y = 111
+spearhead.scale.z = 0.4
+spearhead.castShadow = true
+spear.add(shaft, spearhead)
+
 const hammer = new Group()
 hammer.add(part(wood, [4, 48, 4], [0, 16, 0]), part(steel, [24, 12, 10], [0, 36, 0]))
 
@@ -67,6 +78,7 @@ const grip = {
 
 export const equipmentModels: Partial<Record<ItemId, EquipmentModel>> = {
     sword: { ...grip, model: sword },
+    spear: { ...grip, model: spear },
     hatchet: { ...grip, model: hatchet },
     hammer: { ...grip, model: hammer },
 }

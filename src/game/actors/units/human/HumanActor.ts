@@ -24,7 +24,9 @@ export class HumanActor extends WalkableActor {
     public tick(): void {
         super.tick()
 
-        if (this.target) {
+        if (this.profession?.controlsCombat) {
+            void this.profession.tick()
+        } else if (this.target) {
             this.cancelProfession()
             this.fight()
         } else if (this.profession) {

@@ -227,3 +227,31 @@ test('loads unfinished legacy footprints as walkable terrain', () => {
     expect(loadedSite.isAssignedTo(builder)).toBe(true)
     expect(loaded.canPlaceBuildings(loadedSite.blueprint, [site.position], 0)).toBe(false)
 })
+
+test('group placement converts every worker and appends the same ordered sites', () => {
+    const { game, player, human, sites } = fixture()
+    const [previous] = sites(ActorType.Stakewall, [[19, 20]])
+    const second = game.spawnActor(HumanActor, player, [16, 23])!
+    second.setProfession(new GuardianProfession(game, second))
+    player.selectActors([human, second])
+    player.selectBuilding(ActorType.Stakewall, [human, second])
+    expect(
+        game.placeConstructionSites(
+            player.constructionBuilders,
+            ActorType.Stakewall,
+            [{ position: [21, 20] }, { position: [22, 20] }],
+            0,
+        ),
+    ).toBe(true)
+    const ids = game.findActorsByType(ActorType.ConstructionSite).map((site) => site.id)
+    expect((human.profession as BuilderProfession).queue).toEqual(ids)
+    expect((second.profession as BuilderProfession).queue).toEqual(
+        ids.filter((id) => id !== previous!.id),
+    )
+    expect(second.getEquippedItem('Hands')).toBe('hammer')
+    game.removeActor(human)
+    expect(player.constructionBuilders).toEqual([second])
+    expect(player.selectedBuilding).toBe(ActorType.Stakewall)
+    player.unselectBuilding()
+    expect(player.constructionBuilders).toEqual([])
+})

@@ -9,6 +9,7 @@ import { Group, Object3D } from 'three'
 import { ProfessionType } from './types'
 
 export abstract class Profession {
+    public readonly controlsCombat: boolean = false
     public type = ProfessionType.Empty
     public readonly defaultHeldItem: ItemId | null = null
     public selectImportance = 4

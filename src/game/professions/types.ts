@@ -3,4 +3,5 @@ export enum ProfessionType {
     Guardian = 'Guardian',
     Woodcutter = 'Woodcutter',
     Builder = 'Builder',
+    Hunter = 'Hunter',
 }

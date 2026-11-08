@@ -3,6 +3,7 @@ import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { ActorType } from '+game/types'
 
+import type { HunterHutActor } from './buildings/hunterHut/HunterHutActor'
 import type { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
 import { HumanActor } from './units/human/HumanActor'
 
@@ -19,3 +20,6 @@ export const isWalkableActor = (actor: Actor): actor is WalkableActor =>
 
 export const isWoodCampActor = (actor: Actor): actor is WoodCampActor =>
     actor.type === ActorType.WoodCamp
+
+export const isHunterHutActor = (actor: Actor): actor is HunterHutActor =>
+    actor.type === ActorType.HunterHut

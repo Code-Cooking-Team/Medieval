@@ -14,7 +14,11 @@ export class HumanPlayer implements Player {
 
     public selectedActors: Actor[] = []
     public selectedBuilding?: ActorType
-    public constructionBuilder?: HumanActor
+    public constructionBuilders: HumanActor[] = []
+
+    public get constructionBuilder() {
+        return this.constructionBuilders[0]
+    }
     public removingBuildings = false
     public selectedBuildingRotation = 0
 
@@ -41,9 +45,11 @@ export class HumanPlayer implements Player {
         this.selectedActors = []
     }
 
-    public selectBuilding(actorType: ActorType, builder?: HumanActor) {
+    public selectBuilding(actorType: ActorType, builder?: HumanActor | HumanActor[]) {
         this.setBuildingRemoval(false)
-        this.constructionBuilder = builder
+        this.constructionBuilders = builder
+            ? [...(Array.isArray(builder) ? builder : [builder])]
+            : []
         this.selectedBuilding = actorType
         this.emitter.emit('selectBuilding', actorType)
     }
@@ -52,7 +58,7 @@ export class HumanPlayer implements Player {
         if (!this.selectedBuilding) return
         this.emitter.emit('unselectBuilding', this.selectedBuilding)
         this.selectedBuilding = undefined
-        this.constructionBuilder = undefined
+        this.constructionBuilders = []
     }
 
     public setBuildingRemoval(enabled: boolean) {

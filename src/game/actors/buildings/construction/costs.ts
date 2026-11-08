@@ -3,6 +3,7 @@ import { ActorType } from '+game/types'
 export const constructionCosts = {
     [ActorType.House]: 300,
     [ActorType.WoodCamp]: 300,
+    [ActorType.HunterHut]: 300,
     [ActorType.Barracks]: 450,
     [ActorType.Guildhall]: 600,
     [ActorType.Stakewall]: 30,

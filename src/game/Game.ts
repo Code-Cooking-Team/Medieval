@@ -6,6 +6,7 @@ import { Emitter } from '+lib/Emitter'
 import { actorByType, actorFromJSON } from './actors'
 import { ConstructionSiteActor } from './actors/buildings/construction/ConstructionSiteActor'
 import { ConstructionType } from './actors/buildings/construction/costs'
+import type { HunterHutActor } from './actors/buildings/hunterHut/HunterHutActor'
 import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
 import { BushActor } from './actors/flora/bush/BushActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
@@ -31,6 +32,7 @@ export class Game {
         actorRemoved: Actor
         equipmentChanged: HumanActor
         woodStockChanged: WoodCampActor
+        meatStockChanged: HunterHutActor
         constructionProgress: ConstructionSiteActor
         professionChanged: HumanActor
         started: undefined
@@ -96,7 +98,12 @@ export class Game {
         removeArrayItem(this.actors, actor)
         for (const player of this.players) {
             if (player instanceof HumanPlayer && player.selectedActors.includes(actor)) {
-                if (player.constructionBuilder === actor) player.unselectBuilding()
+                if (player.constructionBuilders.includes(actor as HumanActor)) {
+                    player.constructionBuilders = player.constructionBuilders.filter(
+                        (builder) => builder !== actor,
+                    )
+                    if (!player.constructionBuilders.length) player.unselectBuilding()
+                }
                 player.selectActors(
                     player.selectedActors.filter((selected) => selected !== actor),
                 )
@@ -209,12 +216,16 @@ export class Game {
     }
 
     public placeConstructionSites(
-        builder: HumanActor,
+        builders: HumanActor | HumanActor[],
         type: ConstructionType,
         placements: { position: Position; seed?: number }[],
         rotation: number,
     ) {
-        if (builder.isDead() || this.getActorById(builder.id) !== builder) return false
+        const available = (Array.isArray(builders) ? builders : [builders]).filter(
+            (builder) => !builder.isDead() && this.getActorById(builder.id) === builder,
+        )
+        const builder = available[0]
+        if (!builder) return false
         const blueprint = actorByType[type].blueprint!
         if (
             !this.canPlaceBuildings(
@@ -235,7 +246,7 @@ export class Game {
         })
         for (const site of sites) {
             this.addActor(site)
-            site.assign(builder)
+            for (const worker of available) site.assign(worker)
         }
         return true
     }

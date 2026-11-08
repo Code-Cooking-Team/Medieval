@@ -4,8 +4,9 @@ import {
     ConstructionType,
     isConstructionType,
 } from '+game/actors/buildings/construction/costs'
+import type { HunterHutActor } from '+game/actors/buildings/hunterHut/HunterHutActor'
 import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
-import { isHumanActor, isWoodCampActor } from '+game/actors/helpers'
+import { isHumanActor, isHunterHutActor, isWoodCampActor } from '+game/actors/helpers'
 import { EquipmentSlot, items } from '+game/actors/units/human/equipment'
 import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
@@ -19,7 +20,7 @@ import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
-import { Axe } from 'lucide-react'
+import { Axe, Hammer } from 'lucide-react'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { SelectionPortrait } from './SelectionPortrait'
@@ -41,6 +42,22 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
         subscribe,
         () => humanPlayer.selectedActors,
     )
+
+    const subscribeProfessions = useCallback(
+        (refresh: () => void) =>
+            selectedActors[0]?.game?.emitter.on('professionChanged', refresh) ??
+            (() => {}),
+        [selectedActors],
+    )
+    useSyncExternalStore(subscribeProfessions, () =>
+        selectedActors
+            .filter(isHumanActor)
+            .map((actor) => actor.profession?.type ?? '')
+            .join(','),
+    )
+    const selectedHumans = selectedActors
+        .filter(isHumanActor)
+        .filter((actor) => actor.player === humanPlayer && !actor.isDead())
 
     const selectedTypes = useMemo(() => {
         return Object.entries(groupBy(selectedActors, (actor) => actor.type)) as [
@@ -94,6 +111,7 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                 </span>
                 {isHumanActor(singleActor) && <EquippedSlots actor={singleActor} />}
                 {isWoodCampActor(singleActor) && <CampStock camp={singleActor} />}
+                {isHunterHutActor(singleActor) && <HutStock hut={singleActor} />}
             </ActorDetails>
         )
     }
@@ -125,6 +143,11 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                     </Box>
                 </Box>
             ))}
+            <BuildControls
+                key={selectedHumans.map((actor) => actor.id).join(',')}
+                humans={selectedHumans}
+                player={humanPlayer}
+            />
         </ActorDetails>
     )
 
@@ -165,21 +188,11 @@ function buildingName(type: ConstructionType) {
 }
 
 const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlayer }) => {
-    const [showPicker, setShowPicker] = useState(false)
     const subscribeProfession = useCallback(
         (refresh: () => void) => human.game.emitter.on('professionChanged', refresh),
         [human],
     )
     const profession = useSyncExternalStore(subscribeProfession, () => human.profession)
-    const subscribePlacement = useCallback(
-        (refresh: () => void) =>
-            player.emitter.on(['selectBuilding', 'unselectBuilding'], refresh),
-        [player],
-    )
-    const placing = useSyncExternalStore(subscribePlacement, () =>
-        player.constructionBuilder === human ? player.selectedBuilding : undefined,
-    )
-
     return (
         <>
             <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
@@ -188,36 +201,74 @@ const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlaye
                 )}
                 {profession?.type || noProfession}
             </Box>
-            {human.player === player && !human.isDead() && (
-                <Box
-                    display="flex"
-                    alignItems="center"
-                    flexWrap="wrap"
-                    columnGap={2}
-                    rowGap={2}
-                    style={{ pointerEvents: 'auto' }}
-                >
-                    <Button label="Build" onClick={() => setShowPicker(!showPicker)} />
-                    {showPicker &&
-                        buildOptions.map((type) => (
-                            <Button
-                                key={type}
-                                icon={<ActorIcon type={type} />}
-                                label={buildingName(type)}
-                                onClick={() => {
-                                    player.selectBuilding(type, human)
-                                    setShowPicker(false)
-                                }}
-                            />
-                        ))}
-                    {placing && isConstructionType(placing) && (
-                        <span>{buildingName(placing)} · R to rotate · Esc to exit</span>
-                    )}
-                </Box>
-            )}
+            <BuildControls
+                humans={human.player === player && !human.isDead() ? [human] : []}
+                player={player}
+            />
         </>
     )
 }
+
+const BuildControls = ({
+    humans,
+    player,
+}: {
+    humans: HumanActor[]
+    player: HumanPlayer
+}) => {
+    const [showPicker, setShowPicker] = useState(false)
+    const subscribePlacement = useCallback(
+        (refresh: () => void) =>
+            player.emitter.on(['selectBuilding', 'unselectBuilding'], refresh),
+        [player],
+    )
+    const placing = useSyncExternalStore(subscribePlacement, () =>
+        humans.some((human) => player.constructionBuilders.includes(human))
+            ? player.selectedBuilding
+            : undefined,
+    )
+    if (!humans.length) return null
+    return (
+        <Box
+            display="flex"
+            alignItems="center"
+            flexWrap="wrap"
+            columnGap={2}
+            rowGap={2}
+            style={{ pointerEvents: 'auto' }}
+        >
+            <BuildButton
+                icon={<Hammer size={24} aria-hidden="true" />}
+                label="Build"
+                onClick={() => setShowPicker(!showPicker)}
+            />
+            {showPicker &&
+                buildOptions.map((type) => (
+                    <Button
+                        key={type}
+                        icon={<ActorIcon type={type} />}
+                        label={buildingName(type)}
+                        onClick={() => {
+                            player.selectBuilding(type, humans)
+                            setShowPicker(false)
+                        }}
+                    />
+                ))}
+            {placing && isConstructionType(placing) && (
+                <span>{buildingName(placing)} · R to rotate · Esc to exit</span>
+            )}
+        </Box>
+    )
+}
+
+const BuildButton = styled(Button)({
+    minHeight: 48,
+    minWidth: 132,
+    padding: '10px 20px',
+    fontSize: 16,
+    fontWeight: 700,
+    cursor: 'pointer',
+})
 
 const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
     const subscribe = useCallback(
@@ -271,6 +322,7 @@ const ProfessionButton = styled(Button)({
 })
 
 const ActorDetails = styled(Box)({
+    '& > :not(canvas)': { position: 'relative', zIndex: 1 },
     position: 'fixed',
     zIndex: 11,
     bottom: 12,
@@ -291,3 +343,16 @@ const ActorDetails = styled(Box)({
     borderRadius: 8,
     pointerEvents: 'none',
 })
+
+const HutStock = ({ hut }: { hut: HunterHutActor }) => {
+    const subscribe = useCallback(
+        (refresh: () => void) => hut.game.emitter.on('meatStockChanged', refresh),
+        [hut],
+    )
+    const stock = useSyncExternalStore(subscribe, () => hut.meatStock)
+    return (
+        <span>
+            Meat stock: {stock} / {hut.meatCapacity}
+        </span>
+    )
+}

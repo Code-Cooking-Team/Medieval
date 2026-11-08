@@ -1,5 +1,5 @@
 export type EquipmentSlot = 'Hands' | 'Armor'
-export type ItemId = 'sword' | 'hatchet' | 'hammer' | 'paddedArmor'
+export type ItemId = 'spear' | 'sword' | 'hatchet' | 'hammer' | 'paddedArmor'
 export type Equipment = Record<EquipmentSlot, ItemId | null>
 
 interface Item {
@@ -10,6 +10,7 @@ interface Item {
 }
 
 export const items: Record<ItemId, Item> = {
+    spear: { name: 'Spear', slot: 'Hands', damageBonus: 8, healthBonus: 0 },
     sword: { name: 'Sword', slot: 'Hands', damageBonus: 10, healthBonus: 0 },
     hatchet: { name: 'Hatchet', slot: 'Hands', damageBonus: 5, healthBonus: 0 },
     hammer: { name: 'Hammer', slot: 'Hands', damageBonus: 0, healthBonus: 0 },

@@ -1,5 +1,5 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { isWoodCampActor } from '+game/actors/helpers'
+import { isHunterHutActor, isWoodCampActor } from '+game/actors/helpers'
 import { Game, GameJSON } from '+game/Game'
 // Island, TestMap, TestMapBig, de_grass
 import map from '+game/maps/de_river'
@@ -23,7 +23,7 @@ import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 
 import styled from '@emotion/styled'
-import { FilePlus, FolderOpen, Save, Users } from 'lucide-react'
+import { Beef, FilePlus, FolderOpen, Save, Users } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 const gameRootEl = document.getElementById('game-root') as HTMLElement
@@ -201,7 +201,13 @@ const SettlementStatus = ({
     const subscribe = useCallback(
         (refresh: () => void) =>
             game.emitter.on(
-                ['actorAdded', 'actorRemoved', 'started', 'woodStockChanged'],
+                [
+                    'actorAdded',
+                    'actorRemoved',
+                    'started',
+                    'woodStockChanged',
+                    'meatStockChanged',
+                ],
                 refresh,
             ),
         [game],
@@ -223,6 +229,17 @@ const SettlementStatus = ({
         }, 0),
     )
 
+    const meat = useSyncExternalStore(subscribe, () =>
+        game.actors.reduce(
+            (total, actor) =>
+                total +
+                (isHunterHutActor(actor) && actor.player === humanPlayer
+                    ? actor.meatStock
+                    : 0),
+            0,
+        ),
+    )
+
     return (
         <SettlementStatusBox p={2} px={3} display="flex" columnGap={3}>
             <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
@@ -232,6 +249,10 @@ const SettlementStatus = ({
             <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
                 <WoodIcon />
                 Wood: {wood}
+            </Box>
+            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
+                <Beef size={16} aria-hidden="true" />
+                Meat: {meat}
             </Box>
         </SettlementStatusBox>
     )

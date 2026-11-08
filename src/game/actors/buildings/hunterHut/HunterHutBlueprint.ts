@@ -1,10 +1,11 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
-import { ActorBlueprint } from '+game/types'
+import { ActorBlueprint, Position } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
 
 import { createHunterHutModel } from './createHunterHutModel'
 
 export class HunterHutBlueprint implements ActorBlueprint {
+    public readonly config = { deliveryPoint: [4, 7] as Position }
     public readonly height = 3.4
     public readonly grid: TileCodeGrid = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],

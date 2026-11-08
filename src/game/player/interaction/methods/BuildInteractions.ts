@@ -180,7 +180,7 @@ export class BuildInteractions {
             return (
                 isConstructionType(type) &&
                 this.game.placeConstructionSites(
-                    builder,
+                    this.player.constructionBuilders,
                     type,
                     positions.map((position, index) => ({
                         position,
