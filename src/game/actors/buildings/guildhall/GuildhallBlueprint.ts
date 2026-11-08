@@ -3,9 +3,10 @@ import { ActorBlueprint } from '+game/types'
 import { TileCodeGrid } from '+game/world/tileCodes'
 import { loadGLTF } from '+helpers'
 
+import { applyGuildhallFlame } from './guildhallFlame'
 import url from './models/guildhallv3.gltf'
 
-const guildhallModel = loadGLTF(url)
+const guildhallModel = loadGLTF(url).then(applyGuildhallFlame)
 
 export class GuildhallBlueprint implements ActorBlueprint {
     // prettier-ignore
