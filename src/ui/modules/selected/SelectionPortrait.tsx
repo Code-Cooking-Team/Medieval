@@ -3,7 +3,7 @@ import type { Actor } from '+game/core/Actor'
 import type { Renderer } from '+game/Renderer'
 
 import styled from '@emotion/styled'
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 export function SelectionPortrait({
     actor,
@@ -13,7 +13,7 @@ export function SelectionPortrait({
     renderer: Renderer
 }) {
     const canvas = useRef<HTMLCanvasElement>(null)
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (canvas.current) return renderer.attachPortrait(canvas.current, actor)
     }, [actor, renderer])
     return (

@@ -56,6 +56,7 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
     if (singleActor) {
         return (
             <ActorDetails
+                key="single-selection"
                 style={{ overflow: 'visible', paddingLeft: 152, minHeight: 48 }}
             >
                 {renderer && (
@@ -98,7 +99,7 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
     }
 
     return (
-        <ActorDetails style={{ pointerEvents: 'auto' }}>
+        <ActorDetails key="group-selection" style={{ pointerEvents: 'auto' }}>
             {selectedTypes.map(([type, actors]) => (
                 <Box key={type}>
                     <Button
