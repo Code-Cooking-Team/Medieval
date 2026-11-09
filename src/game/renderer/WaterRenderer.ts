@@ -18,68 +18,37 @@ const RIVER_VERTEX_SPACING = 0.8
 const MAX_WAVE_HEIGHT = 0.22
 
 export class WaterRenderer extends BasicRenderer {
-    private readonly surfaces: { geometry: BufferGeometry; base: Float32Array }[] = []
-    private readonly fallTime = { value: 0 }
-    private readonly materials = [
-        new MeshStandardMaterial({
-            color: 0xa2d3e8,
-            side: DoubleSide,
-            roughness: 0.24,
-            metalness: 0.575,
-            flatShading: true,
-            transparent: true,
-            opacity: 0.6,
-            depthWrite: false,
-        }),
-        new MeshStandardMaterial({
-            color: 0xa2d3e8,
-            emissive: 0xa2c7d5,
-            emissiveIntensity: 0.45,
-            side: DoubleSide,
-            roughness: 0.38,
-            flatShading: true,
-        }),
-    ]
+    private readonly surfaces: {
+        geometry: BufferGeometry
+        base: Float32Array
+        falling: Uint8Array
+    }[] = []
+    private readonly material = new MeshStandardMaterial({
+        color: 0xa2d3e8,
+        side: DoubleSide,
+        roughness: 0.24,
+        metalness: 0.575,
+        flatShading: true,
+        transparent: true,
+        opacity: 0.6,
+        depthWrite: false,
+    })
+    private readonly materials = [this.material, this.material]
 
     constructor(world: World) {
         super()
-        this.materials[1]!.onBeforeCompile = (shader) => {
-            shader.uniforms.fallTime = this.fallTime
-            shader.uniforms.fallTileSize = { value: config.renderer.tileSize }
-            shader.vertexShader = 'varying vec2 vFallPosition;\n' + shader.vertexShader
-            shader.vertexShader = shader.vertexShader.replace(
-                '#include <begin_vertex>',
-                '#include <begin_vertex>\n vFallPosition = vec2(transformed.x + transformed.z, transformed.y);',
-            )
-            shader.fragmentShader =
-                'varying vec2 vFallPosition;\n uniform float fallTime;\n uniform float fallTileSize;\n' +
-                shader.fragmentShader
-            shader.fragmentShader = shader.fragmentShader.replace(
-                '#include <emissivemap_fragment>',
-                /* glsl */ `
-                    #include <emissivemap_fragment>
-                    vec2 fall = vFallPosition / fallTileSize;
-                    float bands = sin(fall.x * 13.0 + sin(fall.x * 4.0))
-                        * sin(fall.x * 8.0 - fall.y * 0.7);
-                    float streaks = smoothstep(0.0, 0.8, bands);
-                    float flow = 0.5 + 0.5 * sin(fall.y * 4.5 + fallTime * 12.0 + fall.x * 3.0);
-                    totalEmissiveRadiance *= 0.8 + streaks * (0.45 + 0.55 * flow);
-                `,
-            )
-        }
         const size = world.getSize()
         for (const region of world.waterRegions) {
-            const geometry = createSurface(region, size)
+            const { geometry, falling } = createSurface(region, size)
             const base = geometry.getAttribute('position').array.slice() as Float32Array
-            this.surfaces.push({ geometry, base })
+            this.surfaces.push({ geometry, base, falling })
             this.group.add(new Mesh(geometry, this.materials))
         }
     }
 
     public render({ elapsedTime }: ClockInfo) {
-        this.fallTime.value = elapsedTime
         const scale = config.renderer.tileSize
-        for (const { geometry, base } of this.surfaces) {
+        for (const { geometry, base, falling } of this.surfaces) {
             const position = geometry.getAttribute('position')
             for (let vertex = 0; vertex < position.count; vertex++) {
                 const x = base[vertex * 3]! / scale
@@ -101,15 +70,27 @@ export class WaterRenderer extends BasicRenderer {
                                 elapsedTime * 1.65,
                         ) +
                     0.031 * Math.sin(1.55 * x - 1.7 * z + elapsedTime * 1.4)
-                position.setY(vertex, base[vertex * 3 + 1]! + wave * scale)
+                const vertical = base[vertex * 3 + 1]! / scale
+                const fallWarp = falling[vertex]!
+                    ? 0.16 *
+                      Math.sin(vertical * 1.45 + elapsedTime * 4.2 + x * 0.8) *
+                      Math.sin(vertical * 0.72 + elapsedTime * 2.7 + z * 1.1)
+                    : 0
+                position.setX(vertex, base[vertex * 3]! + fallWarp * scale)
+                position.setY(
+                    vertex,
+                    base[vertex * 3 + 1]! + (wave + fallWarp * 0.65) * scale,
+                )
+                position.setZ(vertex, base[vertex * 3 + 2]! - fallWarp * scale)
             }
             position.needsUpdate = true
+            geometry.computeVertexNormals()
         }
     }
 
     public destroy() {
         for (const { geometry } of this.surfaces) geometry.dispose()
-        for (const material of this.materials) material.dispose()
+        this.material.dispose()
     }
 }
 
@@ -117,6 +98,7 @@ function createSurface(region: WaterRegion, [width, height]: [number, number]) {
     const geometry = new BufferGeometry()
     const vertices: number[] = []
     const indices: number[] = []
+    const fallingVertices: number[] = []
 
     if (region.kind === 'river') {
         const widest = Math.max(
@@ -173,12 +155,18 @@ function createSurface(region: WaterRegion, [width, height]: [number, number]) {
                 }
             }
             for (let row = 1; row < sections.length; row++) {
-                const material = Number(isWaterfall(sections[row - 1]!, sections[row]!))
+                const isFall = isWaterfall(sections[row - 1]!, sections[row]!)
+                if (isFall) {
+                    for (let column = 0; column < stride; column++) {
+                        fallingVertices[start + (row - 1) * stride + column] = 1
+                        fallingVertices[start + row * stride + column] = 1
+                    }
+                }
                 const previousGroup = geometry.groups.at(-1)
-                if (previousGroup?.materialIndex === material) {
+                if (previousGroup?.materialIndex === Number(isFall)) {
                     previousGroup.count += divisions * 6
                 } else {
-                    geometry.addGroup(indices.length, divisions * 6, material)
+                    geometry.addGroup(indices.length, divisions * 6, Number(isFall))
                 }
                 for (let column = 0; column < divisions; column++) {
                     const a = start + (row - 1) * stride + column
@@ -212,9 +200,12 @@ function createSurface(region: WaterRegion, [width, height]: [number, number]) {
             const ya = vertices[3 * a + 1]!
             const yb = vertices[3 * b + 1]!
             const yc = vertices[3 * c + 1]!
-            const steep = Math.max(ya, yb, yc) - Math.min(ya, yb, yc) > 1.25
+            const steep = Math.max(ya, yb, yc) - Math.min(ya, yb, yc) > 0.45
             const triangles =
                 steep && falling[a] && falling[b] && falling[c] ? falls : indices
+            if (triangles === falls) {
+                fallingVertices[a] = fallingVertices[b!] = fallingVertices[c!] = 1
+            }
             triangles.push(a, b, c)
         }
         for (const [cell, a] of sampleIndices) {
@@ -281,5 +272,9 @@ function createSurface(region: WaterRegion, [width, height]: [number, number]) {
     geometry.computeVertexNormals()
     geometry.computeBoundingSphere()
     geometry.boundingSphere!.radius += MAX_WAVE_HEIGHT * scale
-    return geometry
+    const vertexFalling = new Uint8Array(vertices.length / 3)
+    for (let vertex = 0; vertex < fallingVertices.length; vertex++) {
+        if (fallingVertices[vertex]) vertexFalling[vertex] = 1
+    }
+    return { geometry, falling: vertexFalling }
 }

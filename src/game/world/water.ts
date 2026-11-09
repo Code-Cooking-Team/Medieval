@@ -50,5 +50,5 @@ export function isWaterfall(upper: RiverSection, lower: RiverSection) {
         upper.center[0] - lower.center[0],
         upper.center[1] - lower.center[1],
     )
-    return upper.elevation - lower.elevation > 1.25 * distance
+    return upper.elevation - lower.elevation > 0.45 * distance
 }
