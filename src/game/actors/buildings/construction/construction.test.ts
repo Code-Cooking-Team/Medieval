@@ -1,3 +1,4 @@
+import { config } from '+config'
 import '+game/actors'
 import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
@@ -59,6 +60,13 @@ const fixture = () => {
     }
     return { game, player, human, camp, sites }
 }
+
+beforeEach(() => {
+    config.movement.unitCollision = 'Detour'
+    config.movement.collisionWaitAttempts = 3
+    config.movement.alternateDetourExtraPercent = 10
+    config.movement.spreadOutWhenIdle = true
+})
 
 function tickUntil(game: Game, done: () => boolean) {
     for (let tick = 0; tick < 200 && !done(); tick++) game.tick()
@@ -208,6 +216,273 @@ test('a stakewall site reserves its footprint while keeping the tile walkable', 
     walker.path = [{ x: 19, y: 20 }]
     walker.move()
     expect(walker.position).toEqual([20, 20])
+})
+
+test('two units cannot enter the same tile and the waiting unit keeps its step', () => {
+    const { game, player, human } = fixture()
+    const second = game.spawnActor(HumanActor, player, [17, 21])!
+    human.path = [
+        { x: 16, y: 21 },
+        { x: 16, y: 22 },
+    ]
+    second.path = [{ x: 16, y: 21 }]
+
+    game.tick()
+    expect(human.position).toEqual([16, 21])
+    expect(second.position).toEqual([17, 21])
+    expect(second.path).toEqual([{ x: 16, y: 21 }])
+    expect(game.spawnActor(HumanActor, player, [16, 21])).toBeUndefined()
+
+    game.tick()
+    expect(human.position).toEqual([16, 22])
+    expect(second.position).toEqual([16, 21])
+    expect(second.path).toEqual([])
+})
+
+test('a builder waits for an occupied camp entrance before collecting wood', () => {
+    const { game, player, human, camp, sites } = fixture()
+    sites(ActorType.Stakewall, [[19, 20]])
+    camp.collectTree(30)
+    const entrance = camp.getDeliveryPosition()
+    const blocker = game.spawnActor(HumanActor, player, entrance)!
+    const builder = human.profession as BuilderProfession
+
+    for (let tick = 0; tick < 20; tick++) game.tick()
+    expect(human.position).not.toEqual(entrance)
+    expect(builder.carriedWood).toBe(0)
+
+    game.removeActor(blocker)
+    tickUntil(game, () => builder.carriedWood > 0)
+    expect(human.position).toEqual(entrance)
+})
+
+test('stacked units spread out after finishing their move when enabled', () => {
+    const { game, player, human } = fixture()
+    const stationary = game.spawnActor(HumanActor, player, [16, 21])!
+    human.path = [{ x: 16, y: 21 }]
+    config.movement.unitCollision = 'Off'
+
+    game.tick()
+    expect(human.position).toEqual(stationary.position)
+
+    config.movement.spreadOutWhenIdle = false
+    game.tick()
+    expect(human.position).toEqual(stationary.position)
+
+    config.movement.spreadOutWhenIdle = true
+    game.tick()
+    expect(human.position).not.toEqual(stationary.position)
+    expect(stationary.position).toEqual([16, 21])
+})
+
+test('an idle stack can reach a nearby free tile through a ring of units', () => {
+    const { game, player, human } = fixture()
+    config.movement.unitCollision = 'Off'
+    game.spawnActor(HumanActor, player, human.position)
+    for (const x of [14, 15, 16]) {
+        for (const y of [20, 21, 22]) {
+            if (x !== 15 || y !== 21) game.spawnActor(HumanActor, player, [x, y])
+        }
+    }
+
+    game.tick()
+    const units = game.findActorsByType(ActorType.Human)
+    expect(new Set(units.map((unit) => unit.position.join(','))).size).toBe(9)
+
+    game.tick()
+    expect(new Set(units.map((unit) => unit.position.join(','))).size).toBe(10)
+})
+
+test.each([0, 3, 5])('detour uses the configured wait of %i blocked attempts', (wait) => {
+    const { game, player, human } = fixture()
+    const blocker = game.spawnActor(HumanActor, player, [16, 21])!
+    human.path = [
+        { x: 16, y: 21 },
+        { x: 17, y: 21 },
+        { x: 18, y: 21 },
+    ]
+
+    config.movement.collisionWaitAttempts = wait
+    for (let attempt = 1; attempt < wait; attempt++) {
+        game.tick()
+        expect(human.path[0]).toEqual({ x: 16, y: 21 })
+    }
+
+    game.tick()
+    expect(human.position).toEqual([15, 21])
+    expect(human.path).not.toContainEqual({ x: 16, y: 21 })
+
+    tickUntil(game, () => !human.hasPath())
+    expect(human.position).toEqual([18, 21])
+    expect(blocker.position).toEqual([16, 21])
+})
+
+test.each(['Off', 'Wait'] as const)(
+    '%s collision mode controls occupied steps',
+    (mode) => {
+        const { game, player, human } = fixture()
+        game.spawnActor(HumanActor, player, [16, 21])
+        human.path = [
+            { x: 16, y: 21 },
+            { x: 17, y: 21 },
+        ]
+        config.movement.unitCollision = mode
+
+        for (let tick = 0; tick < 5; tick++) game.tick()
+
+        expect(human.position).toEqual(mode === 'Off' ? [17, 21] : [15, 21])
+        expect(human.path).toHaveLength(mode === 'Off' ? 0 : 2)
+    },
+)
+
+test.each([0, 1, 3])('overlap mode waits %i attempts before sharing the tile', (wait) => {
+    const { game, player, human } = fixture()
+    const blocker = game.spawnActor(HumanActor, player, [16, 21])!
+    const findDetour = vi.spyOn(game, 'findUnitDetour')
+    human.path = [
+        { x: 16, y: 21 },
+        { x: 17, y: 21 },
+    ]
+    config.movement.unitCollision = 'Overlap + sidestep'
+    config.movement.collisionWaitAttempts = wait
+
+    for (let attempt = 0; attempt < wait; attempt++) {
+        game.tick()
+        expect(human.position).toEqual([15, 21])
+    }
+    game.tick()
+    expect(human.position).toEqual(blocker.position)
+    const random = vi.spyOn(Math, 'random').mockReturnValueOnce(0)
+    game.tick()
+    random.mockRestore()
+    expect(human.position).not.toEqual(blocker.position)
+    expect(human.position).not.toEqual([17, 21])
+    expect(human.path).toEqual([{ x: 17, y: 21 }])
+    game.tick()
+    expect(human.position).toEqual([17, 21])
+    expect(findDetour).not.toHaveBeenCalled()
+})
+
+test.each([10, 34])(
+    'alternate mode compares a four-step detour to a three-step route with a %i%% limit',
+    (limit) => {
+        const { game, player, human } = fixture()
+        for (const y of [20, 21, 22]) game.spawnActor(HumanActor, player, [16, y])
+        human.path = [
+            { x: 16, y: 21 },
+            { x: 17, y: 21 },
+            { x: 18, y: 21 },
+        ]
+        config.movement.unitCollision = 'Alternate'
+        config.movement.collisionWaitAttempts = 1
+        config.movement.alternateDetourExtraPercent = limit
+
+        game.tick()
+        expect(human.position).toEqual([15, 21])
+        game.tick()
+        if (limit === 10) {
+            expect(human.position).toEqual([16, 21])
+            expect(human.path).toHaveLength(2)
+        } else {
+            expect(human.position).toEqual([15, 21])
+            expect(human.path).toHaveLength(4)
+        }
+
+        tickUntil(game, () => !human.hasPath())
+        expect(human.position).toEqual([18, 21])
+    },
+)
+
+test('alternate mode pushes through a crowd when there is no detour', () => {
+    const { game, player, human } = fixture()
+    game.world.setTile([14, 21], new WallTile())
+    for (const x of [15, 16, 17, 18]) {
+        game.world.setTile([x, 20], new WallTile())
+        game.world.setTile([x, 22], new WallTile())
+    }
+    game.spawnActor(HumanActor, player, [16, 21])
+    game.spawnActor(HumanActor, player, [17, 21])
+    human.path = [
+        { x: 16, y: 21 },
+        { x: 17, y: 21 },
+        { x: 18, y: 21 },
+    ]
+    config.movement.unitCollision = 'Alternate'
+    config.movement.collisionWaitAttempts = 1
+    const findDetour = vi.spyOn(game, 'findUnitDetour')
+
+    game.tick()
+    expect(human.position).toEqual([15, 21])
+    expect(findDetour).not.toHaveBeenCalled()
+
+    game.tick()
+    expect(human.position).toEqual([16, 21])
+    expect(findDetour).toHaveBeenCalledTimes(1)
+
+    game.tick()
+    expect(human.position).toEqual([16, 21])
+    game.tick()
+    expect(human.position).toEqual([17, 21])
+    expect(findDetour).toHaveBeenCalledTimes(2)
+    tickUntil(game, () => !human.hasPath())
+    expect(human.position).toEqual([18, 21])
+})
+
+test('overlapping units never step back when only the tile behind is free', () => {
+    const { game, player, human } = fixture()
+    game.spawnActor(HumanActor, player, [16, 21])
+    const ahead = game.spawnActor(HumanActor, player, [17, 21])!
+    for (const x of [15, 16, 17]) {
+        game.world.setTile([x, 20], new WallTile())
+        game.world.setTile([x, 22], new WallTile())
+    }
+    human.path = [
+        { x: 16, y: 21 },
+        { x: 17, y: 21 },
+    ]
+    config.movement.unitCollision = 'Overlap + sidestep'
+    config.movement.collisionWaitAttempts = 1
+
+    game.tick()
+    game.tick()
+    game.tick()
+    expect(human.position).toEqual([16, 21])
+    expect(human.path).toEqual([{ x: 17, y: 21 }])
+
+    game.removeActor(ahead)
+    game.tick()
+    expect(human.position).toEqual([17, 21])
+    expect(human.path).toEqual([])
+})
+
+test('an order through a dense crowd continues when every sidestep is occupied', async () => {
+    const { game, player, human } = fixture()
+    human.position = [20, 21]
+    const crowd: Position[] = [
+        [18, 20],
+        [19, 20],
+        [18, 21],
+        [19, 21],
+        [18, 22],
+        [19, 22],
+    ]
+    for (const position of crowd) game.spawnActor(HumanActor, player, position)
+    config.movement.unitCollision = 'Overlap + sidestep'
+    config.movement.collisionWaitAttempts = 1
+
+    const order = human.setPathTo([17, 21])
+    game.pf.tick()
+    await order
+
+    game.tick()
+    game.tick()
+    expect(human.position).toEqual([19, 21])
+    game.tick()
+    expect(human.position).toEqual([19, 21])
+    game.tick()
+    expect(human.position).toEqual([18, 21])
+    tickUntil(game, () => !human.hasPath())
+    expect(human.position).toEqual([17, 21])
 })
 
 test('loads unfinished legacy footprints as walkable terrain', () => {

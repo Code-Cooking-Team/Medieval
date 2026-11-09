@@ -10,7 +10,7 @@ type FindPathResult =
       }[]
     | null
 
-const steps: Position[] = [
+export const neighborSteps: Position[] = [
     [0, -1],
     [-1, 0],
     [1, 0],
@@ -78,11 +78,46 @@ export class Pathfinding {
         )
     }
 
+    public findStepToFreeTile(
+        start: Position,
+        maxSteps: number,
+        isFree: (position: Position) => boolean,
+    ): Position | undefined {
+        const frontier: { position: Position; distance: number; firstStep?: Position }[] =
+            [{ position: start, distance: 0 }]
+        const visited = new Set([start.join(',')])
+
+        for (const { position, distance, firstStep } of frontier) {
+            if (distance >= maxSteps) break
+            const [x, y] = position
+            for (const [dx, dy] of neighborSteps) {
+                const next: Position = [x + dx, y + dy]
+                const key = next.join(',')
+                if (visited.has(key) || !this.canStep(position, next)) continue
+                if (isFree(next)) return firstStep ?? next
+
+                // Cross crowded tiles only to reach a nearby free one.
+                visited.add(key)
+                frontier.push({
+                    position: next,
+                    distance: distance + 1,
+                    firstStep: firstStep ?? next,
+                })
+            }
+        }
+    }
+
     // Search once for all approaches. Goals are ordered by priority, and the
     // closest approach wins among positions belonging to the same goal.
-    public findRoute<T>(start: Position, goals: RouteGoal<T>[], inOrder = true) {
+    public findRoute<T>(
+        start: Position,
+        goals: RouteGoal<T>[],
+        inOrder = true,
+        occupied?: Position[],
+    ) {
         const [width, height] = this.word.getSize()
         const indexOf = ([x, y]: Position) => y * width + x
+        const blocked = occupied && new Set(occupied.map(indexOf))
         const destinations = new Map<number, { target: T; priority: number }>()
         goals.forEach(({ positions, target }, order) => {
             for (const position of positions) {
@@ -110,10 +145,11 @@ export class Pathfinding {
 
             const x = index % width
             const y = Math.floor(index / width)
-            for (const [dx, dy] of steps) {
+            for (const [dx, dy] of neighborSteps) {
                 const next: Position = [x + dx, y + dy]
                 const nextIndex = indexOf(next)
-                if (parents[nextIndex] !== -1 || !this.canStep([x, y], next)) continue
+                if (parents[nextIndex] !== -1 || blocked?.has(nextIndex)) continue
+                if (!this.canStep([x, y], next)) continue
                 parents[nextIndex] = index
                 frontier.push(nextIndex)
             }

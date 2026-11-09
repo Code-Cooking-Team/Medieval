@@ -1,6 +1,6 @@
 import { config } from '+config/config'
 import { Player, PlayerJSON } from '+game/player/types'
-import { distanceBetweenPoints, removeArrayItem } from '+helpers'
+import { distanceBetweenPoints, isSamePosition, removeArrayItem } from '+helpers'
 import { Emitter } from '+lib/Emitter'
 
 import { actorByType, actorFromJSON } from './actors'
@@ -14,6 +14,7 @@ import type { HumanActor } from './actors/units/human/HumanActor'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { BuildingActor } from './core/BuildingActor'
 import { Pathfinding } from './core/Pathfinding'
+import type { WalkableActor } from './core/WalkableActor'
 import { playerFromJSON } from './player'
 import { HumanPlayer } from './player/HumanPlayer'
 import { ActorBlueprint, ActorType, Position } from './types'
@@ -69,7 +70,25 @@ export class Game {
         this.actors.forEach((actor) => {
             actor.tick()
         })
+        if (config.movement.spreadOutWhenIdle) this.spreadOutIdleUnits()
         this.emitter.emit('tick')
+    }
+
+    private spreadOutIdleUnits() {
+        const unitsByPosition = new Map<string, WalkableActor[]>()
+        for (const actor of this.actors) {
+            if (!isWalkableActor(actor) || actor.isDead()) continue
+            const key = actor.position.join(',')
+            const units = unitsByPosition.get(key)
+            if (units) units.push(actor)
+            else unitsByPosition.set(key, [actor])
+        }
+
+        for (const units of unitsByPosition.values()) {
+            if (units.length < 2 || !units.every((unit) => unit.isIdleForSpreading()))
+                continue
+            for (const unit of units) unit.spreadOut()
+        }
     }
 
     public addActor(actor: Actor): void {
@@ -146,6 +165,35 @@ export class Game {
         })
     }
 
+    public isUnitOccupying(position: Position, except?: Actor): boolean {
+        return this.actors.some(
+            (actor) =>
+                actor !== except &&
+                isWalkableActor(actor) &&
+                !actor.isDead() &&
+                isSamePosition(actor.position, position),
+        )
+    }
+
+    public findUnitDetour(unit: Actor, destination: Position) {
+        // Pursuit routes can end at the target's tile. Movement still checks occupancy.
+        const occupied = this.actors
+            .filter(
+                (actor) =>
+                    actor !== unit &&
+                    isWalkableActor(actor) &&
+                    !actor.isDead() &&
+                    !isSamePosition(actor.position, destination),
+            )
+            .map((actor) => actor.position)
+        return this.pf.findRoute(
+            unit.position,
+            [{ target: destination, positions: [destination] }],
+            true,
+            occupied,
+        )?.path
+    }
+
     public findClosestActorByType(
         type: ActorType,
         position: Position,
@@ -173,7 +221,13 @@ export class Game {
         if (!tile) return
 
         const actor = new ActorClass(this, player, position)
-        if (isWalkableActor(actor) && !tile.canWalk) return
+        if (
+            isWalkableActor(actor) &&
+            (!tile.canWalk ||
+                (config.movement.unitCollision !== 'Off' &&
+                    this.isUnitOccupying(position)))
+        )
+            return
         if (actor.type === ActorType.Bush && !BushActor.growsOn(tile.type)) return
         if (isBuildingActor(actor)) {
             if (!this.canPlaceBuildings(actor.blueprint, [position], rotation)) return

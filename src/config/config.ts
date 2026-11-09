@@ -1,15 +1,28 @@
 import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 
 import { createConfig } from './lib/createConfig'
-import { colorInput } from './lib/definitions'
+import { booleanCheckbox, colorInput, minMaxNumber, select } from './lib/definitions'
 
 const CLOSE_CAMERA_HEIGHT = 0.65
+type UnitCollisionMode = 'Off' | 'Wait' | 'Detour' | 'Overlap + sidestep' | 'Alternate'
 
 export const { config, resetConfig, saveConfig } = createConfig({
     core: {
         tickTime: 250,
         orbitalControls: false,
         unfocusedFpsLimit: 5,
+    },
+    movement: {
+        unitCollision: select<UnitCollisionMode>('Alternate', [
+            'Off',
+            'Wait',
+            'Detour',
+            'Overlap + sidestep',
+            'Alternate',
+        ]),
+        collisionWaitAttempts: minMaxNumber(1, 0, 20),
+        alternateDetourExtraPercent: minMaxNumber(15, 0, 100),
+        spreadOutWhenIdle: booleanCheckbox(true),
     },
     camera: {
         fov: 60,
@@ -123,6 +136,14 @@ export const { config, resetConfig, saveConfig } = createConfig({
         color: colorInput(0x225c43),
     },
 })
+
+const movement = config.movement as typeof config.movement & {
+    sidestepWaitAttempts?: number
+}
+if (typeof movement.sidestepWaitAttempts === 'number') {
+    movement.collisionWaitAttempts = movement.sidestepWaitAttempts
+    delete movement.sidestepWaitAttempts
+}
 
 // Existing settings can still contain the previous default.
 if (config.camera.minHeight === 2) config.camera.minHeight = CLOSE_CAMERA_HEIGHT

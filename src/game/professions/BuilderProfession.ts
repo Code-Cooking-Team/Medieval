@@ -77,9 +77,8 @@ export class BuilderProfession extends Profession {
             return
         }
 
-        const step = job.path.shift()
-        if (step) {
-            this.actor.position = [step.x, step.y]
+        if (job.path.length) {
+            if (this.actor.move(job.path) === 'invalid') this.job = undefined
             return
         }
 

@@ -4,7 +4,7 @@ import { Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
 import { ActorType, Position } from '+game/types'
-import { addPosition, distanceBetweenPoints, random } from '+helpers'
+import { addPosition, distanceBetweenPoints, isSamePosition, random } from '+helpers'
 
 import { HumanActor } from '../human/HumanActor'
 
@@ -13,6 +13,7 @@ export class BoarActor extends WalkableActor {
     public maxHp = config.boar.hp
     public hp = this.maxHp
     public target?: Actor
+    private chaseDestination?: Position
 
     public tick(): void {
         super.tick()
@@ -41,6 +42,7 @@ export class BoarActor extends WalkableActor {
     }
 
     public setTarget(target: Actor) {
+        if (this.target !== target) this.chaseDestination = undefined
         this.target = target
     }
 
@@ -69,8 +71,13 @@ export class BoarActor extends WalkableActor {
             if (this.target.isDead()) {
                 this.target = undefined
             }
-        } else {
-            this.setPathTo(this.target.position, true)
+        } else if (
+            !this.hasPath() ||
+            !this.chaseDestination ||
+            !isSamePosition(this.chaseDestination, this.target.position)
+        ) {
+            this.chaseDestination = this.target.position
+            this.setPathTo(this.chaseDestination, true)
         }
     }
 

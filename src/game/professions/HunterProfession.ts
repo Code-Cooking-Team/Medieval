@@ -57,12 +57,7 @@ export class HunterProfession extends Profession {
         if (this.actor.isFindingPath || this.actor.hasPath()) {
             this.route = undefined
             this.preyId = undefined
-            if (!this.actor.isFindingPath) {
-                const next = this.actor.path[0]!
-                if (this.game.pf.canStep(this.actor.position, [next.x, next.y]))
-                    this.actor.move()
-                else this.actor.cancelPath()
-            }
+            if (!this.actor.isFindingPath) this.actor.move()
             return
         }
         if (this.retryIn-- > 0) return
@@ -203,18 +198,10 @@ export class HunterProfession extends Profession {
     }
 
     private moveAlongRoute() {
-        const next = this.route?.path.shift()
-        if (!next) {
-            this.route = undefined
-            return false
-        }
-        const position: Position = [next.x, next.y]
-        if (!this.game.pf.canStep(this.actor.position, position)) {
-            this.route = undefined
-            return false
-        }
-        this.actor.position = position
-        return true
+        if (!this.route) return false
+        const result = this.actor.move(this.route.path)
+        if (result === 'invalid' || result === 'idle') this.route = undefined
+        return result === 'moved'
     }
 
     public toJSON(): HunterProfessionJSON {
