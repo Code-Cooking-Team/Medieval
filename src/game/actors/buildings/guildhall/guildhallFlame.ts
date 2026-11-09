@@ -24,9 +24,9 @@ export function applyGuildhallFlame(model: Group) {
             uniforms: {
                 time: guildhallFlameTime,
                 heightRange: { value: new Vector2(min.y, max.y - min.y) },
-                ember: { value: new Color(0xf33e0b) },
-                orange: { value: new Color(0xff871e) },
-                gold: { value: new Color(0xffdb71) },
+                ember: { value: new Color(0xff681c).multiplyScalar(1.8) },
+                orange: { value: new Color(0xff9124).multiplyScalar(3.5) },
+                core: { value: new Color(0xfff0b5).multiplyScalar(7) },
             },
             vertexShader: /* glsl */ `
                 uniform float time;
@@ -54,7 +54,7 @@ export function applyGuildhallFlame(model: Group) {
             fragmentShader: /* glsl */ `
                 uniform vec3 ember;
                 uniform vec3 orange;
-                uniform vec3 gold;
+                uniform vec3 core;
                 varying vec3 flamePosition;
                 varying float phase;
 
@@ -65,7 +65,8 @@ export function applyGuildhallFlame(model: Group) {
                         + 1.2 * sin(flamePosition.x * 8.0 + flamePosition.z * 5.0));
                     float heat = clamp(1.05 - height + flow * 0.14, 0.0, 1.0);
                     vec3 color = mix(ember, orange, smoothstep(0.05, 0.56, heat));
-                    color = mix(color, gold * 1.4, smoothstep(0.46, 0.95, heat));
+                    // The white-hot base drives bloom while the tips stay orange.
+                    color = mix(color, core, smoothstep(0.62, 1.0, heat));
                     gl_FragColor = vec4(color, 1.0);
                     #include <tonemapping_fragment>
                     #include <colorspace_fragment>
