@@ -78,7 +78,7 @@ export class MeadowTile extends Tile {
     public type = TileType.Meadow
     public color = generateSimilarColor(0x274517, 4)
     public height = random(0, 0.2)
-    public treeChance = 0.004
+    public treeChance = 0.001
 }
 
 export class StepTile extends Tile {
