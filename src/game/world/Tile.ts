@@ -18,6 +18,7 @@ export class Tile {
     public color = 0x000000
     public height = 0
     public treeChance = 0
+    public buildingId?: string
 
     public constructor(public previousTile?: Tile) {}
 
@@ -26,12 +27,14 @@ export class Tile {
 
         const data = omitBy(this.getData(), (value, keyName) => {
             const key = keyName as keyof typeof pristineTile
-            return pristineTile[key] === value
+            // The constructor can randomize both, so neither is a stable default.
+            return key !== 'height' && key !== 'color' && pristineTile[key] === value
         })
 
         return {
             type: this.type,
             ...data,
+            buildingId: this.buildingId,
             previousTile: this.previousTile?.toJSON(),
         }
     }
@@ -66,7 +69,7 @@ export class ForestTile extends Tile {
 }
 
 export class SandTile extends Tile {
-    public type = TileType.Meadow
+    public type = TileType.Sand
     public color = generateSimilarColor(0x626948, 6)
     public height = random(-0.15, 0.4)
     public treeChance = 0.001
@@ -75,7 +78,7 @@ export class MeadowTile extends Tile {
     public type = TileType.Meadow
     public color = generateSimilarColor(0x274517, 4)
     public height = random(0, 0.2)
-    public treeChance = 0.004
+    public treeChance = 0.001
 }
 
 export class StepTile extends Tile {
@@ -129,6 +132,7 @@ export class OvergrownTile extends Tile {
     public type = TileType.Overgrown
     public color = generateSimilarColor(0x052507, 4)
     public canBuild = false
+    public height = this.previousTile?.height ?? 0
     public treeChance = 0.1
     public walkCost = 3
 }
@@ -137,6 +141,7 @@ const tileByType: Record<TileType, TileClass> = {
     [TileType.Empty]: Tile,
     [TileType.Forest]: ForestTile,
     [TileType.Meadow]: MeadowTile,
+    [TileType.Sand]: SandTile,
     [TileType.Step]: StepTile,
     [TileType.Water]: WaterTile,
     [TileType.Wall]: WallTile,

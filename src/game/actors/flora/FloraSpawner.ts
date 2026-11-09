@@ -19,13 +19,17 @@ const bushNeighbors: Position[] = [
 ]
 
 export class FloraSpawner {
-    private rng = seededRandom()
-    private bushRng = seededRandom()
+    private rng: ReturnType<typeof seededRandom>
+    private bushRng: ReturnType<typeof seededRandom>
 
     constructor(
         public game: Game,
         public player: NaturePlayer,
-    ) {}
+        seed?: number,
+    ) {
+        this.rng = seededRandom(seed)
+        this.bushRng = seededRandom(seed === undefined ? undefined : seed ^ 0x42b7d18c)
+    }
 
     public bulkSpawnPlants() {
         const tilePositions: Position[] = []

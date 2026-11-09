@@ -43,7 +43,7 @@ const simplifyConfigValues = <T extends {}>(config: T, configTemplate = config) 
                 typeof templateValue === 'object' &&
                 '__type' in templateValue
             ) {
-                const configValue = config[categoryKey][key] as any
+                const configValue = (config[categoryKey][key] ?? templateValue) as any
                 const anyTemplateValue = templateValue as any
 
                 addConfigOption(categoryKey, key, anyTemplateValue)

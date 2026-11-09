@@ -77,7 +77,7 @@ export class Renderer {
         )
 
         this.ground = new GroundRenderer(this.game)
-        this.water = new WaterRenderer(this.game)
+        this.water = new WaterRenderer(this.game.world)
     }
 
     public init() {
@@ -368,17 +368,25 @@ export class Renderer {
 
         if (config.postProcessing.postprocessingEnabled) {
             if (this.bokehPass) {
-                const cameraY = this.rtsCamera.camera.position.y
-                const cameraRotation =
-                    (this.rtsCamera.camera.rotation.x + Math.PI / 2) *
-                    1.5 *
-                    (cameraY * 0.2)
-                const uniform = this.bokehPass.uniforms as any
-                uniform.focus.value = cameraY + cameraRotation
-                uniform.aperture.value =
-                    (10 - cameraY + cameraRotation) *
-                    config.postProcessing.bokehAperture *
-                    0.2
+                const camera = this.rtsCamera.camera
+                const pitch = camera.rotation.x
+                // Focus where the center ray meets the ground, with a limit near the horizon.
+                const down = Math.max(0.25, -Math.sin(pitch))
+                const focus = camera.position.y / down
+                const bottomRayDrop =
+                    (Math.cos(pitch) * Math.cos(camera.rotation.z)) /
+                    camera.projectionMatrix.elements[5]!
+                const foregroundDepth =
+                    camera.position.y / (down + Math.abs(bottomRayDrop))
+                // Keep the foreground blur consistent across zoom levels and soften it overhead.
+                const depthSpan = Math.max(focus - foregroundDepth, focus * 0.2)
+                const uniforms = this.bokehPass.uniforms as Record<
+                    string,
+                    { value: number }
+                >
+                uniforms.focus!.value = focus
+                uniforms.aperture!.value =
+                    (6 * config.postProcessing.bokehAperture) / depthSpan
             }
             this.composer.render()
         } else {

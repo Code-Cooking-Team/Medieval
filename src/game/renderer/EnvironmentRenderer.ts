@@ -41,8 +41,7 @@ export class EnvironmentRenderer extends BasicRenderer {
 
         if (config.renderer.shadow) {
             this.sun.castShadow = true
-            this.sun.shadow.mapSize.width = 128 * 10
-            this.sun.shadow.mapSize.height = 128 * 10
+            this.sun.shadow.mapSize.setScalar(Number(config.renderer.shadowResolution))
             this.sun.shadow.camera.near = 0.5
             this.sun.shadow.camera.far = 200
             this.sun.shadow.camera.left = -100

@@ -8,13 +8,14 @@ import { Player } from '+game/player/types'
 import { Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
-import { Scene } from 'three'
+import { Scene, Vector2 } from 'three'
 import { SelectionBox } from 'three/addons/interactive/SelectionBox.js'
 
 import { RaycastFinder } from './lib/RaycastFinder'
 
 const LEFT_MOUSE_BUTTON = 0
 const RIGHT_MOUSE_BUTTON = 2
+const DRAG_THRESHOLD_PX = 5
 
 export class SelectInteractions {
     private finder: RaycastFinder
@@ -51,18 +52,22 @@ export class SelectInteractions {
         this.el.removeEventListener('dblclick', this.handleDoubleClick)
         document.removeEventListener('pointermove', this.handlePointerMove)
         document.removeEventListener('pointerup', this.handlePointerUp)
+        this.pressedButton = undefined
+        this.selectionDiv.onUp()
     }
 
-    private down = false
-    private distance = 0
+    private pressedButton?: number
+    private pointerStart = new Vector2()
 
     private handlePointerDown = (event: PointerEvent) => {
-        const selectedBuilding = this.player.selectedBuilding
-        this.down = !selectedBuilding
-        this.distance = 0
+        if (this.player.selectedBuilding) return
+        if (event.button !== LEFT_MOUSE_BUTTON && event.button !== RIGHT_MOUSE_BUTTON)
+            return
 
-        if (event.button !== LEFT_MOUSE_BUTTON || selectedBuilding) return
+        this.pressedButton = event.button
+        if (event.button !== LEFT_MOUSE_BUTTON) return
 
+        this.pointerStart.set(event.clientX, event.clientY)
         this.selectionDiv.onDown(event)
         this.selectionBox.startPoint.set(
             (event.clientX / window.innerWidth) * 2 - 1,
@@ -72,22 +77,15 @@ export class SelectInteractions {
     }
 
     private handlePointerMove = (event: PointerEvent) => {
-        if (!this.down) return
+        if (this.pressedButton !== LEFT_MOUSE_BUTTON) return
 
         this.selectionDiv.onMove(event)
-        this.distance += 1
-
-        this.selectionBox.endPoint.set(
-            (event.clientX / window.innerWidth) * 2 - 1,
-            -(event.clientY / window.innerHeight) * 2 + 1,
-            0,
-        )
     }
 
     private handlePointerUp = (event: PointerEvent) => {
-        if (!this.down) return
+        if (this.pressedButton !== event.button) return
 
-        this.down = false
+        this.pressedButton = undefined
 
         if (event.button === RIGHT_MOUSE_BUTTON) {
             this.handleRightClick(event)
@@ -96,12 +94,14 @@ export class SelectInteractions {
 
         this.selectionDiv.onUp()
 
-        if (this.distance < 10) {
+        const distance = Math.hypot(
+            event.clientX - this.pointerStart.x,
+            event.clientY - this.pointerStart.y,
+        )
+        if (distance < DRAG_THRESHOLD_PX) {
             this.handleClick(event)
             return
         }
-
-        this.distance = 0
 
         this.selectionBox.endPoint.set(
             (event.clientX / window.innerWidth) * 2 - 1,

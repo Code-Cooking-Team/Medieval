@@ -1,4 +1,4 @@
-import type { Ref } from 'react'
+import { type Ref, useState } from 'react'
 
 import { InputStyleProps, StyledInput } from './Input'
 
@@ -24,16 +24,40 @@ export const NumberInput = ({
     inputRef,
     ...props
 }: NumberInputProps) => {
-    const val = Number.isNaN(value) ? '' : value
+    const [draft, setDraft] = useState<{ text: string; value?: number }>()
+    const displayValue =
+        draft && Object.is(draft.value, value)
+            ? draft.text
+            : Number.isFinite(value)
+              ? String(value)
+              : ''
 
     return (
         <StyledInput
             ref={inputRef}
-            value={val}
+            type="text"
+            inputMode="decimal"
+            value={displayValue}
             onChange={({ target }) => {
-                onChange(parseFloat(target.value))
+                const text = target.value.replaceAll(',', '.')
+                if (!/^[+-]?(?:(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d*)?|\.)?$/.test(text))
+                    return
+
+                if (text !== target.value) {
+                    const { selectionStart, selectionEnd } = target
+                    target.value = text
+                    target.setSelectionRange(selectionStart, selectionEnd)
+                }
+
+                const parsed = text === '' ? NaN : Number(text)
+                const nextValue = Number.isFinite(parsed) ? parsed : value
+                setDraft({ text, value: nextValue })
+                if (Number.isFinite(parsed) && !Object.is(parsed, value)) onChange(parsed)
             }}
-            onBlur={onBlur}
+            onBlur={() => {
+                setDraft(undefined)
+                onBlur?.()
+            }}
             name={name}
             step={step}
             placeholder={placeholder}

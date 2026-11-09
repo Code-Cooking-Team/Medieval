@@ -1,3 +1,5 @@
+import { seededRandom } from '+helpers/random'
+
 import { BufferGeometry, Float32BufferAttribute } from 'three'
 
 export type Diagonals = 'left' | 'right' | 'both' | 'random'
@@ -62,6 +64,7 @@ class DiagonalsPlaneGeometry extends BufferGeometry {
             }
         }
 
+        const random = seededRandom(0)
         for (let iy = 0; iy < gridY; iy++) {
             for (let ix = 0; ix < gridX; ix++) {
                 const a = ix + gridX1 * iy
@@ -82,7 +85,7 @@ class DiagonalsPlaneGeometry extends BufferGeometry {
                     indices.push(a, c, d)
                     indices.push(b, c, d)
                 } else {
-                    if (Math.random() > 0.5) {
+                    if (random() > 0.5) {
                         indices.push(a, b, d)
                         indices.push(b, c, d)
                     } else {

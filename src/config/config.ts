@@ -1,7 +1,7 @@
 import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 
 import { createConfig } from './lib/createConfig'
-import { colorInput } from './lib/definitions'
+import { colorInput, select } from './lib/definitions'
 
 const CLOSE_CAMERA_HEIGHT = 0.65
 
@@ -35,6 +35,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         dayAndNightTimeScale: 600,
         dayAndNightTimeStart: 1,
         shadow: true,
+        shadowResolution: select('1280', ['512', '1024', '1280', '2048', '4096']),
         treeWaving: true,
         light: false,
         diagonals: 'random' as Diagonals,

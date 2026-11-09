@@ -4,11 +4,7 @@ import { HorizontalPlaneGeometry } from '+helpers'
 
 import { Diagonals } from './DiagonalsPlaneGeometry'
 
-export const createWordPlane = (
-    word: World,
-    diagonals: Diagonals,
-    multiply: number = 1,
-) => {
+export const createWordPlane = (word: World, diagonals: Diagonals) => {
     const [wordWidth, wordHeight] = word.getSize()
 
     const width = (wordWidth - 1) * config.renderer.tileSize
@@ -17,8 +13,8 @@ export const createWordPlane = (
     const geometry = new HorizontalPlaneGeometry(
         width,
         height,
-        multiply * wordWidth - 1,
-        multiply * wordHeight - 1,
+        wordWidth - 1,
+        wordHeight - 1,
         diagonals,
     )
 
