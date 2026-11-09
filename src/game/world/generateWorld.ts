@@ -20,11 +20,14 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
     const stride = HEIGHT - 1
     const offsetY = chunkY * stride
     const noise = createTerrainNoise(seed)
-    const regionalRelief = createTerrainRegions(seed)
+    const mountainNoise = createTerrainNoise(seed ^ 0x13ed40ad)
+    // Include worlds at both extremes while still allowing any intermediate coverage.
+    const mountainCoverage = smooth(seededRandom(seed ^ 0x57903ab7)(-0.15, 1.15))
+    const regionalRelief = createTerrainRegions(seed, mix(0.85, 1.55, mountainCoverage))
     const features = [chunkY - 1, chunkY, chunkY + 1].map((chunk) => {
         const random = seededRandom(seed ^ Math.imul(chunk, 0x373cb179))
         return {
-            ranges: createRanges(random, chunk * stride),
+            ranges: createRanges(random, chunk * stride, mountainCoverage),
             cliffs: createCliffs(random, chunk * stride),
         }
     })
@@ -39,11 +42,17 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
                 regionalRelief(x, worldY) +
                 2.1 * noise.layered(x / 53, worldY / 53)
             const hills = 1.35 * noise.layered(x / 22 + 8, worldY / 22)
+            const lowland = plain + hills + cliffRelief(x, worldY, cliffs, noise)
+            const mountainField =
+                mountainCoverage + 0.36 * mountainNoise.layered(x / 145, worldY / 145)
+            const mountainRegion = smooth((mountainField - 0.38) / 0.24)
+            if (mountainRegion === 0) return lowland
+
+            const upland =
+                4 + 10 * smooth(0.5 + mountainNoise.layered(x / 38, worldY / 38))
             return (
-                plain +
-                hills +
-                mountainRelief(x, worldY, ranges, noise) +
-                cliffRelief(x, worldY, cliffs, noise)
+                lowland +
+                mountainRegion * (upland + mountainRelief(x, worldY, ranges, noise))
             )
         })
     })
@@ -67,7 +76,9 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
                 wet[y]![x + 1] ||
                 (!seam && (wet[y - 1]![x] || wet[y + 1]![x]))
             const cover = noise.layered(x / 28 + 9, worldY / 28 - 12)
-            const stone = slope > 1.02 + 0.38 * cover || localElevation > 14 + 2.8 * cover
+            const summit = smooth((localElevation - 23 - 3 * cover) / 8)
+            const stone = slope > 1.02 + 0.38 * cover || summit > 0.45
+            const grayRock = Math.max(summit, smooth((slope - 1.25) / 1.1))
             const detail = noise.layered(x / 6 - 16, worldY / 6 + 7)
             const [tile, dark, light] = flooded
                 ? ([new WaterTile(), 0x3a493d, 0x8d7d58] as const)
@@ -84,7 +95,11 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
                 0.49 + 0.64 * detail + 0.44 * cover + (stone ? 0.15 * strata : 0),
             )
             tile.height = elevation + 0.045 * detail
-            tile.color = blendColor(dark, light, tint)
+            const color = blendColor(dark, light, tint)
+            tile.color =
+                tile instanceof StepTile
+                    ? blendColor(color, blendColor(0x343b44, 0x81878e, tint), grayRock)
+                    : color
             if (tile instanceof ForestTile)
                 tile.treeChance = mix(0.025, 0.085, smooth(cover * 1.6))
             if (tile instanceof StepTile) tile.treeChance = 0
@@ -100,9 +115,16 @@ function blendColor(dark: number, light: number, tint: number) {
     return channel(16) | channel(8) | channel(0)
 }
 
-function createRanges(random: ReturnType<typeof seededRandom>, offsetY: number) {
+function createRanges(
+    random: ReturnType<typeof seededRandom>,
+    offsetY: number,
+    mountainCoverage: number,
+) {
+    const count = Math.floor(random(4, 9) * WORLD_TEST_SCALE)
+    const footprint = mix(1, 1.45, mountainCoverage)
+    const elevation = mix(1, 1.5, mountainCoverage)
     return Array.from(
-        { length: Math.floor(random(4, 9) * WORLD_TEST_SCALE) },
+        { length: Math.round(count * mix(1, 1.75, mountainCoverage)) },
         (_, index) => {
             const angle = random(0, Math.PI * 2)
             return {
@@ -110,9 +132,9 @@ function createRanges(random: ReturnType<typeof seededRandom>, offsetY: number) 
                 y: offsetY + random(24, HEIGHT - 24),
                 cos: Math.cos(angle),
                 sin: Math.sin(angle),
-                length: random(17, 36),
-                width: random(12, 24),
-                height: index === 0 ? random(19, 24) : random(8, 19),
+                length: random(17, 36) * footprint,
+                width: random(12, 24) * footprint,
+                height: (index === 0 ? random(19, 24) : random(8, 19)) * elevation,
             }
         },
     )
@@ -175,13 +197,19 @@ function mountainRelief(
         const across = (-dx * range.sin + dy * range.cos) / range.width
         if (Math.abs(along) >= 1.4 || Math.abs(across) >= 1.4) continue
 
-        const crest = smooth(1 - Math.abs(along) / 1.4)
-        const spine = Math.max(0, 1 - Math.abs(across + roughness * 0.35))
+        const ridge = across + roughness * 0.35 + 0.14 * Math.sin(along * 5)
+        const shoulder = smooth(1 - Math.abs(along) / 1.4) * smooth(1 - Math.abs(ridge))
+        const summit =
+            Math.max(0, 1 - 0.95 * Math.abs(along)) *
+            Math.max(0, 1 - 2.1 * Math.abs(ridge))
         const spur =
-            0.62 * Math.max(0, 1 - Math.abs(across - 0.48 * Math.sin(along * 4)) * 1.7)
+            smooth(1 - Math.abs(along) / 1.4) *
+            Math.max(0, 1 - 1.7 * Math.abs(across - 0.48 * Math.sin(along * 4)))
         relief = Math.max(
             relief,
-            range.height * crest * Math.max(spine, spur) * (0.9 + 0.32 * roughness),
+            range.height *
+                (0.53 * shoulder + 0.72 * summit + 0.18 * spur) *
+                (0.9 + 0.32 * roughness),
         )
     }
     return relief

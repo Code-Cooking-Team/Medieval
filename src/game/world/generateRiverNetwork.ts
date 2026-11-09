@@ -18,12 +18,13 @@ export function carveDrainageNetwork(
     wet: boolean[][],
     seed: number,
     chunkY: number,
-): WaterRegion {
+): Extract<WaterRegion, { kind: 'drainage' }> {
     const width = ground[0]!.length
     const height = ground.length
     const size = width * height
     const layout = seededRandom(seed ^ 0x6bbdb457)
-    const threshold = size * layout(0.028, 0.041)
+    // A dry world keeps the main crossing, while a wet one activates smaller tributaries.
+    const threshold = size * mix(0.011, 0.16, layout() ** 2)
     const axis = layout() < 0.5 ? 0 : 1
     const [inlet, outlet] = riverPorts(ground, seed, chunkY, axis)
     const extent = (axis === 0 ? width : height) - 1
@@ -64,7 +65,21 @@ export function carveDrainageNetwork(
             const best = strongest[parent]!
             if (best < 0 || area[cell]! > area[best]!) strongest[parent] = cell
         }
-        levels[cell] = Math.max(drainage.minimum[cell]!, sample.elevations[cell]! - 0.42)
+        const x = Math.round(sample.x[cell]!)
+        const y = Math.round(sample.y[cell]!)
+        // Keep the channel below nearby low ground, including on the downhill side of a slope.
+        let nearbyGround = ground[y]![x]!
+        for (let dy = -9; dy <= 9; dy++) {
+            const span = Math.floor(Math.sqrt(81 - dy * dy))
+            const row = ground[y + dy]!
+            for (let dx = -span; dx <= span; dx++) {
+                nearbyGround = Math.min(nearbyGround, row[x + dx]!)
+            }
+        }
+        levels[cell] = Math.max(
+            drainage.minimum[cell]!,
+            Math.min(sample.elevations[cell]! - 0.42, nearbyGround - 0.15),
+        )
     }
     levels[head] = upstream.elevation
     levels[drainage.root] = downstream.elevation
@@ -435,6 +450,8 @@ class ChannelRaster {
 
     carve() {
         const samples: RiverSample[] = []
+        const bankFloor = new Float64Array(this.distance.length).fill(-Infinity)
+        const banks: number[] = []
         for (let cell = 0; cell < this.distance.length; cell++) {
             const halfWidth = this.widths[cell]!
             const distance = this.distance[cell]! - halfWidth
@@ -452,7 +469,8 @@ class ChannelRaster {
                 distance +
                 smooth(edge / 6) *
                     (1 - smooth(Math.abs(distance) / 4.5)) *
-                    smooth(halfWidth / 2) *
+                    // Keep bank erosion from closing a narrow channel.
+                    smooth((halfWidth - 1.3) / 1.2) *
                     erosion
             const bed = level - (this.shallow[cell] ? 0.42 : 0.68 + 0.055 * halfWidth)
             const bankTop = Math.max(level + 0.48, Math.min(ground, level + 1.25))
@@ -460,6 +478,10 @@ class ChannelRaster {
             const elevation = mix(slope, ground, smooth((bank - 3.5) / 3.5))
             this.ground[y]![x] = elevation
             if (bank <= SHORE_OVERLAP && elevation < level) this.wet[y]![x] = true
+            if (bank >= 1.25 && bank <= 3.5 && edge > 0) {
+                bankFloor[cell] = level + 0.48
+                banks.push(cell)
+            }
             if (bank <= SHORE_OVERLAP + 0.8) {
                 samples.push(
                     this.falling[cell] && elevation < level && bank < 0
@@ -468,6 +490,42 @@ class ChannelRaster {
                 )
             }
         }
+        this.blendLowBanks(bankFloor, banks)
         return samples
+    }
+
+    private blendLowBanks(bankFloor: Float64Array, banks: number[]) {
+        const bankSlope = 0.26
+        const neighbors = [-1, 1, -this.width, this.width]
+        for (const cell of banks) {
+            const floor = bankFloor[cell]! - bankSlope
+            for (const offset of neighbors) {
+                const next = cell + offset
+                const nx = next % this.width
+                const ny = Math.floor(next / this.width)
+                if (nx <= 0 || nx >= this.width - 1 || ny <= 0 || ny >= this.height - 1)
+                    continue
+                if (this.wet[ny]![nx]! || floor <= bankFloor[next]!) continue
+
+                // A high point next to the channel can hide a drop just behind it.
+                const besideRiver = this.distance[next]! - this.widths[next]! < 7
+                if (!besideRiver && floor <= this.ground[ny]![nx]!) continue
+
+                bankFloor[next] = floor
+                banks.push(next)
+            }
+        }
+        // Preserve shared map edges and raise only ground below the bank profile.
+        for (const cell of new Set(banks)) {
+            const x = cell % this.width
+            const y = Math.floor(cell / this.width)
+            const edge = Math.min(x, y, this.width - 1 - x, this.height - 1 - y)
+            const ground = this.ground[y]![x]!
+            this.ground[y]![x] = mix(
+                ground,
+                Math.max(ground, bankFloor[cell]!),
+                smooth(edge / 8),
+            )
+        }
     }
 }

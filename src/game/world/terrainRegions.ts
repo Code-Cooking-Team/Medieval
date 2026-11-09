@@ -2,7 +2,7 @@ import { createTerrainNoise, mix, smooth } from './terrainNoise'
 
 const REGION_SIZE = 80
 
-export function createTerrainRegions(seed: number) {
+export function createTerrainRegions(seed: number, reliefScale: number) {
     const noise = createTerrainNoise(seed ^ 0x4fb92371)
 
     const transition = (
@@ -16,7 +16,7 @@ export function createTerrainRegions(seed: number) {
         const ramp = smooth(
             0.6 + 0.85 * Math.sin((along / spacing) * 2 * Math.PI + phase),
         )
-        const width = mix(2.4, 30, ramp)
+        const width = mix(2.4, 30 * reliefScale, ramp)
         return smooth(0.5 + ((position - 0.5) * REGION_SIZE) / width)
     }
 
@@ -31,6 +31,7 @@ export function createTerrainRegions(seed: number) {
         const v = transition(regionY - top, x, top, -21)
         return (
             5 *
+            reliefScale *
             mix(
                 mix(noise.sample(left, top), noise.sample(left + 1, top), u),
                 mix(noise.sample(left, top + 1), noise.sample(left + 1, top + 1), u),
