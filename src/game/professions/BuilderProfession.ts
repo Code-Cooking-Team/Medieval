@@ -1,7 +1,7 @@
 import type { ConstructionSiteActor } from '+game/actors/buildings/construction/ConstructionSiteActor'
-import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
-import { isWoodCampActor } from '+game/actors/helpers'
+import { hasWoodStorage } from '+game/actors/helpers'
 import type { ItemId } from '+game/actors/units/human/equipment'
+import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { ActorType, Path } from '+game/types'
 
 import { Profession, ProfessionJSON } from './Profession'
@@ -13,7 +13,7 @@ const retryTicks = 4
 
 type Job = {
     site?: ConstructionSiteActor
-    camp?: WoodCampActor
+    camp?: WoodStorageBuilding
     path: Path
     tileRevision: number
 }
@@ -131,7 +131,7 @@ export class BuilderProfession extends Profession {
         if (!sites.length && !this.carriedWood) return
 
         const camps = this.game.actors
-            .filter(isWoodCampActor)
+            .filter(hasWoodStorage)
             .filter(
                 (camp) =>
                     camp.player === this.actor.player &&

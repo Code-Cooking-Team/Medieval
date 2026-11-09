@@ -1,5 +1,5 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
-import { isHunterHutActor, isWoodCampActor } from '+game/actors/helpers'
+import { hasWoodStorage, isGuildhallActor, isHunterHutActor } from '+game/actors/helpers'
 import { Game, GameJSON } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
@@ -49,7 +49,7 @@ function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
     const [renderer, setRenderer] = useState<Renderer>()
     const [started, setStarted] = useState(false)
-    const [rightMenuOpen, setRightMenuOpen] = useState(true)
+    const [rightMenuOpen, setRightMenuOpen] = useState(false)
     const [mode, setMode] = useState<'showcase' | 'play'>('showcase')
     const isShowcase = mode === 'showcase'
     const [gameMenuOpen, setGameMenuOpen] = useState(true)
@@ -69,6 +69,7 @@ function App() {
         setToLoadJSON(undefined)
         setMode('play')
         setGameMenuOpen(false)
+        setRightMenuOpen(false)
         forceReload()
     }
 
@@ -76,6 +77,7 @@ function App() {
         setToLoadJSON(save)
         setMode('play')
         setGameMenuOpen(false)
+        setRightMenuOpen(false)
         forceReload()
     }
 
@@ -92,10 +94,9 @@ function App() {
 
         const seedParam = new URLSearchParams(window.location.search).get('seed')?.trim()
         const requestedSeed = seedParam ? Number(seedParam) : NaN
-        const seed =
-            isShowcase && Number.isSafeInteger(requestedSeed)
-                ? requestedSeed
-                : Math.floor(random(0, 2 ** 32))
+        const seed = Number.isSafeInteger(requestedSeed)
+            ? requestedSeed
+            : Math.floor(random(0, 2 ** 32))
         const world = generateWorld(seed)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
@@ -347,7 +348,7 @@ const SettlementStatus = ({
 
     const wood = useSyncExternalStore(subscribe, () =>
         game.actors.reduce((total, actor) => {
-            if (isWoodCampActor(actor) && actor.player === humanPlayer) {
+            if (hasWoodStorage(actor) && actor.player === humanPlayer) {
                 return total + actor.woodStock
             }
             return total
@@ -358,7 +359,8 @@ const SettlementStatus = ({
         game.actors.reduce(
             (total, actor) =>
                 total +
-                (isHunterHutActor(actor) && actor.player === humanPlayer
+                ((isHunterHutActor(actor) || isGuildhallActor(actor)) &&
+                actor.player === humanPlayer
                     ? actor.meatStock
                     : 0),
             0,

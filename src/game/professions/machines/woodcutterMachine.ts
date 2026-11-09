@@ -10,6 +10,10 @@ export const woodcutterMachine =
                 'on': {
                     'TICK': [
                         {
+                            'cond': 'readyToUnload',
+                            'target': 'NearCamp',
+                        },
+                        {
                             'cond': 'campFull',
                             'target': 'HaveWood',
                         },

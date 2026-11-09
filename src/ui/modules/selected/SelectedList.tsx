@@ -4,23 +4,29 @@ import {
     ConstructionType,
     isConstructionType,
 } from '+game/actors/buildings/construction/costs'
+import type { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
 import type { HunterHutActor } from '+game/actors/buildings/hunterHut/HunterHutActor'
-import type { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
-import { isHumanActor, isHunterHutActor, isWoodCampActor } from '+game/actors/helpers'
+import {
+    hasWoodStorage,
+    isGuildhallActor,
+    isHumanActor,
+    isHunterHutActor,
+} from '+game/actors/helpers'
 import { EquipmentSlot, items } from '+game/actors/units/human/equipment'
 import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Actor } from '+game/core/Actor'
+import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { ProfessionType } from '+game/professions/types'
 import type { Renderer } from '+game/Renderer'
-import { ActorType } from '+game/types'
+import { ActorType, actorTypesByCategory } from '+game/types'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
-import { Axe, Hammer } from 'lucide-react'
+import { Axe, Hammer, X } from 'lucide-react'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { SelectionPortrait } from './SelectionPortrait'
@@ -66,87 +72,165 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
         ][]
     }, [selectedActors])
 
+    const selectedCategories = useMemo(
+        () =>
+            Object.entries(actorTypesByCategory)
+                .map(([category, types]) => ({
+                    category,
+                    actors: selectedTypes.filter(([type]) =>
+                        (types as ActorType[]).includes(type),
+                    ),
+                }))
+                .filter(({ actors }) => actors.length),
+        [selectedTypes],
+    )
+
     const singleActor = selectedActors.length === 1 ? selectedActors[0] : undefined
+    const [showBuildPicker, setShowBuildPicker] = useState(false)
+    const [showGroupBuildPicker, setShowGroupBuildPicker] = useState(false)
 
     if (!selectedActors.length) return null
 
     if (singleActor) {
+        const canBuild =
+            isHumanActor(singleActor) &&
+            singleActor.player === humanPlayer &&
+            !singleActor.isDead()
         return (
             <ActorDetails
                 key="single-selection"
-                style={{ overflow: 'visible', paddingLeft: 152, minHeight: 48 }}
+                style={{
+                    overflow: 'visible',
+                    minHeight: showBuildPicker ? 64 : 76,
+                    flexDirection: showBuildPicker ? 'column' : 'row',
+                    paddingLeft: !showBuildPicker && renderer ? 152 : 16,
+                }}
             >
-                {renderer && (
+                {!showBuildPicker && renderer && (
                     <SelectionPortrait
                         key={singleActor.id}
                         actor={singleActor}
                         renderer={renderer}
                     />
                 )}
-                <Box as="strong" display="inline-flex" alignItems="center" columnGap={2}>
-                    {singleActor instanceof ConstructionSiteActor ? (
-                        <>
-                            <ActorIcon type={singleActor.buildingType} />
-                            {buildingName(singleActor.buildingType)} Construction Site
-                        </>
-                    ) : (
-                        <>
-                            <ActorIcon type={singleActor.type} />
-                            {singleActor.type}
-                        </>
-                    )}
-                </Box>
-                {isHumanActor(singleActor) && (
-                    <HumanDetails
-                        key={singleActor.id}
-                        human={singleActor}
+                {!showBuildPicker && (
+                    <ActorIdentity>
+                        <Box
+                            as="strong"
+                            display="inline-flex"
+                            alignItems="center"
+                            columnGap={2}
+                        >
+                            <GoldIcon>
+                                <ActorIcon
+                                    type={
+                                        singleActor instanceof ConstructionSiteActor
+                                            ? singleActor.buildingType
+                                            : singleActor.type
+                                    }
+                                />
+                            </GoldIcon>
+                            {singleActor instanceof ConstructionSiteActor
+                                ? `${buildingName(singleActor.buildingType)} Construction Site`
+                                : singleActor.type}
+                        </Box>
+                        <ActorStats>
+                            <GoldValue>
+                                {singleActor.hp}/{singleActor.maxHp}
+                            </GoldValue>{' '}
+                            HP
+                        </ActorStats>
+                        {isHumanActor(singleActor) && (
+                            <HumanDetails
+                                key={singleActor.id}
+                                human={singleActor}
+                                player={humanPlayer}
+                            />
+                        )}
+                        {singleActor instanceof ConstructionSiteActor && (
+                            <SiteProgress site={singleActor} />
+                        )}
+                        {isHumanActor(singleActor) && (
+                            <EquippedSlots actor={singleActor} />
+                        )}
+                        {hasWoodStorage(singleActor) && <CampStock camp={singleActor} />}
+                        {(isHunterHutActor(singleActor) ||
+                            isGuildhallActor(singleActor)) && (
+                            <HutStock hut={singleActor} />
+                        )}
+                    </ActorIdentity>
+                )}
+                {canBuild && (
+                    <BuildControls
+                        humans={[singleActor]}
                         player={humanPlayer}
+                        showPicker={showBuildPicker}
+                        setShowPicker={setShowBuildPicker}
                     />
                 )}
-                {singleActor instanceof ConstructionSiteActor && (
-                    <SiteProgress site={singleActor} />
-                )}
-                <span>
-                    {singleActor.hp}/{singleActor.maxHp} HP
-                </span>
-                {isHumanActor(singleActor) && <EquippedSlots actor={singleActor} />}
-                {isWoodCampActor(singleActor) && <CampStock camp={singleActor} />}
-                {isHunterHutActor(singleActor) && <HutStock hut={singleActor} />}
             </ActorDetails>
         )
     }
 
     return (
         <ActorDetails key="group-selection" style={{ pointerEvents: 'auto' }}>
-            {selectedTypes.map(([type, actors]) => (
-                <Box key={type}>
-                    <Button
-                        icon={<ActorIcon type={type} />}
-                        label={`${type} (${actors.length})`}
-                        onClick={() => selectActorsByType(type)}
-                    />
-                    <Box pt={2} display="flex" flexWrap="wrap" rowGap={2} columnGap={2}>
-                        {countProfessions(actors).map(([professionType, count]) => (
-                            <ProfessionButton
-                                key={professionType}
-                                icon={
-                                    professionType === ProfessionType.Woodcutter && (
-                                        <Axe size={16} aria-hidden="true" />
-                                    )
-                                }
-                                label={`${professionType} (${count})`}
-                                onClick={() =>
-                                    selectActorsByProfession(actors, professionType)
-                                }
-                            />
+            <SelectionGroups>
+                {selectedCategories.map(({ category, actors }, categoryIndex) => (
+                    <SelectionCategory key={category} withDivider={categoryIndex > 0}>
+                        {actors.map(([type, typedActors]) => (
+                            <Box key={type}>
+                                <Button
+                                    icon={
+                                        <GoldIcon>
+                                            <ActorIcon type={type} />
+                                        </GoldIcon>
+                                    }
+                                    label={`${type} (${typedActors.length})`}
+                                    onClick={() => selectActorsByType(type)}
+                                />
+                                <Box
+                                    pt={2}
+                                    display="flex"
+                                    flexWrap="nowrap"
+                                    columnGap={2}
+                                >
+                                    {countProfessions(typedActors).map(
+                                        ([professionType, count]) => (
+                                            <ProfessionButton
+                                                key={professionType}
+                                                icon={
+                                                    professionType ===
+                                                        ProfessionType.Woodcutter && (
+                                                        <GoldIcon>
+                                                            <Axe
+                                                                size={16}
+                                                                aria-hidden="true"
+                                                            />
+                                                        </GoldIcon>
+                                                    )
+                                                }
+                                                label={`${professionType} (${count})`}
+                                                onClick={() =>
+                                                    selectActorsByProfession(
+                                                        typedActors,
+                                                        professionType,
+                                                    )
+                                                }
+                                            />
+                                        ),
+                                    )}
+                                </Box>
+                            </Box>
                         ))}
-                    </Box>
-                </Box>
-            ))}
+                    </SelectionCategory>
+                ))}
+            </SelectionGroups>
             <BuildControls
                 key={selectedHumans.map((actor) => actor.id).join(',')}
                 humans={selectedHumans}
                 player={humanPlayer}
+                showPicker={showGroupBuildPicker}
+                setShowPicker={setShowGroupBuildPicker}
             />
         </ActorDetails>
     )
@@ -197,14 +281,12 @@ const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlaye
         <>
             <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
                 {profession?.type === ProfessionType.Woodcutter && (
-                    <Axe size={16} aria-hidden="true" />
+                    <GoldIcon>
+                        <Axe size={16} aria-hidden="true" />
+                    </GoldIcon>
                 )}
                 {profession?.type || noProfession}
             </Box>
-            <BuildControls
-                humans={human.player === player && !human.isDead() ? [human] : []}
-                player={player}
-            />
         </>
     )
 }
@@ -212,11 +294,14 @@ const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlaye
 const BuildControls = ({
     humans,
     player,
+    showPicker,
+    setShowPicker,
 }: {
     humans: HumanActor[]
     player: HumanPlayer
+    showPicker: boolean
+    setShowPicker: (show: boolean) => void
 }) => {
-    const [showPicker, setShowPicker] = useState(false)
     const subscribePlacement = useCallback(
         (refresh: () => void) =>
             player.emitter.on(['selectBuilding', 'unselectBuilding'], refresh),
@@ -231,29 +316,47 @@ const BuildControls = ({
     return (
         <Box
             display="flex"
-            alignItems="center"
+            alignItems={showPicker ? 'flex-end' : 'center'}
             flexWrap="wrap"
             columnGap={2}
             rowGap={2}
-            style={{ pointerEvents: 'auto' }}
+            style={{
+                pointerEvents: 'auto',
+                marginLeft: 'auto',
+                width: showPicker ? '100%' : undefined,
+                justifyContent: showPicker ? 'flex-end' : undefined,
+            }}
         >
-            <BuildButton
-                icon={<Hammer size={24} aria-hidden="true" />}
-                label="Build"
-                onClick={() => setShowPicker(!showPicker)}
-            />
-            {showPicker &&
-                buildOptions.map((type) => (
-                    <Button
-                        key={type}
-                        icon={<ActorIcon type={type} />}
-                        label={buildingName(type)}
-                        onClick={() => {
-                            player.selectBuilding(type, humans)
-                            setShowPicker(false)
-                        }}
+            {showPicker ? (
+                <BuildPicker>
+                    <BuildCloseButton
+                        aria-label="Close build picker"
+                        label=""
+                        icon={<X size={24} aria-hidden="true" />}
+                        onClick={() => setShowPicker(false)}
                     />
-                ))}
+                    <BuildOptions>
+                        {buildOptions.map((type) => (
+                            <Button
+                                key={type}
+                                icon={<ActorIcon type={type} />}
+                                label={buildingName(type)}
+                                onClick={() => {
+                                    player.selectBuilding(type, humans)
+                                    setShowPicker(false)
+                                }}
+                            />
+                        ))}
+                    </BuildOptions>
+                </BuildPicker>
+            ) : (
+                <BuildButton
+                    aria-label="Build"
+                    icon={<Hammer size={30} aria-hidden="true" />}
+                    label=""
+                    onClick={() => setShowPicker(true)}
+                />
+            )}
             {placing && isConstructionType(placing) && (
                 <span>{buildingName(placing)} · R to rotate · Esc to exit</span>
             )}
@@ -262,12 +365,40 @@ const BuildControls = ({
 }
 
 const BuildButton = styled(Button)({
-    minHeight: 48,
-    minWidth: 132,
-    padding: '10px 20px',
-    fontSize: 16,
-    fontWeight: 700,
+    width: 64,
+    height: 64,
+    minWidth: 64,
+    padding: 0,
+    borderRadius: '50%',
+    fontSize: 0,
+    justifyContent: 'center',
+    flexShrink: 0,
     cursor: 'pointer',
+})
+
+const BuildPicker = styled.div({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    width: '100%',
+    gap: 8,
+})
+
+const BuildCloseButton = styled(Button)({
+    width: 44,
+    height: 44,
+    minWidth: 44,
+    padding: 0,
+    borderRadius: '50%',
+    justifyContent: 'center',
+})
+
+const BuildOptions = styled.div({
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    gap: 8,
+    width: '100%',
 })
 
 const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
@@ -278,7 +409,10 @@ const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
     const wood = useSyncExternalStore(subscribe, () => site.deliveredWood)
     return (
         <span>
-            Wood {wood} / {constructionCosts[site.buildingType]}
+            Wood{' '}
+            <GoldValue>
+                {wood} / {constructionCosts[site.buildingType]}
+            </GoldValue>
         </span>
     )
 }
@@ -304,7 +438,7 @@ const EquippedSlots = ({ actor }: { actor: HumanActor }) => {
     return description ? <span>{description}</span> : null
 }
 
-const CampStock = ({ camp }: { camp: WoodCampActor }) => {
+const CampStock = ({ camp }: { camp: WoodStorageBuilding }) => {
     const subscribe = useCallback(
         (refresh: () => void) => camp.game.emitter.on('woodStockChanged', refresh),
         [camp],
@@ -312,7 +446,10 @@ const CampStock = ({ camp }: { camp: WoodCampActor }) => {
     const woodStock = useSyncExternalStore(subscribe, () => camp.woodStock)
     return (
         <span>
-            Wood stock: {woodStock} / {camp.woodCapacity}
+            Wood stock:{' '}
+            <GoldValue>
+                {woodStock} / {camp.woodCapacity}
+            </GoldValue>
         </span>
     )
 }
@@ -329,13 +466,16 @@ const ActorDetails = styled(Box)({
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: '4px 16px',
     width: 'max-content',
+    minWidth: 'min(360px, calc(100vw - 24px))',
     maxWidth: 'calc(100% - 24px)',
     maxHeight: '35vh',
-    overflow: 'auto',
+    overflowX: 'auto',
+    overflowY: 'hidden',
     boxSizing: 'border-box',
     padding: '8px 16px',
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -344,7 +484,51 @@ const ActorDetails = styled(Box)({
     pointerEvents: 'none',
 })
 
-const HutStock = ({ hut }: { hut: HunterHutActor }) => {
+const SelectionGroups = styled.div({
+    display: 'flex',
+    alignItems: 'flex-start',
+    flexWrap: 'nowrap',
+    gap: 16,
+    width: 'max-content',
+})
+
+const SelectionCategory = styled.div<{ withDivider: boolean }>(
+    ({ withDivider, theme }) => ({
+        display: 'flex',
+        alignItems: 'flex-start',
+        flexWrap: 'nowrap',
+        gap: 16,
+        paddingLeft: withDivider ? 16 : 0,
+        borderLeft: withDivider ? `1px solid ${theme.colors.black}` : 'none',
+    }),
+)
+
+const ActorIdentity = styled.div({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+    minWidth: 0,
+    flex: 1,
+})
+
+const ActorStats = styled.span(({ theme }) => ({
+    color: theme.colors.primary,
+    fontVariantNumeric: 'tabular-nums',
+}))
+
+const GoldValue = styled.strong(({ theme }) => ({
+    color: theme.colors.primary,
+    fontWeight: 700,
+    fontVariantNumeric: 'tabular-nums',
+}))
+
+const GoldIcon = styled.span(({ theme }) => ({
+    display: 'inline-flex',
+    color: theme.colors.primary,
+}))
+
+const HutStock = ({ hut }: { hut: HunterHutActor | GuildhallActor }) => {
     const subscribe = useCallback(
         (refresh: () => void) => hut.game.emitter.on('meatStockChanged', refresh),
         [hut],
@@ -352,7 +536,10 @@ const HutStock = ({ hut }: { hut: HunterHutActor }) => {
     const stock = useSyncExternalStore(subscribe, () => hut.meatStock)
     return (
         <span>
-            Meat stock: {stock} / {hut.meatCapacity}
+            Meat stock:{' '}
+            <GoldValue>
+                {stock} / {hut.meatCapacity}
+            </GoldValue>
         </span>
     )
 }

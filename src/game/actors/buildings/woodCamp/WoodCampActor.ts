@@ -1,68 +1,35 @@
 import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
 import { Actor } from '+game/core/Actor'
-import { BuildingActor, BuildingActorJSON } from '+game/core/BuildingActor'
+import { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType } from '+game/types'
 
 import { WoodCampBlueprint } from './WoodCampBlueprint'
 
-export class WoodCampActor extends BuildingActor {
+export class WoodCampActor extends WoodStorageBuilding {
     public type = ActorType.WoodCamp
     public blueprint = actorByType[this.type].blueprint as WoodCampBlueprint
 
-    public readonly woodCapacity = 500
-    public woodStock = 0
-
     public getDeliveryPosition() {
         return this.getGlobalPositionOfLocalPoint(this.blueprint.config.deliveryPoint)
-    }
-
-    public getFreeWoodStorage() {
-        return this.woodCapacity - this.woodStock
-    }
-
-    public collectTree(amount: number): number {
-        const accepted = Math.min(amount, this.getFreeWoodStorage())
-        if (accepted <= 0) return 0
-
-        this.woodStock += accepted
-        this.game.emitter.emit('woodStockChanged', this)
-        return accepted
-    }
-
-    public withdrawWood(amount: number): number {
-        const withdrawn = Math.min(this.woodStock, amount)
-        if (withdrawn <= 0) return 0
-
-        this.woodStock -= withdrawn
-        this.game.emitter.emit('woodStockChanged', this)
-        return withdrawn
-    }
-
-    public toJSON(): WoodCampJSON {
-        return { ...super.toJSON(), woodStock: this.woodStock }
-    }
-
-    public fromJSON(json: WoodCampJSON): void {
-        super.fromJSON(json)
-        this.woodStock = Math.min(json.woodStock ?? 0, this.woodCapacity)
     }
 
     public interact(actors: Actor[]) {
         let interactionHappened = false
         for (const actor of actors) {
             if (isHumanActor(actor)) {
-                const profession = new WoodcutterProfession(this.game, actor)
-                profession.setCamp(this)
-                actor.setProfession(profession)
+                const profession = actor.profession
+                if (profession instanceof WoodcutterProfession) {
+                    profession.setCamp(this)
+                } else {
+                    const woodcutter = new WoodcutterProfession(this.game, actor)
+                    woodcutter.setCamp(this)
+                    actor.setProfession(woodcutter)
+                }
                 interactionHappened = true
             }
         }
         return interactionHappened
     }
-}
-
-interface WoodCampJSON extends BuildingActorJSON {
-    woodStock?: number
 }

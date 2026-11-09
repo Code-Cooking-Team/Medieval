@@ -1,8 +1,9 @@
 import { config } from '+config'
-import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
+import { hasWoodStorage } from '+game/actors/helpers'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
+import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { Game } from '+game/Game'
 import { ActorType } from '+game/types'
 import { distanceBetweenPoints, isSamePosition } from '+helpers'
@@ -45,6 +46,7 @@ export class WoodcutterProfession extends Profession {
         isFull: this.isFull.bind(this),
         campFull: this.campFull.bind(this),
         waitingAtFullCamp: () => this.nearCamp() && this.campFull(),
+        readyToUnload: () => this.hasWood && this.nearCamp(),
         nearTree: this.nearTree.bind(this),
         nearCamp: this.nearCamp.bind(this),
         reachedCamp: this.reachedCamp.bind(this),
@@ -95,8 +97,12 @@ export class WoodcutterProfession extends Profession {
         this.machine.reset()
     }
 
-    public setCamp(camp: WoodCampActor) {
+    public setCamp(camp: WoodStorageBuilding) {
+        if (this.campId === camp.id) return
         this.campId = camp.id
+        this.actor.cancelPath()
+        this.actor.target = undefined
+        this.machine.setState(this.hasWood ? 'HaveWood' : 'Idle')
     }
 
     public getModel(): Object3D {
@@ -153,7 +159,8 @@ export class WoodcutterProfession extends Profession {
 
     private getCamp() {
         if (!this.campId) return
-        return this.game.getActorById(this.campId) as WoodCampActor
+        const camp = this.game.getActorById(this.campId)
+        if (camp && hasWoodStorage(camp) && !camp.isDead()) return camp
     }
 
     /*

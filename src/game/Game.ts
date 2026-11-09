@@ -6,14 +6,15 @@ import { Emitter } from '+lib/Emitter'
 import { actorByType, actorFromJSON } from './actors'
 import { ConstructionSiteActor } from './actors/buildings/construction/ConstructionSiteActor'
 import { ConstructionType } from './actors/buildings/construction/costs'
+import type { GuildhallActor } from './actors/buildings/guildhall/GuildhallActor'
 import type { HunterHutActor } from './actors/buildings/hunterHut/HunterHutActor'
-import type { WoodCampActor } from './actors/buildings/woodCamp/WoodCampActor'
 import { BushActor } from './actors/flora/bush/BushActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
 import type { HumanActor } from './actors/units/human/HumanActor'
 import { Actor, ActorClass, ActorJSON } from './core/Actor'
 import { BuildingActor } from './core/BuildingActor'
 import { Pathfinding } from './core/Pathfinding'
+import type { WoodStorageBuilding } from './core/WoodStorageBuilding'
 import { playerFromJSON } from './player'
 import { HumanPlayer } from './player/HumanPlayer'
 import { ActorBlueprint, ActorType, Position } from './types'
@@ -38,8 +39,8 @@ export class Game {
         actorAdded: Actor
         actorRemoved: Actor
         equipmentChanged: HumanActor
-        woodStockChanged: WoodCampActor
-        meatStockChanged: HunterHutActor
+        woodStockChanged: WoodStorageBuilding
+        meatStockChanged: HunterHutActor | GuildhallActor
         constructionProgress: ConstructionSiteActor
         professionChanged: HumanActor
         started: undefined

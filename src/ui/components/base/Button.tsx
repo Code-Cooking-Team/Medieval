@@ -4,6 +4,7 @@ import { margin, MarginProps } from 'styled-system'
 
 interface ButtonProps extends MarginProps {
     label: string
+    'aria-label'?: string
     icon?: ReactNode
     onClick: () => void
     submit?: boolean

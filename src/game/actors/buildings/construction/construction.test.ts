@@ -1,5 +1,6 @@
 import '+game/actors'
 import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
+import { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
 import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
@@ -8,8 +9,9 @@ import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { BuilderProfession } from '+game/professions/BuilderProfession'
 import { GuardianProfession } from '+game/professions/GuardianProfession'
+import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType, Position } from '+game/types'
-import { InsideTile, Tile, WallTile } from '+game/world/Tile'
+import { ImportantFootpathTile, InsideTile, Tile, WallTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 
 import { ConstructionSiteActor } from './ConstructionSiteActor'
@@ -345,4 +347,44 @@ test('group placement converts every worker and appends the same ordered sites',
     expect(player.selectedBuilding).toBe(ActorType.Stakewall)
     player.unselectBuilding()
     expect(player.constructionBuilders).toEqual([])
+})
+
+test.each([0, 1, 2, 3])(
+    'a Guildhall starts full with a walkable delivery point at rotation %i',
+    (rotation) => {
+        const { game, player } = fixture()
+        const hall = game.spawnActor(GuildhallActor, player, [34, 20], rotation)!
+        expect(hall.woodStock).toBe(500)
+        expect(hall.meatStock).toBe(300)
+        expect(game.world.hasTile(hall.getDeliveryPosition())).toBeInstanceOf(
+            ImportantFootpathTile,
+        )
+        expect(hall.collectTree(10)).toBe(0)
+        expect(hall.collectMeat(10)).toBe(0)
+    },
+)
+
+test('builders use Guildhall wood and a reassigned woodcutter refills it after reload', async () => {
+    const { game, player, camp, sites } = fixture()
+    const hall = game.spawnActor(GuildhallActor, player, [34, 20], 1)!
+    const [house] = sites(ActorType.House, [[24, 20]]) as [ConstructionSiteActor]
+    tickUntil(game, () => house.deliveredWood > 0)
+    expect(hall.woodStock).toBe(350)
+
+    const worker = game.spawnActor(HumanActor, player, [41, 20])!
+    camp.interact([worker])
+    const woodcutter = worker.profession as WoodcutterProfession
+    woodcutter.fromJSON({ ...woodcutter.toJSON(), collectedTreeHP: 20 })
+    expect(hall.interact([worker])).toBe(true)
+    expect(worker.profession).toBe(woodcutter)
+
+    const loaded = Game.fromJSON(JSON.parse(JSON.stringify(game.toJSON())))
+    const savedHall = loaded.getActorById(hall.id) as GuildhallActor
+    expect(savedHall.woodStock).toBe(350)
+    expect(savedHall.meatStock).toBe(300)
+    for (let tick = 0; tick < 40 && savedHall.woodStock === 350; tick++) {
+        loaded.tick()
+        await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    }
+    expect(savedHall.woodStock).toBe(370)
 })

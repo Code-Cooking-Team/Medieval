@@ -21,7 +21,7 @@ export const StyledButton = styled.button<BoxProps & { hover?: true }>(
     resetButtonCSS,
     ({ hover, theme }) => ({
         cursor: 'pointer',
-        borderRadius: hover && theme.borderRadius.normal,
+        borderRadius: theme.borderRadius.normal,
         transition: hover && theme.values.transition,
         ':hover, :focus-visible, :active': hover && {
             background: theme.colors.border,

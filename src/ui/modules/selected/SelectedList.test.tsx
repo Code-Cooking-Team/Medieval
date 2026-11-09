@@ -109,7 +109,7 @@ it('offers Build for a group and passes every selected human to placement', asyn
         )
         const button = (label: string) =>
             Array.from(host.querySelectorAll('button')).find(
-                (node) => node.textContent === label,
+                (node) => (node.getAttribute('aria-label') ?? node.textContent) === label,
             )!
         expect(button('Build').querySelector('svg')).not.toBeNull()
         await act(async () => button('Build').click())

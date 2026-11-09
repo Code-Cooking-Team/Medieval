@@ -48,10 +48,11 @@ const Trigger = styled(AccordionPrimitive.Trigger)(resetButtonCSS, ({ theme }) =
     width: '100%',
     textAlign: 'left',
     padding: theme.space[2],
+    borderRadius: theme.borderRadius.normal,
     borderLeft: '2px solid',
     borderColor: theme.colors.black10,
     ':hover, :focus-visible': {
-        borderColor: theme.colors.black70,
+        borderColor: `${theme.colors.primary}99`,
     },
     '&[data-state="open"]': {
         borderColor: theme.colors.primary,
