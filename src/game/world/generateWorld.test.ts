@@ -1,4 +1,5 @@
 import { config } from '+config'
+import { Pathfinding } from '+game/core/Pathfinding'
 import { WaterRenderer } from '+game/renderer/WaterRenderer'
 
 import { Mesh } from 'three'
@@ -34,6 +35,30 @@ test('reproduces seeded terrain and restores the same world from a save', () => 
     const tile = world.getTile([28, 44])
     expect(new OvergrownTile(tile).height).toBe(tile.height)
 }, 20_000)
+
+test('regional cliffs leave multiple walkable approaches between the same elevations', () => {
+    const world = generateWorld(DEFAULT_WORLD_SEED)
+    const pathfinding = new Pathfinding(world)
+    const left = 16
+    const right = 64
+
+    // These rows cross the same regional boundary, with a cliff between two ramps.
+    for (const [y, walkable] of [
+        [90, true],
+        [125, false],
+        [145, true],
+    ] as const) {
+        const start = world.getTile([left, y])
+        const end = world.getTile([right, y])
+        expect(Math.abs(end.height - start.height)).toBeGreaterThan(4)
+        expect(world.tiles[y]!.slice(left, right + 1).every((tile) => tile.canWalk)).toBe(
+            true,
+        )
+        const steps = Array.from({ length: right - left }, (_, i) => left + i)
+        expect(steps.every((x) => pathfinding.canStep([x, y], [x + 1, y]))).toBe(walkable)
+        expect(steps.every((x) => pathfinding.canStep([x + 1, y], [x, y]))).toBe(walkable)
+    }
+})
 
 test.each([18, 19])(
     'seed %i generates a connected channel from inlet to outlet',

@@ -3,6 +3,7 @@ import { seededRandom } from '+helpers/random'
 import { generateWater } from './generateWater'
 import { riverDatum } from './riverRouting'
 import { createTerrainNoise, mix, smooth } from './terrainNoise'
+import { createTerrainRegions } from './terrainRegions'
 import { ForestTile, MeadowTile, SandTile, StepTile, WaterTile } from './Tile'
 import { World } from './World'
 
@@ -19,6 +20,7 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
     const stride = HEIGHT - 1
     const offsetY = chunkY * stride
     const noise = createTerrainNoise(seed)
+    const regionalRelief = createTerrainRegions(seed)
     const features = [chunkY - 1, chunkY, chunkY + 1].map((chunk) => {
         const random = seededRandom(seed ^ Math.imul(chunk, 0x373cb179))
         return {
@@ -32,7 +34,10 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
         const worldY = y + offsetY
         const datum = 2.4 + riverDatum(seed, worldY / stride)
         return Array.from({ length: WIDTH }, (_, x) => {
-            const plain = datum + 3.8 * noise.layered(x / 53, worldY / 53)
+            const plain =
+                datum +
+                regionalRelief(x, worldY) +
+                2.1 * noise.layered(x / 53, worldY / 53)
             const hills = 1.35 * noise.layered(x / 22 + 8, worldY / 22)
             return (
                 plain +
