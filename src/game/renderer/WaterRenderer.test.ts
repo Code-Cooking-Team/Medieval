@@ -1,6 +1,6 @@
 import { config } from '+config'
 import { MeadowTile } from '+game/world/Tile'
-import type { RiverSection, WaterRegion } from '+game/world/water'
+import type { RiverSample, RiverSection, WaterRegion } from '+game/world/water'
 import { World } from '+game/world/World'
 
 import { Mesh, Raycaster, Vector3 } from 'three'
@@ -144,3 +144,37 @@ test('trims a tributary to the animated edge of the main channel', () => {
     expect(position.getX(firstBranchVertex + 1)).toBeGreaterThan(position.getX(mainEdge))
     renderer.destroy()
 })
+
+test.each([false, true])(
+    'renders waterfall material only at a marked channel drop (%s)',
+    (marked) => {
+        const tiles = Array.from({ length: 4 }, () =>
+            Array.from({ length: 4 }, () => new MeadowTile()),
+        )
+        const samples: RiverSample[] = [0, 1, 2].flatMap((y) =>
+            [0, 1, 2].map((x): RiverSample => [
+                x,
+                y,
+                y === 0 ? 3 : 0,
+                marked && x < 2 && y < 2 ? true : undefined,
+            ]),
+        )
+        const renderer = new WaterRenderer(
+            new World(tiles, [{ kind: 'drainage', samples }]),
+        )
+        const geometry = (renderer.group.children[0] as Mesh).geometry
+        expect(geometry.getAttribute('position').count).toBe(9)
+        expect(geometry.getIndex()!.count).toBe(24)
+        expect(
+            geometry.groups.map(({ materialIndex, count }) => [materialIndex, count]),
+        ).toEqual(
+            marked
+                ? [
+                      [0, 18],
+                      [1, 6],
+                  ]
+                : [[0, 24]],
+        )
+        renderer.destroy()
+    },
+)

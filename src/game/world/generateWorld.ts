@@ -1,50 +1,69 @@
 import { seededRandom } from '+helpers/random'
 
 import { generateWater } from './generateWater'
+import { riverDatum } from './riverRouting'
 import { createTerrainNoise, mix, smooth } from './terrainNoise'
 import { ForestTile, MeadowTile, SandTile, StepTile, WaterTile } from './Tile'
 import { World } from './World'
 
 export const DEFAULT_WORLD_SEED = 18
 
-const WIDTH = 224
-const HEIGHT = 208
+const WORLD_TEST_SCALE = 2
+const WIDTH = 224 * WORLD_TEST_SCALE
+const HEIGHT = 208 * WORLD_TEST_SCALE
 
 type TerrainNoise = ReturnType<typeof createTerrainNoise>
 
-export function generateWorld(seed = DEFAULT_WORLD_SEED) {
-    const random = seededRandom(seed)
+export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
+    // The outer rows of neighboring chunks represent the same world coordinates.
+    const stride = HEIGHT - 1
+    const offsetY = chunkY * stride
     const noise = createTerrainNoise(seed)
-    const ranges = createRanges(random)
-    const cliffs = createCliffs(random)
-    const elevations = Array.from({ length: HEIGHT }, (_, y) =>
-        Array.from({ length: WIDTH }, (_, x) => {
-            const plain = 2.4 + 3.8 * noise.layered(x / 53, y / 53)
-            const hills = 1.35 * noise.layered(x / 22 + 8, y / 22)
+    const features = [chunkY - 1, chunkY, chunkY + 1].map((chunk) => {
+        const random = seededRandom(seed ^ Math.imul(chunk, 0x373cb179))
+        return {
+            ranges: createRanges(random, chunk * stride),
+            cliffs: createCliffs(random, chunk * stride),
+        }
+    })
+    const ranges = features.flatMap(({ ranges }) => ranges)
+    const cliffs = features.flatMap(({ cliffs }) => cliffs)
+    const elevations = Array.from({ length: HEIGHT }, (_, y) => {
+        const worldY = y + offsetY
+        const datum = 2.4 + riverDatum(seed, worldY / stride)
+        return Array.from({ length: WIDTH }, (_, x) => {
+            const plain = datum + 3.8 * noise.layered(x / 53, worldY / 53)
+            const hills = 1.35 * noise.layered(x / 22 + 8, worldY / 22)
             return (
                 plain +
                 hills +
-                mountainRelief(x, y, ranges, noise) +
-                cliffRelief(x, y, cliffs, noise)
+                mountainRelief(x, worldY, ranges, noise) +
+                cliffRelief(x, worldY, cliffs, noise)
             )
-        }),
-    )
+        })
+    })
 
-    const { wet, regions } = generateWater(elevations, seed)
-    const tiles = elevations.map((row, y) =>
-        row.map((elevation, x) => {
+    const { wet, regions } = generateWater(elevations, seed, chunkY)
+    const tiles = elevations.map((row, y) => {
+        const seam = y === 0 || y === HEIGHT - 1
+        const worldY = y + offsetY
+        const datum = riverDatum(seed, worldY / stride)
+        return row.map((elevation, x) => {
             const flooded = wet[y]![x]!
+            const localElevation = elevation - datum
             const slope = Math.max(
                 Math.abs(elevation - (row[x - 1] ?? elevation)),
                 Math.abs(elevation - (row[x + 1] ?? elevation)),
-                Math.abs(elevation - (elevations[y - 1]?.[x] ?? elevation)),
-                Math.abs(elevation - (elevations[y + 1]?.[x] ?? elevation)),
+                seam ? 0 : Math.abs(elevation - elevations[y - 1]![x]!),
+                seam ? 0 : Math.abs(elevation - elevations[y + 1]![x]!),
             )
             const shore =
-                wet[y]![x - 1] || wet[y]![x + 1] || wet[y - 1]?.[x] || wet[y + 1]?.[x]
-            const cover = noise.layered(x / 28 + 9, y / 28 - 12)
-            const stone = slope > 1.02 + 0.38 * cover || elevation > 14 + 2.8 * cover
-            const detail = noise.layered(x / 6 - 16, y / 6 + 7)
+                wet[y]![x - 1] ||
+                wet[y]![x + 1] ||
+                (!seam && (wet[y - 1]![x] || wet[y + 1]![x]))
+            const cover = noise.layered(x / 28 + 9, worldY / 28 - 12)
+            const stone = slope > 1.02 + 0.38 * cover || localElevation > 14 + 2.8 * cover
+            const detail = noise.layered(x / 6 - 16, worldY / 6 + 7)
             const [tile, dark, light] = flooded
                 ? ([new WaterTile(), 0x3a493d, 0x8d7d58] as const)
                 : stone
@@ -55,7 +74,7 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED) {
                       ? ([new ForestTile(), 0x22340f, 0x415324] as const)
                       : ([new MeadowTile(), 0x2b431b, 0x577938] as const)
 
-            const strata = Math.sin(elevation * 2.1 + detail * 1.6)
+            const strata = Math.sin(localElevation * 2.1 + detail * 1.6)
             const tint = smooth(
                 0.49 + 0.64 * detail + 0.44 * cover + (stone ? 0.15 * strata : 0),
             )
@@ -65,8 +84,8 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED) {
                 tile.treeChance = mix(0.025, 0.085, smooth(cover * 1.6))
             if (tile instanceof StepTile) tile.treeChance = 0
             return tile
-        }),
-    )
+        })
+    })
     return new World(tiles, regions)
 }
 
@@ -76,27 +95,30 @@ function blendColor(dark: number, light: number, tint: number) {
     return channel(16) | channel(8) | channel(0)
 }
 
-function createRanges(random: ReturnType<typeof seededRandom>) {
-    return Array.from({ length: Math.floor(random(4, 9)) }, (_, index) => {
-        const angle = random(0, Math.PI * 2)
-        return {
-            x: random(24, WIDTH - 24),
-            y: random(24, HEIGHT - 24),
-            cos: Math.cos(angle),
-            sin: Math.sin(angle),
-            length: random(17, 36),
-            width: random(12, 24),
-            height: index === 0 ? random(19, 24) : random(8, 19),
-        }
-    })
+function createRanges(random: ReturnType<typeof seededRandom>, offsetY: number) {
+    return Array.from(
+        { length: Math.floor(random(4, 9) * WORLD_TEST_SCALE) },
+        (_, index) => {
+            const angle = random(0, Math.PI * 2)
+            return {
+                x: random(24, WIDTH - 24),
+                y: offsetY + random(24, HEIGHT - 24),
+                cos: Math.cos(angle),
+                sin: Math.sin(angle),
+                length: random(17, 36),
+                width: random(12, 24),
+                height: index === 0 ? random(19, 24) : random(8, 19),
+            }
+        },
+    )
 }
 
-function createCliffs(random: ReturnType<typeof seededRandom>) {
-    return Array.from({ length: Math.floor(random(2, 8)) }, () => {
+function createCliffs(random: ReturnType<typeof seededRandom>, offsetY: number) {
+    return Array.from({ length: Math.floor(random(2, 8) * WORLD_TEST_SCALE) }, () => {
         const angle = random(0, Math.PI * 2)
         return {
             x: random(16, WIDTH - 16),
-            y: random(16, HEIGHT - 16),
+            y: offsetY + random(16, HEIGHT - 16),
             cos: Math.cos(angle),
             sin: Math.sin(angle),
             span: random(12, 37),

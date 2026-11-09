@@ -6,8 +6,11 @@ export interface RiverSection {
     elevation: number
 }
 
+export type RiverSample = [x: number, y: number, elevation: number, falling?: true]
+
 export type WaterRegion =
     | { kind: 'lake'; tiles: Position[]; elevation: number }
+    | { kind: 'drainage'; samples: RiverSample[] }
     | {
           kind: 'river'
           axis?: 'x' | 'y'

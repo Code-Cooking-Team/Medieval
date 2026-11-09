@@ -6,142 +6,102 @@ import { Mesh } from 'three'
 import { DEFAULT_WORLD_SEED, generateWorld } from './generateWorld'
 import { MeadowTile, OvergrownTile } from './Tile'
 import { TileType } from './types'
-import { expandWaterFootprint, isWaterfall, SHORE_OVERLAP } from './water'
 import { World } from './World'
 
 test('reproduces seeded terrain and restores the same world from a save', () => {
     const world = generateWorld(DEFAULT_WORLD_SEED)
     const snapshot = world.toJSON()
-    expect(world.getSize()).toEqual([224, 208])
-    expect(generateWorld(DEFAULT_WORLD_SEED).toJSON()).toEqual(snapshot)
+    expect(world.getSize()).toEqual([448, 416])
+    expect(JSON.stringify(generateWorld(DEFAULT_WORLD_SEED).toJSON())).toBe(
+        JSON.stringify(snapshot),
+    )
     const alternate = generateWorld(DEFAULT_WORLD_SEED + 1)
     expect(alternate.getTile([58, 117]).height).not.toBe(world.getTile([58, 117]).height)
     expect(alternate.waterRegions).not.toEqual(world.waterRegions)
-    expect(World.fromJSON(JSON.parse(JSON.stringify(snapshot))).toJSON()).toEqual(
-        snapshot,
+    const serialized = JSON.stringify(snapshot)
+    expect(JSON.stringify(World.fromJSON(JSON.parse(serialized)).toJSON())).toBe(
+        serialized,
     )
 
-    const elevations = world.tiles.flat().map((tile) => tile.height)
-    expect(Math.max(...elevations) - Math.min(...elevations)).toBeGreaterThan(10)
+    let lowest = Infinity
+    let highest = -Infinity
+    world.forEachTile(({ height }) => {
+        lowest = Math.min(lowest, height)
+        highest = Math.max(highest, height)
+    })
+    expect(highest - lowest).toBeGreaterThan(10)
 
     const tile = world.getTile([28, 44])
     expect(new OvergrownTile(tile).height).toBe(tile.height)
-})
+}, 20_000)
 
-test('seeds vary water layouts and rivers descend to different edges', () => {
-    const riverCounts = new Set<number>()
-    const lakeCounts = new Set<number>()
-    const outlets = new Set<string>()
-    let hasWaterfall = false
-    let branches = 0
-    let broadens = false
-    let hasLakeBay = false
-
-    for (const seed of [0, 1, 2, 3, 4, 18, 19, 20, 21, 22, 23]) {
+test.each([18, 19])(
+    'seed %i generates a connected channel from inlet to outlet',
+    (seed) => {
         const world = generateWorld(seed)
-        const size = world.getSize()
-        const rivers = world.waterRegions.filter((region) => region.kind === 'river')
-        const lakes = world.waterRegions.filter((region) => region.kind === 'lake')
-        const throughRivers = rivers.filter(({ axis, sections }) => {
-            const along = axis === 'x' ? 0 : 1
-            return (
-                Math.abs(sections[0]!.center[along] - sections.at(-1)!.center[along]) ===
-                size[along] - 1
-            )
+        const [width, height] = world.getSize()
+        const river = world.waterRegions.find((region) => region.kind === 'drainage')!
+        const flooded = new Set(
+            river.samples
+                .filter(([x, y]) => world.getTile([x, y]).type === TileType.Water)
+                .map(([x, y]) => y * width + x),
+        )
+        const edge = [...flooded].filter((cell) => {
+            const x = cell % width
+            const y = Math.floor(cell / width)
+            return x === 0 || y === 0 || x === width - 1 || y === height - 1
         })
-        expect(throughRivers.length).toBeGreaterThan(rivers.length / 2)
-        for (const river of throughRivers) {
-            for (const end of [river.sections[0]!, river.sections.at(-1)!]) {
-                expect(world.getTile(end.center).height).toBeLessThan(end.elevation)
+        expect(edge.length).toBeGreaterThan(0)
+        const connected = new Set([edge[0]!])
+        const open = [edge[0]!]
+        for (const cell of open) {
+            const x = cell % width
+            const y = Math.floor(cell / width)
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (x + dx < 0 || x + dx >= width) continue
+                    const next = (y + dy) * width + x + dx
+                    if (!flooded.has(next) || connected.has(next)) continue
+                    connected.add(next)
+                    open.push(next)
+                }
             }
         }
-        riverCounts.add(rivers.length)
-        lakeCounts.add(lakes.length)
-        for (const river of rivers) {
-            const axis = river.axis === 'x' ? 0 : 1
-            const exit = river.sections.at(-1)!.center[axis]
-            expect([0, size[axis] - 1]).toContain(exit)
-            outlets.add(river.axis + ',' + exit)
+        expect(edge.every((cell) => connected.has(cell))).toBe(true)
+        expect(connected.size).toBeGreaterThan(width)
+        expect(
+            edge.some(
+                (cell) =>
+                    Math.abs((cell % width) - (edge[0]! % width)) === width - 1 ||
+                    Math.abs(Math.floor(cell / width) - Math.floor(edge[0]! / width)) ===
+                        height - 1,
+            ),
+        ).toBe(true)
 
-            const byRow = new Map(
-                river.sections.map((section) => [section.center[axis], section]),
-            )
-            const widths = river.sections.slice(18).map((section) => section.halfWidth)
-            broadens ||= Math.max(...widths) > Math.min(...widths) * 2
-            for (const [index, section] of river.sections.entries()) {
-                if (!index) continue
-                const previous = river.sections[index - 1]!
-                expect(section.elevation).toBeLessThan(previous.elevation)
-                expect(Math.abs(section.center[axis] - previous.center[axis])).toBe(1)
-                hasWaterfall ||= isWaterfall(previous, section)
-            }
-            for (const tributary of river.tributaries ?? []) {
-                branches++
-                const mouth = tributary.at(-1)!
-                const parent = byRow.get(mouth.center[axis])!
-                expect(mouth.center).toEqual(parent.center)
-                expect(mouth.elevation).toBe(parent.elevation)
-                expect(tributary[0]!.center).not.toEqual(
-                    byRow.get(tributary[0]!.center[axis])!.center,
-                )
-                for (let step = 1; step < tributary.length; step++) {
-                    expect(tributary[step]!.elevation).toBeLessThan(
-                        tributary[step - 1]!.elevation,
-                    )
-                    hasWaterfall ||= isWaterfall(tributary[step - 1]!, tributary[step]!)
-                }
-            }
-            for (const lake of lakes) {
-                for (const point of lake.tiles) {
-                    const section = byRow.get(point[axis])
-                    if (!section) continue
-                    const cross = axis === 0 ? 1 : 0
-                    expect(
-                        Math.abs(point[cross] - section.center[cross]),
-                    ).toBeGreaterThan(section.halfWidth + 2)
-                }
-            }
-        }
-        const [width, height] = size
-        for (const lake of lakes) {
-            let previous: (typeof lake.tiles)[number] | undefined
-            for (const tile of lake.tiles) {
-                if (previous?.[1] === tile[1] && tile[0] - previous[0] >= 4) {
-                    hasLakeBay = true
-                }
-                previous = tile
-            }
-            const shore = expandWaterFootprint(
-                lake.tiles,
-                width,
-                height,
-                SHORE_OVERLAP - 1,
-            )
-            const padding = expandWaterFootprint(
-                lake.tiles,
-                width,
-                height,
-                SHORE_OVERLAP + 1,
-            )
-            const exposedBank = [...padding].filter((cell) => !shore.has(cell))
-            expect(
-                exposedBank.every(
-                    (cell) =>
-                        world.getTile([cell % width, Math.floor(cell / width)]).height >
-                        lake.elevation + 0.22,
-                ),
-            ).toBe(true)
-        }
-    }
+        expect(world.waterRegions).toHaveLength(1)
+        expect(connected.size / flooded.size).toBeGreaterThan(0.99)
 
-    expect(riverCounts.size).toBeGreaterThan(1)
-    expect(lakeCounts.size).toBeGreaterThan(1)
-    expect(outlets.size).toBe(4)
-    expect(hasWaterfall).toBe(true)
-    expect(branches).toBeGreaterThan(3)
-    expect(broadens).toBe(true)
-    expect(hasLakeBay).toBe(true)
-})
+        const shallows = new Set(
+            river.samples
+                .filter(([x, y, elevation]) => {
+                    const depth = elevation - world.getTile([x, y]).height
+                    return depth > 0.15 && depth < 0.55 && connected.has(y * width + x)
+                })
+                .map(([x, y]) => y * width + x),
+        )
+        const basins: [number, number][] = []
+        for (const cell of shallows) {
+            const x = cell % width
+            const y = Math.floor(cell / width)
+            if (basins.some(([bx, by]) => Math.hypot(x - bx, y - by) < 40)) continue
+            const interior = [-2, -1, 0, 1, 2].every((dy) =>
+                [-2, -1, 0, 1, 2].every((dx) => shallows.has(cell + dy * width + dx)),
+            )
+            if (interior) basins.push([x, y])
+        }
+        expect(basins.length).toBeGreaterThanOrEqual(3)
+    },
+)
 
 test('dry worlds create no water meshes and old saves retain separate wet patches', () => {
     const dryRenderer = new WaterRenderer(new World([[new MeadowTile()]]))
@@ -169,3 +129,31 @@ test('dry worlds create no water meshes and old saves retain separate wet patche
         { kind: 'lake', tiles: [[2, 0]], elevation: -0.5 },
     ])
 })
+
+test.each([18, 19])(
+    'seed %i has compatible terrain and crossings in north and south chunks',
+    (seed) => {
+        const chunks = [-1, 0, 1].map((chunkY) => generateWorld(seed, chunkY))
+        const riverCrossings = (world: World, edge: number) =>
+            world.waterRegions.flatMap((region) =>
+                region.kind === 'drainage'
+                    ? region.samples
+                          .filter(([, y]) => y === edge)
+                          .map(([x, , elevation]) => [x, elevation])
+                    : [],
+            )
+
+        for (let i = 0; i < chunks.length - 1; i++) {
+            const north = chunks[i]!
+            const south = chunks[i + 1]!
+            const last = north.getSize()[1] - 1
+            expect(north.tiles[last]!.map((tile) => tile.toJSON())).toEqual(
+                south.tiles[0]!.map((tile) => tile.toJSON()),
+            )
+            const crossings = riverCrossings(north, last)
+            expect(crossings).toEqual(riverCrossings(south, 0))
+            if (seed === 19) expect(crossings.length).toBeGreaterThan(0)
+        }
+    },
+    15_000,
+)

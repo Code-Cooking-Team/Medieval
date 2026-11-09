@@ -198,6 +198,47 @@ function createSurface(region: WaterRegion, [width, height]: [number, number]) {
             )
             for (const tributary of region.tributaries) appendRibbon(tributary, main)
         }
+    } else if (region.kind === 'drainage') {
+        const sampleIndices = new Map<number, number>()
+        const falling = new Uint8Array(region.samples.length)
+        const falls: number[] = []
+        for (const [i, [x, y, elevation, isFalling]] of region.samples.entries()) {
+            sampleIndices.set(y * width + x, i)
+            if (isFalling) falling[i] = 1
+            vertices.push(x, elevation, y)
+        }
+        const triangle = (a: number, b: number | undefined, c: number | undefined) => {
+            if (b === undefined || c === undefined) return
+            const ya = vertices[3 * a + 1]!
+            const yb = vertices[3 * b + 1]!
+            const yc = vertices[3 * c + 1]!
+            const steep = Math.max(ya, yb, yc) - Math.min(ya, yb, yc) > 1.25
+            const triangles =
+                steep && falling[a] && falling[b] && falling[c] ? falls : indices
+            triangles.push(a, b, c)
+        }
+        for (const [cell, a] of sampleIndices) {
+            const x = cell % width
+            if (x === width - 1) continue
+            const b = sampleIndices.get(cell + width)
+            const c = sampleIndices.get(cell + 1)
+            const d = sampleIndices.get(cell + width + 1)
+            const y = Math.floor(cell / width)
+            const flip =
+                ((Math.imul(x, 0x1f123bb5) ^ Math.imul(y, 0x5f356495)) >>> 12) & 1
+            if (d !== undefined && flip) {
+                triangle(a, b, d)
+                triangle(a, d, c)
+            } else {
+                triangle(a, b, c)
+                if (c !== undefined) triangle(c, b, d)
+            }
+        }
+        if (indices.length) geometry.addGroup(0, indices.length, 0)
+        if (falls.length) {
+            geometry.addGroup(indices.length, falls.length, 1)
+            for (const index of falls) indices.push(index)
+        }
     } else {
         const corners = new Map<string, number>()
         const corner = (x: number, z: number) => {
