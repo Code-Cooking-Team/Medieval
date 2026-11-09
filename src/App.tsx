@@ -1,8 +1,6 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { isHunterHutActor, isWoodCampActor } from '+game/actors/helpers'
 import { Game, GameJSON } from '+game/Game'
-// Island, TestMap, TestMapBig, de_grass
-import map from '+game/maps/de_river'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { NaturePlayer } from '+game/player/NaturePlayer'
@@ -10,8 +8,7 @@ import { PlayerType } from '+game/player/types'
 import '+game/professions/machines/woodcutterMachine'
 import { Renderer } from '+game/Renderer'
 import { ActorType } from '+game/types'
-import { createTilesFromGrid, TileCodeGrid } from '+game/world/tileCodes'
-import { World } from '+game/world/World'
+import { DEFAULT_WORLD_SEED, generateWorld } from '+game/world/generateWorld'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 import { WoodIcon } from '+ui/components/icons/WoodIcon'
@@ -54,27 +51,17 @@ function App() {
             return { game, humanPlayer }
         }
 
-        // increse resolution map by duplicate in x
-        // const resolutionMap = map
-        //     .map((row) => [...row.reverse(), ...row.reverse()])
-        //     .reverse()
-        // const resolutionMap3 = map
-        //     .map((row) => [...row.reverse(), ...row.reverse()])
-        //     .reverse()
-        // // and in y
-        // const resolutionMap2 = [
-        //     ...resolutionMap3.map((row) => [...row]).reverse(),
-        //     ...resolutionMap3.map((row) => [...row]).reverse(),
-        //     ...resolutionMap.map((row) => [...row.reverse()]).reverse(),
-        // ]
-
-        const tiles = createTilesFromGrid(map as TileCodeGrid)
-        const word = new World(tiles)
+        const seedParam = new URLSearchParams(window.location.search).get('seed')
+        const requestedSeed = seedParam ? Number(seedParam) : DEFAULT_WORLD_SEED
+        const seed = Number.isSafeInteger(requestedSeed)
+            ? requestedSeed
+            : DEFAULT_WORLD_SEED
+        const world = generateWorld(seed)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
-        const game = new Game(word, [humanPlayer, naturePlayer])
+        const game = new Game(world, [humanPlayer, naturePlayer])
 
-        const floraSpawner = new FloraSpawner(game, naturePlayer)
+        const floraSpawner = new FloraSpawner(game, naturePlayer, seed)
         floraSpawner.bulkSpawnPlants()
 
         return { game, humanPlayer }

@@ -151,9 +151,10 @@ export class GroundRenderer extends BasicRenderer {
             // Saved tile palettes were authored as linear RGB.
             color.setHex(tile.color, LinearSRGBColorSpace)
             colors.setXYZ(i, color.r, color.g, color.b)
-            colors.needsUpdate = true
         }
 
+        colors.needsUpdate = true
         position.needsUpdate = true
+        this.geometry.computeBoundingSphere()
     }
 }

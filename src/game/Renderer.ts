@@ -77,7 +77,7 @@ export class Renderer {
         )
 
         this.ground = new GroundRenderer(this.game)
-        this.water = new WaterRenderer(this.game)
+        this.water = new WaterRenderer(this.game.world)
     }
 
     public init() {

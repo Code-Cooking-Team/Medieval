@@ -4,6 +4,7 @@ export enum TileType {
     Empty = 'Empty',
     Forest = 'Forest',
     Meadow = 'Meadow',
+    Sand = 'Sand',
     Step = 'Step',
     Water = 'Water',
     Wall = 'Wall',

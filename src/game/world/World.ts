@@ -3,17 +3,22 @@ import { Emitter } from '+lib/Emitter'
 
 import { Position } from '../types'
 import { getTileByJSON, Tile } from './Tile'
-import { TileGrid, TileJSON } from './types'
+import { TileGrid, TileJSON, TileType } from './types'
+import { WaterRegion } from './water'
 
 export interface WordJSON {
     tiles: TileJSON[][]
+    waterRegions?: WaterRegion[]
 }
 
 export class World {
     public tileRevision = 0
     public emitter = new Emitter<{ tailUpdate: undefined }>('Word')
 
-    constructor(public tiles: TileGrid) {}
+    constructor(
+        public tiles: TileGrid,
+        public readonly waterRegions = legacyWaterRegions(tiles),
+    ) {}
 
     public hasTile([x, y]: Position) {
         return this.tiles?.[y]?.[x]!!
@@ -60,12 +65,13 @@ export class World {
     public toJSON(): WordJSON {
         return {
             tiles: this.tiles.map((row) => row.map((tile) => tile.toJSON())),
+            waterRegions: this.waterRegions,
         }
     }
 
     static fromJSON(json: WordJSON) {
         const tiles = json.tiles.map((row) => row.map(getTileByJSON))
-        return new World(tiles)
+        return new World(tiles, json.waterRegions)
     }
 
     private setTileAt([x, y]: Position, tile: Tile) {
@@ -74,4 +80,37 @@ export class World {
         this.tiles[y]![x] = tile
         this.tileRevision++
     }
+}
+
+// Older saves recorded water only through WaterTile. Keep the old surface level
+// while splitting the footprint into connected patches.
+function legacyWaterRegions(tiles: TileGrid): WaterRegion[] {
+    const remaining = new Set<number>()
+    const width = tiles[0]?.length ?? 0
+    tiles.forEach((row, y) =>
+        row.forEach((tile, x) => {
+            if (tile.type === TileType.Water) remaining.add(y * width + x)
+        }),
+    )
+
+    const regions: WaterRegion[] = []
+    for (const start of remaining) {
+        remaining.delete(start)
+        const patch: Position[] = [[start % width, Math.floor(start / width)]]
+        for (const [x, y] of patch) {
+            const neighbors: Position[] = [
+                [x - 1, y],
+                [x + 1, y],
+                [x, y - 1],
+                [x, y + 1],
+            ]
+            for (const [nx, ny] of neighbors) {
+                if (nx >= 0 && nx < width && remaining.delete(ny * width + nx)) {
+                    patch.push([nx, ny])
+                }
+            }
+        }
+        regions.push({ kind: 'lake', tiles: patch, elevation: -0.5 })
+    }
+    return regions
 }
