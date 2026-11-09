@@ -27,7 +27,7 @@ const Container = styled.button<MarginProps>(margin, ({ theme }) => ({
     color: theme.colors.text,
     border: '2px solid',
     borderColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.small,
+    borderRadius: theme.borderRadius.normal,
     padding: theme.space[2],
     paddingLeft: theme.space[3],
     paddingRight: theme.space[3],

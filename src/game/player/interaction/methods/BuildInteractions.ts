@@ -292,11 +292,11 @@ export class BuildInteractions {
         const position = this.finder.findPositionByMouseEvent(event)
         if (!position || !this.game.world.hasTile(position)) return
 
-        if (
-            this.place([position], [this.preview]) &&
-            selectedBuilding === ActorType.Stakewall
-        ) {
-            this.setPlaceholder(selectedBuilding)
+        if (this.place([position], [this.preview])) {
+            if (this.player.singleBuildingPlacement) this.player.unselectBuilding()
+            else if (selectedBuilding === ActorType.Stakewall) {
+                this.setPlaceholder(selectedBuilding)
+            }
         }
         this.updateHover(position)
     }

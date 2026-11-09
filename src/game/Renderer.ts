@@ -32,6 +32,8 @@ import { WaterRenderer } from './renderer/WaterRenderer'
 import { ClockInfo } from './types'
 
 const stats = new Stats()
+const SHOWCASE_BOKEH_APERTURE = 0.0025
+const SHOWCASE_BOKEH_MAX_BLUR = 0.012
 
 export class Renderer {
     public webGLRenderer = new WebGLRenderer({
@@ -44,6 +46,7 @@ export class Renderer {
     private outlinePass?: OutlinePass
     private FXAAPass?: ShaderPass
     private bokehPass?: BokehPass
+    private showcase = false
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
@@ -80,20 +83,25 @@ export class Renderer {
         this.water = new WaterRenderer(this.game.world)
     }
 
-    public init() {
-        if (config.postProcessing.postprocessingEnabled) this.addComposerPasses()
+    public init(showcase = false) {
+        this.showcase = showcase
+        if (showcase || config.postProcessing.postprocessingEnabled) {
+            this.addComposerPasses()
+        }
 
         this.rootEl.append(this.webGLRenderer.domElement)
 
         stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-        this.rootEl.append(stats.dom)
+        if (!showcase) this.rootEl.append(stats.dom)
 
         this.loadRenderers()
-        this.rtsCamera.init()
+        this.rtsCamera.init(showcase ? this.game.world : undefined)
         this.ground.init()
-        this.animate()
-
         this.resize()
+
+        if (this.isWindowFocused) this.animate()
+        else this.throttledAnimate()
+
         window.addEventListener('resize', this.resize)
         window.addEventListener('focus', this.handleWindowFocus)
         window.addEventListener('blur', this.handleWindowBlur)
@@ -133,11 +141,12 @@ export class Renderer {
         this.basicRendererList.forEach((renderer) => renderer.destroy?.())
         this.composer.passes.forEach((pass) => pass.dispose())
         this.composer.dispose()
+        this.rtsCamera.destroy()
         this.clock.dispose()
         this.webGLRenderer.dispose() // TODO needed?
 
         this.rootEl.removeChild(this.webGLRenderer.domElement)
-        this.rootEl.removeChild(stats.dom)
+        if (stats.dom.parentElement === this.rootEl) stats.dom.remove()
 
         window.removeEventListener('resize', this.resize)
         window.removeEventListener('focus', this.handleWindowFocus)
@@ -190,11 +199,12 @@ export class Renderer {
         const width = window.innerWidth
         const height = window.innerHeight
         const camera = this.rtsCamera.camera
+        const gameEffects = config.postProcessing.postprocessingEnabled
 
         this.composer.addPass(new RenderPass(this.scene, camera))
 
         // Outline
-        if (config.postProcessing.outlineEnabled) {
+        if (gameEffects && config.postProcessing.outlineEnabled) {
             const outlineParams = {
                 edgeStrength: config.postProcessing.outlineEdgeStrength,
                 edgeGlow: config.postProcessing.outlineEdgeGlow,
@@ -217,7 +227,7 @@ export class Renderer {
         }
 
         // Bloom
-        if (config.postProcessing.bloomEnabled) {
+        if (gameEffects && config.postProcessing.bloomEnabled) {
             const bloomPass = new UnrealBloomPass(
                 new Vector2(width, height),
                 1.5,
@@ -231,19 +241,35 @@ export class Renderer {
         }
 
         // Bokeh
-        if (config.postProcessing.bokehEnable) {
+        if (this.showcase || config.postProcessing.bokehEnable) {
             this.bokehPass = new BokehPass(this.scene, camera, {
                 focus: 5,
-                aperture: config.postProcessing.bokehAperture,
-                maxblur: config.postProcessing.bokehMaxBlur,
+                aperture: this.showcase
+                    ? SHOWCASE_BOKEH_APERTURE
+                    : config.postProcessing.bokehAperture,
+                maxblur: this.showcase
+                    ? SHOWCASE_BOKEH_MAX_BLUR
+                    : config.postProcessing.bokehMaxBlur,
             })
+            if (this.showcase) {
+                const material = this.bokehPass.materialBokeh
+                material.fragmentShader = material.fragmentShader.replace(
+                    'vec2 dofblur9',
+                    `
+                        float edgeFade = smoothstep(0.12, 0.52, length(vUv - vec2(0.5)));
+                        vec2 blur = abs(dofblur);
+                        dofblur = mix(blur * 0.12, max(blur, vec2(maxblur * 0.4)) * 0.8, edgeFade);
+                        vec2 dofblur9
+                    `,
+                )
+            }
             this.composer.addPass(this.bokehPass)
         }
 
         this.composer.addPass(new OutputPass())
 
         // FXAA
-        if (config.postProcessing.FXAAEnabled) {
+        if (gameEffects && config.postProcessing.FXAAEnabled) {
             this.FXAAPass = new ShaderPass(FXAAShader)
             this.composer.addPass(this.FXAAPass)
         }
@@ -366,7 +392,7 @@ export class Renderer {
                 : []
         }
 
-        if (config.postProcessing.postprocessingEnabled) {
+        if (this.showcase || config.postProcessing.postprocessingEnabled) {
             if (this.bokehPass) {
                 const camera = this.rtsCamera.camera
                 const pitch = camera.rotation.x
@@ -385,8 +411,10 @@ export class Renderer {
                     { value: number }
                 >
                 uniforms.focus!.value = focus
-                uniforms.aperture!.value =
-                    (6 * config.postProcessing.bokehAperture) / depthSpan
+                const aperture = this.showcase
+                    ? SHOWCASE_BOKEH_APERTURE
+                    : config.postProcessing.bokehAperture
+                uniforms.aperture!.value = (6 * aperture) / depthSpan
             }
             this.composer.render()
         } else {

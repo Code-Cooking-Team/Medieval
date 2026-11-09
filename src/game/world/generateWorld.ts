@@ -106,7 +106,7 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
             return tile
         })
     })
-    return new World(tiles, regions)
+    return new World(tiles, regions, seed)
 }
 
 function blendColor(dark: number, light: number, tint: number) {

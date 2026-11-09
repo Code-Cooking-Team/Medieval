@@ -14,6 +14,7 @@ export class HumanPlayer implements Player {
 
     public selectedActors: Actor[] = []
     public selectedBuilding?: ActorType
+    public singleBuildingPlacement = false
     public constructionBuilders: HumanActor[] = []
 
     public get constructionBuilder() {
@@ -45,12 +46,17 @@ export class HumanPlayer implements Player {
         this.selectedActors = []
     }
 
-    public selectBuilding(actorType: ActorType, builder?: HumanActor | HumanActor[]) {
+    public selectBuilding(
+        actorType: ActorType,
+        builder?: HumanActor | HumanActor[],
+        singlePlacement = false,
+    ) {
         this.setBuildingRemoval(false)
         this.constructionBuilders = builder
             ? [...(Array.isArray(builder) ? builder : [builder])]
             : []
         this.selectedBuilding = actorType
+        this.singleBuildingPlacement = singlePlacement
         this.emitter.emit('selectBuilding', actorType)
     }
 
@@ -58,6 +64,7 @@ export class HumanPlayer implements Player {
         if (!this.selectedBuilding) return
         this.emitter.emit('unselectBuilding', this.selectedBuilding)
         this.selectedBuilding = undefined
+        this.singleBuildingPlacement = false
         this.constructionBuilders = []
     }
 

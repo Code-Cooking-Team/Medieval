@@ -9,6 +9,7 @@ import { WaterRegion } from './water'
 export interface WordJSON {
     tiles: TileJSON[][]
     waterRegions?: WaterRegion[]
+    seed?: number
 }
 
 export class World {
@@ -18,6 +19,7 @@ export class World {
     constructor(
         public tiles: TileGrid,
         public readonly waterRegions = legacyWaterRegions(tiles),
+        public readonly seed?: number,
     ) {}
 
     public hasTile([x, y]: Position) {
@@ -66,12 +68,13 @@ export class World {
         return {
             tiles: this.tiles.map((row) => row.map((tile) => tile.toJSON())),
             waterRegions: this.waterRegions,
+            seed: this.seed,
         }
     }
 
     static fromJSON(json: WordJSON) {
         const tiles = json.tiles.map((row) => row.map(getTileByJSON))
-        return new World(tiles, json.waterRegions)
+        return new World(tiles, json.waterRegions, json.seed)
     }
 
     private setTileAt([x, y]: Position, tile: Tile) {

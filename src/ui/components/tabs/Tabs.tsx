@@ -21,7 +21,8 @@ export const Tabs = (props: TabsProps) => {
             <List>
                 {items.map((el, index) => (
                     <Trigger key={index} value={index.toString()}>
-                        {el.props.label}
+                        {el.props.icon && <el.props.icon size={18} aria-hidden="true" />}
+                        <Label>{el.props.label}</Label>
                     </Trigger>
                 ))}
             </List>
@@ -40,18 +41,25 @@ const List = styled(TabsPrimitive.List)({
     gridAutoFlow: 'column',
 })
 
+const Label = styled.span({ fontSize: 12 })
+
 const Trigger = styled(TabsPrimitive.Trigger)(resetButtonCSS, ({ theme }) => ({
     cursor: 'pointer',
-    display: 'block',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderBottom: '2px solid',
+    borderRadius: `${theme.borderRadius.normal}px ${theme.borderRadius.normal}px 0 0`,
     borderColor: theme.colors.black10,
     textAlign: 'center',
-    padding: theme.space[3],
+    padding: `${theme.space[2]}px ${theme.space[3]}px`,
     ':hover, :focus-visible': {
-        borderColor: theme.colors.black70,
+        borderColor: `${theme.colors.primary}99`,
     },
     '&[data-state="active"]': {
         borderColor: theme.colors.primary,
