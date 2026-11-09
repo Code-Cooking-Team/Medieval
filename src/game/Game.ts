@@ -18,13 +18,15 @@ import { playerFromJSON } from './player'
 import { HumanPlayer } from './player/HumanPlayer'
 import { ActorBlueprint, ActorType, Position } from './types'
 import { createTerrainNoise, smooth } from './world/terrainNoise'
-import { TileClass } from './world/Tile'
+import { InsideTile, Tile, TileClass, WallTile, WaterTile } from './world/Tile'
 import { applyTileGrid } from './world/tileCodes'
 import { TileType } from './world/types'
 import { SHORE_OVERLAP } from './world/water'
 import { WordJSON, World } from './world/World'
 
 const BUILDING_APRON_RADIUS = 5
+const occupiesBuildingSpace = (TileClass: TileClass) =>
+    TileClass === WallTile || TileClass === InsideTile || TileClass === WaterTile
 
 export class Game {
     public pf: Pathfinding
@@ -89,7 +91,7 @@ export class Game {
         if (actor instanceof ConstructionSiteActor) actor.unassign()
         if (isBuildingActor(actor)) {
             if (!(actor instanceof ConstructionSiteActor)) {
-                this.restoreBuildingTerrain(actor, index)
+                this.restoreBuildingTerrain(actor)
             }
             for (const unit of this.actors.filter(isHumanActor)) {
                 if (unit.home === actor) unit.home = undefined
@@ -181,6 +183,20 @@ export class Game {
         if (seed !== undefined) actor.seed = seed
         if (isWalkableActor(actor) && !tile.canWalk) return
         if (actor.type === ActorType.Bush && !BushActor.growsOn(tile.type)) return
+        if (
+            actor.type === ActorType.Tree &&
+            this.actors.some(
+                (site) =>
+                    site instanceof ConstructionSiteActor &&
+                    this.buildingTiles(site.blueprint, site.position, site.rotation).some(
+                        ([[x, y], TileClass]) =>
+                            x === position[0] &&
+                            y === position[1] &&
+                            occupiesBuildingSpace(TileClass),
+                    ),
+            )
+        )
+            return
         if (isBuildingActor(actor)) {
             if (!this.canPlaceBuildings(actor.blueprint, [position], rotation)) return
             actor.setRotation(rotation)
@@ -197,27 +213,32 @@ export class Game {
     ) {
         const proposed = new Set<string>()
         for (const position of positions) {
-            for (const [tilePosition] of this.buildingTiles(
+            if (!this.world.hasTile(position)) return false
+            for (const [tilePosition, TileClass] of this.buildingTiles(
                 blueprint,
                 position,
                 rotation,
             )) {
+                if (!occupiesBuildingSpace(TileClass)) continue
                 const key = tilePosition.join(',')
-                if (proposed.has(key) || !this.world.hasTile(tilePosition)?.canBuild) {
-                    return false
-                }
+                const tile = this.world.hasTile(tilePosition)
+                if (proposed.has(key) || !tile?.canBuild || !tile.canWalk) return false
                 proposed.add(key)
             }
         }
 
-        // Some footprint tiles, including those in old saves, are buildable paths.
-        return !this.actors
-            .filter(isBuildingActor)
-            .some((actor) =>
+        return !this.actors.some((actor) => {
+            if (actor.type === ActorType.Tree)
+                return proposed.has(actor.position.join(','))
+            return (
+                isBuildingActor(actor) &&
                 this.buildingTiles(actor.blueprint, actor.position, actor.rotation).some(
-                    ([position]) => proposed.has(position.join(',')),
-                ),
+                    ([position, TileClass]) =>
+                        occupiesBuildingSpace(TileClass) &&
+                        proposed.has(position.join(',')),
+                )
             )
+        })
     }
 
     public placeConstructionSites(
@@ -308,12 +329,21 @@ export class Game {
         const variationAt = (x: number, y: number) => noise.sample(x / 4.5, y / 4.5)
         const terrainApron: [Position, number][] = []
         actor.terrainApron = terrainApron
+        const trees = new Set(
+            this.actors
+                .filter(({ type }) => type === ActorType.Tree)
+                .map(({ position }) => position.join(',')),
+        )
         this.world.setMultipleTiles((set, get) => {
             const { height } = get(actor.position)
             const maxRelief = actor.blueprint.height * 0.28
             for (const [position, TileClass] of footprint) {
-                const ground = get(position)
+                const ground = this.world.hasTile(position)
+                if (!ground?.canBuild || !ground.canWalk || trees.has(position.join(',')))
+                    continue
+                if (!occupiesBuildingSpace(TileClass) && ground.previousTile) continue
                 const tile = new TileClass(ground)
+                tile.buildingId = actor.id
                 const relief =
                     (ground.height - height) * (0.25 + 0.15 * variationAt(...position))
                 tile.height = height + maxRelief * Math.tanh(relief / maxRelief)
@@ -342,16 +372,20 @@ export class Game {
 
                     const position: Position = [x, y]
                     const tile = this.world.hasTile(position)
+                    const edgeTile = this.world.hasTile(edge)
                     if (
                         !tile?.canBuild ||
+                        !tile.canWalk ||
                         tile.previousTile ||
+                        !edgeTile ||
+                        trees.has(position.join(',')) ||
                         this.isNearWater(position)
                     )
                         continue
 
                     const weight =
                         (0.8 + 0.18 * variation) * (1 - smooth(distance / reach))
-                    const delta = (get(edge).height - tile.height) * weight
+                    const delta = (edgeTile.height - tile.height) * weight
                     if (!delta) continue
                     tile.height += delta
                     terrainApron.push([position, delta])
@@ -385,7 +419,36 @@ export class Game {
         return tiles
     }
 
-    private restoreBuildingTerrain(actor: BuildingActor, index: number) {
+    private restoreBuildingTerrain(actor: BuildingActor) {
+        this.world.setMultipleTiles((set, get) => {
+            for (const [position, delta] of actor.terrainApron ?? []) {
+                const tile = get(position)
+                let ground = tile
+                // An adjacent building may now cover terrain graded by this one.
+                while (ground.previousTile) ground = ground.previousTile
+                ground.height -= delta
+                set(position, tile)
+            }
+            for (const [position] of this.buildingTiles(
+                actor.blueprint,
+                actor.position,
+                actor.rotation,
+            )) {
+                const current = this.world.hasTile(position)
+                let tile: Tile | undefined = current
+                let above: Tile | undefined
+                while (tile && tile.buildingId !== actor.id) {
+                    above = tile
+                    tile = tile.previousTile
+                }
+                if (!tile?.previousTile) continue
+                if (above) above.previousTile = tile.previousTile
+                else set(position, tile.previousTile)
+            }
+        })
+    }
+
+    private restoreLegacySiteTerrain(actor: BuildingActor, index: number) {
         // Later buildings may have placed their own tiles over this footprint.
         const layersAbove = new Map<string, number>()
         for (const building of this.actors.slice(index + 1).filter(isBuildingActor)) {
@@ -400,14 +463,6 @@ export class Game {
         }
 
         this.world.setMultipleTiles((set, get) => {
-            for (const [position, delta] of actor.terrainApron ?? []) {
-                const tile = get(position)
-                let ground = tile
-                // An adjacent building may now cover terrain graded by this one.
-                while (ground.previousTile) ground = ground.previousTile
-                ground.height -= delta
-                set(position, tile)
-            }
             for (const [position, TileClass] of this.buildingTiles(
                 actor.blueprint,
                 actor.position,
@@ -432,10 +487,30 @@ export class Game {
         })
     }
 
+    private assignLegacyBuildingTerrainOwners() {
+        const lowerLayers = new Map<string, Tile>()
+        for (const building of this.actors.slice().reverse()) {
+            if (!isBuildingActor(building) || building instanceof ConstructionSiteActor)
+                continue
+            for (const [position, TileClass] of this.buildingTiles(
+                building.blueprint,
+                building.position,
+                building.rotation,
+            )) {
+                const key = position.join(',')
+                const tile = lowerLayers.get(key) ?? this.world.hasTile(position)
+                if (!(tile instanceof TileClass) || !tile.previousTile) continue
+                tile.buildingId = building.id
+                lowerLayers.set(key, tile.previousTile)
+            }
+        }
+    }
+
     public toJSON(): GameJSON {
         return {
             world: this.world.toJSON(),
             constructionTerrainDeferred: true,
+            buildingTerrainOwners: true,
             players: this.players.map((player) => player.toJSON()),
             actors: this.actors.map((actor) => actor.toJSON()),
         }
@@ -459,11 +534,12 @@ export class Game {
             // Older saves applied the finished terrain when the site was placed.
             game.actors.forEach((actor, index) => {
                 if (actor instanceof ConstructionSiteActor) {
-                    game.restoreBuildingTerrain(actor, index)
+                    game.restoreLegacySiteTerrain(actor, index)
                 }
             })
             if (world.tileRevision) game.pf.update()
         }
+        if (!json.buildingTerrainOwners) game.assignLegacyBuildingTerrainOwners()
 
         return game
     }
@@ -476,6 +552,7 @@ export class Game {
 export interface GameJSON {
     world: WordJSON
     constructionTerrainDeferred?: true
+    buildingTerrainOwners?: true
     players: PlayerJSON[]
     actors: ActorJSON[]
 }

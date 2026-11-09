@@ -24,5 +24,6 @@ export interface TileJSON {
     color?: number
     height?: number
     treeChance?: number
+    buildingId?: string
     previousTile?: TileJSON
 }

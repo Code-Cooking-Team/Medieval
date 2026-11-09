@@ -18,6 +18,7 @@ export class Tile {
     public color = 0x000000
     public height = 0
     public treeChance = 0
+    public buildingId?: string
 
     public constructor(public previousTile?: Tile) {}
 
@@ -33,6 +34,7 @@ export class Tile {
         return {
             type: this.type,
             ...data,
+            buildingId: this.buildingId,
             previousTile: this.previousTile?.toJSON(),
         }
     }

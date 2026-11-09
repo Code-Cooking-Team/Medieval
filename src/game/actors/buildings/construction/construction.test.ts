@@ -1,13 +1,15 @@
 import '+game/actors'
+import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
 import { HouseActor } from '+game/actors/buildings/house/HouseActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
+import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { BuilderProfession } from '+game/professions/BuilderProfession'
 import { GuardianProfession } from '+game/professions/GuardianProfession'
 import { ActorType, Position } from '+game/types'
-import { Tile, WallTile } from '+game/world/Tile'
+import { InsideTile, Tile, WallTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 
 import { ConstructionSiteActor } from './ConstructionSiteActor'
@@ -270,6 +272,51 @@ test('the same building seed repeats its uneven grading along a uniform slope', 
     expect(Math.max(...first) - Math.min(...first)).toBeGreaterThan(0.03)
     expect(apron(18)).toEqual(first)
     expect(apron(19)).not.toEqual(first)
+})
+
+test('a barracks can wrap around a tree and a barrier in its open corner', () => {
+    const { game, player } = fixture()
+    const treePosition: Position = [36, 25]
+    const treeGround = game.world.getTile(treePosition)
+    const tree = game.spawnActor(TreeActor, player, treePosition)!
+    expect(game.spawnActor(WoodCampActor, player, treePosition)).toBeUndefined()
+    const wall = new WallTile()
+    game.world.setTile([37, 25], wall)
+
+    const barracks = game.spawnActor(BarracksActor, player, [32, 22])
+    expect(barracks).toBeDefined()
+    expect(game.getActorById(tree.id)).toBe(tree)
+    expect(game.world.getTile(treePosition)).toBe(treeGround)
+    expect(game.world.getTile([37, 25])).toBe(wall)
+    expect(game.world.getTile([37, 25]).canWalk).toBe(false)
+    const interior = game.world.getTile([30, 22])
+    expect(interior).toBeInstanceOf(InsideTile)
+    expect(interior.canWalk).toBe(true)
+    expect(interior.canBuild).toBe(false)
+})
+
+test('adjacent houses preserve each wall when their paths overlap', () => {
+    const { game, player } = fixture()
+    const first = game.spawnActor(HouseActor, player, [27, 22])!
+    expect(game.spawnActor(HouseActor, player, [34, 22])).toBeUndefined()
+
+    const snapshot = JSON.parse(JSON.stringify(game.toJSON()))
+    delete snapshot.buildingTerrainOwners
+    for (const row of snapshot.world.tiles) {
+        for (const tile of row) delete tile.buildingId
+    }
+    const loaded = Game.fromJSON(snapshot)
+    const second = loaded.spawnActor(HouseActor, loaded.players[0]!, [35, 22])!
+    expect(second).toBeDefined()
+    expect(loaded.world.getTile([30, 18]).buildingId).toBe(first.id)
+    expect(loaded.world.getTile([31, 18]).buildingId).toBe(second.id)
+    expect(loaded.world.getTile([30, 18]).canWalk).toBe(false)
+
+    loaded.removeActor(loaded.getActorById(first.id)!)
+    expect(loaded.world.getTile([31, 18]).canWalk).toBe(false)
+    loaded.removeActor(second)
+    expect(loaded.world.getTile([31, 18]).canWalk).toBe(true)
+    expect(loaded.world.getTile([31, 18]).previousTile).toBeUndefined()
 })
 
 test('group placement converts every worker and appends the same ordered sites', () => {
