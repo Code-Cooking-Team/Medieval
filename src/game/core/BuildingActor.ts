@@ -10,6 +10,7 @@ export abstract class BuildingActor extends Actor {
     public blueprint = {} as ActorBlueprint
 
     public traits: BuildingTrait[] = []
+    public terrainApron?: [Position, number][]
 
     public tick(): void {
         super.tick()
@@ -49,6 +50,7 @@ export abstract class BuildingActor extends Actor {
         return {
             ...super.toJSON(),
             traits: this.traits.map((trait) => trait.toJSON()),
+            terrainApron: this.terrainApron,
         }
     }
 
@@ -60,4 +62,5 @@ export abstract class BuildingActor extends Actor {
 
 export interface BuildingActorJSON extends ActorJSON {
     traits: BuildingTraitJSON[]
+    terrainApron?: [Position, number][]
 }

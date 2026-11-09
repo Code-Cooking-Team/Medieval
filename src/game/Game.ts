@@ -17,9 +17,14 @@ import { Pathfinding } from './core/Pathfinding'
 import { playerFromJSON } from './player'
 import { HumanPlayer } from './player/HumanPlayer'
 import { ActorBlueprint, ActorType, Position } from './types'
+import { createTerrainNoise, smooth } from './world/terrainNoise'
 import { TileClass } from './world/Tile'
 import { applyTileGrid } from './world/tileCodes'
+import { TileType } from './world/types'
+import { SHORE_OVERLAP } from './world/water'
 import { WordJSON, World } from './world/World'
+
+const BUILDING_APRON_RADIUS = 5
 
 export class Game {
     public pf: Pathfinding
@@ -173,6 +178,7 @@ export class Game {
         if (!tile) return
 
         const actor = new ActorClass(this, player, position)
+        if (seed !== undefined) actor.seed = seed
         if (isWalkableActor(actor) && !tile.canWalk) return
         if (actor.type === ActorType.Bush && !BushActor.growsOn(tile.type)) return
         if (isBuildingActor(actor)) {
@@ -180,7 +186,6 @@ export class Game {
             actor.setRotation(rotation)
             this.placeBuilding(actor)
         }
-        if (seed !== undefined) actor.seed = seed
         this.addActor(actor)
         return actor
     }
@@ -292,19 +297,80 @@ export class Game {
     }
 
     private placeBuilding(actor: BuildingActor) {
+        const footprint = this.buildingTiles(
+            actor.blueprint,
+            actor.position,
+            actor.rotation,
+        )
+        const [[left, top]] = footprint[0]!
+        const [[right, bottom]] = footprint[footprint.length - 1]!
+        const noise = createTerrainNoise(actor.seed)
+        const variationAt = (x: number, y: number) => noise.sample(x / 4.5, y / 4.5)
+        const terrainApron: [Position, number][] = []
+        actor.terrainApron = terrainApron
         this.world.setMultipleTiles((set, get) => {
             const { height } = get(actor.position)
-            for (const [position, TileClass] of this.buildingTiles(
-                actor.blueprint,
-                actor.position,
-                actor.rotation,
-            )) {
-                const tile = new TileClass(get(position))
-                tile.height = height
+            const maxRelief = actor.blueprint.height * 0.28
+            for (const [position, TileClass] of footprint) {
+                const ground = get(position)
+                const tile = new TileClass(ground)
+                const relief =
+                    (ground.height - height) * (0.25 + 0.15 * variationAt(...position))
+                tile.height = height + maxRelief * Math.tanh(relief / maxRelief)
                 set(position, tile)
+            }
+            for (
+                let y = top - BUILDING_APRON_RADIUS;
+                y <= bottom + BUILDING_APRON_RADIUS;
+                y++
+            ) {
+                for (
+                    let x = left - BUILDING_APRON_RADIUS;
+                    x <= right + BUILDING_APRON_RADIUS;
+                    x++
+                ) {
+                    const edge: Position = [
+                        Math.max(left, Math.min(right, x)),
+                        Math.max(top, Math.min(bottom, y)),
+                    ]
+                    const distance = Math.hypot(x - edge[0], y - edge[1])
+                    if (distance === 0) continue
+
+                    const variation = variationAt(x, y)
+                    const reach = 3.8 + 0.7 * variation
+                    if (distance >= reach) continue
+
+                    const position: Position = [x, y]
+                    const tile = this.world.hasTile(position)
+                    if (
+                        !tile?.canBuild ||
+                        tile.previousTile ||
+                        this.isNearWater(position)
+                    )
+                        continue
+
+                    const weight =
+                        (0.8 + 0.18 * variation) * (1 - smooth(distance / reach))
+                    const delta = (get(edge).height - tile.height) * weight
+                    if (!delta) continue
+                    tile.height += delta
+                    terrainApron.push([position, delta])
+                    set(position, tile)
+                }
             }
         })
         if (!this.loop) this.pf.update()
+    }
+
+    private isNearWater([x, y]: Position) {
+        if (!this.world.waterRegions.length) return false
+        for (let dy = -SHORE_OVERLAP; dy <= SHORE_OVERLAP; dy++) {
+            for (let dx = -SHORE_OVERLAP; dx <= SHORE_OVERLAP; dx++) {
+                if (this.world.hasTile([x + dx, y + dy])?.type === TileType.Water)
+                    return true
+            }
+        }
+        return false
     }
 
     private buildingTiles(blueprint: ActorBlueprint, [x, y]: Position, rotation: number) {
@@ -334,6 +400,14 @@ export class Game {
         }
 
         this.world.setMultipleTiles((set, get) => {
+            for (const [position, delta] of actor.terrainApron ?? []) {
+                const tile = get(position)
+                let ground = tile
+                // An adjacent building may now cover terrain graded by this one.
+                while (ground.previousTile) ground = ground.previousTile
+                ground.height -= delta
+                set(position, tile)
+            }
             for (const [position, TileClass] of this.buildingTiles(
                 actor.blueprint,
                 actor.position,

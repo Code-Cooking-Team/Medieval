@@ -11,19 +11,12 @@ import {
     MeshStandardMaterial,
     RepeatWrapping,
     TextureLoader,
-    Vector2,
 } from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
 import { createWordPlane } from './lib/createWordPlane'
-// import hdrUrl from './textures/sand/TexturesCom_Ground_SandRoughSliding1_1x1_512_roughness.tif'
-// tif not working
 import colorUrl from './textures/test4color.png'
-// import aoUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_ao.jpg'
 import heightUrl from './textures/test4height.png'
-import normalUrl from './textures/test4normal.png'
-
-// import roughnessUrl from './textures/muddy/TexturesCom_Sand_Muddy3_3x3_1K_roughness.jpg'
 
 export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
@@ -49,58 +42,8 @@ export class GroundRenderer extends BasicRenderer {
             flatShading: true,
         })
 
-        const loader = new TextureLoader()
-
-        const textureScale = 50
-
-        const [sizeX, sizeY] = this.game.world.getSize()
-
         if (config.renderer.texture) {
-            loader.load(colorUrl, (texture) => {
-                texture.wrapS = RepeatWrapping
-                texture.wrapT = RepeatWrapping
-                texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-                this.groundMaterial.map = texture
-                this.groundMaterial.needsUpdate = true
-            })
-            // loader.load(normalUrl, (texture) => {
-            //     texture.wrapS = RepeatWrapping
-            //     texture.wrapT = RepeatWrapping
-            //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-            //     this.groundMaterial.normalMap = texture
-            //     this.groundMaterial.normalScale = new Vector2(0.12, 0.12)
-            // })
-            loader.load(heightUrl, (texture) => {
-                texture.wrapS = RepeatWrapping
-                texture.wrapT = RepeatWrapping
-                texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-                this.groundMaterial.bumpMap = texture
-                this.groundMaterial.bumpScale = 0.005
-                this.groundMaterial.needsUpdate = true
-            })
-            // loader.load(aoUrl, (texture) => {
-            //     texture.wrapS = RepeatWrapping
-            //     texture.wrapT = RepeatWrapping
-            //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-            //     this.groundMaterial.aoMap = texture
-            //     this.groundMaterial.aoMapIntensity = 0.2
-            // })
-            // loader.load(roughnessUrl, (texture) => {
-            //     texture.wrapS = RepeatWrapping
-            //     texture.wrapT = RepeatWrapping
-            //     texture.repeat.set(sizeX / textureScale, sizeY / textureScale)
-
-            //     this.groundMaterial.roughnessMap = texture
-            //     this.groundMaterial.metalnessMap = texture
-
-            //     // rain
-            //     // groundMaterial.roughness = 0.2
-            //     // groundMaterial.metalness = 0.1
-
-            //     // normal
-            //     this.groundMaterial.roughness = 1.1
-            //     // groundMaterial.metalness = 0.1
-            // })
+            this.loadGroundTextures()
         }
 
         this.groundMesh = new Mesh(this.geometry, this.groundMaterial)
@@ -129,6 +72,54 @@ export class GroundRenderer extends BasicRenderer {
 
         this.game.world.emitter.on('tailUpdate', () => {
             this.render()
+        })
+    }
+
+    private loadGroundTextures() {
+        const loader = new TextureLoader()
+        const [width, height] = this.game.world.getSize()
+
+        this.groundMaterial.onBeforeCompile = (shader) => {
+            shader.uniforms.groundTextureSpan = { value: config.renderer.tileSize * 38 }
+            shader.vertexShader = 'varying vec3 vGroundPosition;\n' + shader.vertexShader
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <begin_vertex>',
+                '#include <begin_vertex>\n vGroundPosition = transformed;',
+            )
+            shader.fragmentShader =
+                'varying vec3 vGroundPosition;\n uniform float groundTextureSpan;\n' +
+                shader.fragmentShader
+            shader.fragmentShader = shader.fragmentShader.replace(
+                '#include <map_fragment>',
+                /* glsl */ `
+                    #ifdef USE_MAP
+                        // Blend three projections so rock faces keep their grain on steep slopes.
+                        vec3 weights = abs(normalize(cross(dFdx(vGroundPosition), dFdy(vGroundPosition))));
+                        weights = pow(weights, vec3(4.0));
+                        weights /= weights.x + weights.y + weights.z;
+                        vec3 p = vGroundPosition / groundTextureSpan;
+                        vec3 grain = texture2D(map, p.zy).rgb * weights.x
+                            + texture2D(map, p.xz).rgb * weights.y
+                            + texture2D(map, p.xy).rgb * weights.z;
+                        diffuseColor.rgb *= mix(vec3(1.0), grain, 0.68);
+                    #endif
+                `,
+            )
+        }
+
+        loader.load(colorUrl, (texture) => {
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            this.groundMaterial.map = texture
+            this.groundMaterial.needsUpdate = true
+        })
+        loader.load(heightUrl, (texture) => {
+            texture.wrapS = RepeatWrapping
+            texture.wrapT = RepeatWrapping
+            texture.repeat.set(width / 20, height / 20)
+            this.groundMaterial.bumpMap = texture
+            this.groundMaterial.bumpScale = 0.007
+            this.groundMaterial.needsUpdate = true
         })
     }
 

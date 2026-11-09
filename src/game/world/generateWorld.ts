@@ -1,89 +1,36 @@
 import { seededRandom } from '+helpers/random'
 
-import type { Position } from '../types'
+import { generateWater } from './generateWater'
+import { createTerrainNoise, mix, smooth } from './terrainNoise'
 import { ForestTile, MeadowTile, SandTile, StepTile, WaterTile } from './Tile'
-import type { RiverSection, WaterRegion } from './water'
 import { World } from './World'
 
 export const DEFAULT_WORLD_SEED = 18
 
-const WIDTH = 112
-const HEIGHT = 104
+const WIDTH = 224
+const HEIGHT = 208
 
-const smooth = (value: number) => {
-    const t = Math.max(0, Math.min(1, value))
-    return t * t * (3 - 2 * t)
-}
-
-const mix = (start: number, end: number, t: number) => start + (end - start) * t
+type TerrainNoise = ReturnType<typeof createTerrainNoise>
 
 export function generateWorld(seed = DEFAULT_WORLD_SEED) {
     const random = seededRandom(seed)
-    const valleyPhase = random(0, Math.PI * 2)
-    const widthPhase = random(0, Math.PI * 2)
-    const ridge = HEIGHT * random(0.33, 0.43)
-    const valleyWidth = random(7, 10)
-    const peaks = [
-        {
-            x: WIDTH * random(0.21, 0.33),
-            y: HEIGHT * random(0.39, 0.56),
-            width: random(9, 15),
-            length: random(9, 13),
-            height: random(12, 17),
-        },
-        {
-            x: WIDTH * random(0.72, 0.83),
-            y: HEIGHT * random(0.43, 0.57),
-            width: random(9, 13),
-            length: random(10, 15),
-            height: random(8, 13),
-        },
-    ]
-
-    const valley = (y: number) =>
-        WIDTH * 0.51 + 5 * Math.sin(y / 15 + valleyPhase) + 2 * Math.sin(y / 8)
+    const noise = createTerrainNoise(seed)
+    const ranges = createRanges(random)
+    const cliffs = createCliffs(random)
     const elevations = Array.from({ length: HEIGHT }, (_, y) =>
         Array.from({ length: WIDTH }, (_, x) => {
-            const distance = Math.abs(x - valley(y))
-            const cliff = ridge + 3 * Math.sin(x / 18 + valleyPhase)
-            const plateau = 4.8 * smooth((cliff - y) / (0.8 + distance / 30))
-            const hills = 0.65 * Math.sin(x / 8 + valleyPhase) * Math.cos(y / 11)
-            const slope = (1 - y / (HEIGHT - 1)) * 3.5
-            const foothills = smooth(distance / valleyWidth) * (1.2 + hills)
-            const mountains = peaks.reduce((height, peak) => {
-                const dx = (x - peak.x + 2 * Math.sin(y / 6)) / peak.width
-                const dy = (y - peak.y + 2 * Math.sin(x / 6)) / peak.length
-                return height + peak.height * Math.exp(-dx * dx - dy * dy)
-            }, 0)
+            const plain = 2.4 + 3.8 * noise.layered(x / 53, y / 53)
+            const hills = 1.35 * noise.layered(x / 22 + 8, y / 22)
             return (
-                slope + plateau + foothills + mountains * smooth(distance / valleyWidth)
+                plain +
+                hills +
+                mountainRelief(x, y, ranges, noise) +
+                cliffRelief(x, y, cliffs, noise)
             )
         }),
     )
 
-    const wet = elevations.map((row) => row.map(() => false))
-    const sections = carveRiver(elevations, wet, Math.round(valley(0)), widthPhase)
-    const waterRegions: WaterRegion[] = [
-        { kind: 'river', sections },
-        carveLake(
-            elevations,
-            wet,
-            [WIDTH * random(0.16, 0.24), HEIGHT * random(0.66, 0.78)],
-            random(5, 8),
-            random(4, 6),
-            random(0, Math.PI * 2),
-        ),
-        carveLake(
-            elevations,
-            wet,
-            [WIDTH * random(0.76, 0.84), HEIGHT * random(0.13, 0.21)],
-            random(5, 8),
-            random(4, 6),
-            random(0, Math.PI * 2),
-        ),
-    ]
-
-    const coverPhase = random(0, Math.PI * 2)
+    const { wet, regions } = generateWater(elevations, seed)
     const tiles = elevations.map((row, y) =>
         row.map((elevation, x) => {
             const flooded = wet[y]![x]!
@@ -95,80 +42,120 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED) {
             )
             const shore =
                 wet[y]![x - 1] || wet[y]![x + 1] || wet[y - 1]?.[x] || wet[y + 1]?.[x]
-            const woodland = Math.sin(x / 9 + coverPhase) * Math.cos(y / 10) > 0.55
-            const [tile, color] = flooded
-                ? ([new WaterTile(), 0x665a36] as const)
-                : slope > 1.05 || elevation > 8.6
-                  ? ([new StepTile(), 0x5c5955] as const)
+            const cover = noise.layered(x / 28 + 9, y / 28 - 12)
+            const stone = slope > 1.02 + 0.38 * cover || elevation > 14 + 2.8 * cover
+            const detail = noise.layered(x / 6 - 16, y / 6 + 7)
+            const [tile, dark, light] = flooded
+                ? ([new WaterTile(), 0x3a493d, 0x8d7d58] as const)
+                : stone
+                  ? ([new StepTile(), 0x383c40, 0x79766e] as const)
                   : shore
-                    ? ([new SandTile(), 0x80704c] as const)
-                    : woodland
-                      ? ([new ForestTile(), 0x2b360a] as const)
-                      : ([new MeadowTile(), 0x355123] as const)
+                    ? ([new SandTile(), 0x736042, 0xa18c63] as const)
+                    : cover > 0.16
+                      ? ([new ForestTile(), 0x22340f, 0x415324] as const)
+                      : ([new MeadowTile(), 0x2b431b, 0x577938] as const)
 
-            // Constructor defaults are for hand-authored tile maps.
-            tile.height = elevation + random(-0.035, 0.035)
-            const tint = Math.round(random(-5, 5))
-            tile.color = color + tint * 0x010101
+            const strata = Math.sin(elevation * 2.1 + detail * 1.6)
+            const tint = smooth(
+                0.49 + 0.64 * detail + 0.44 * cover + (stone ? 0.15 * strata : 0),
+            )
+            tile.height = elevation + 0.045 * detail
+            tile.color = blendColor(dark, light, tint)
+            if (tile instanceof ForestTile)
+                tile.treeChance = mix(0.025, 0.085, smooth(cover * 1.6))
+            if (tile instanceof StepTile) tile.treeChance = 0
             return tile
         }),
     )
-    return new World(tiles, waterRegions)
+    return new World(tiles, regions)
 }
 
-function carveRiver(
-    elevations: number[][],
-    wet: boolean[][],
-    sourceX: number,
-    phase: number,
-) {
-    let x = sourceX
-    let surface = Infinity
-    return elevations.map((row, y): RiverSection => {
-        // Follow the lowest adjacent point downstream. When it rises, cut through it.
-        x = [x, x - 1, x + 1].reduce((lowest, candidate) =>
-            (row[candidate] ?? Infinity) < row[lowest]! ? candidate : lowest,
-        )
-        surface = Math.min(row[x]! + 0.22, surface - 0.018)
-        const halfWidth = 2.5 + 0.75 * Math.sin(y / 11 + phase) + 0.4 * Math.sin(y / 5)
-        for (
-            let bankX = Math.max(0, Math.floor(x - halfWidth - 2));
-            bankX <= Math.min(row.length - 1, Math.ceil(x + halfWidth + 2));
-            bankX++
-        ) {
-            const distance = Math.abs(bankX - x)
-            const bank = smooth((distance - halfWidth - 0.4) / 1.6)
-            row[bankX] = mix(surface - 0.58, Math.max(row[bankX]!, surface + 0.45), bank)
-            wet[y]![bankX] = distance <= halfWidth
+function blendColor(dark: number, light: number, tint: number) {
+    const channel = (shift: number) =>
+        Math.round(mix((dark >> shift) & 255, (light >> shift) & 255, tint)) << shift
+    return channel(16) | channel(8) | channel(0)
+}
+
+function createRanges(random: ReturnType<typeof seededRandom>) {
+    return Array.from({ length: Math.floor(random(4, 9)) }, (_, index) => {
+        const angle = random(0, Math.PI * 2)
+        return {
+            x: random(24, WIDTH - 24),
+            y: random(24, HEIGHT - 24),
+            cos: Math.cos(angle),
+            sin: Math.sin(angle),
+            length: random(17, 36),
+            width: random(12, 24),
+            height: index === 0 ? random(19, 24) : random(8, 19),
         }
-        return { center: [x, y], halfWidth, elevation: surface }
     })
 }
 
-function carveLake(
-    elevations: number[][],
-    wet: boolean[][],
-    [cx, cy]: Position,
-    radiusX: number,
-    radiusY: number,
-    phase: number,
-): WaterRegion {
-    const elevation = elevations[Math.round(cy)]![Math.round(cx)]! - 0.45
-    const tiles: Position[] = []
-    elevations.forEach((row, y) =>
-        row.forEach((ground, x) => {
-            const dx = (x - cx) / radiusX
-            const dy = (y - cy) / radiusY
-            const distance = Math.hypot(dx, dy)
-            if (distance > 1.8) return
-            const shore = 1 + 0.12 * Math.sin(3 * Math.atan2(dy, dx) + phase)
-            const rim = smooth((distance - shore) / 0.48)
-            row[x] = mix(elevation - 0.62, Math.max(ground, elevation + 0.45), rim)
-            if (distance <= shore) {
-                wet[y]![x] = true
-                tiles.push([x, y])
-            }
-        }),
-    )
-    return { kind: 'lake', tiles, elevation }
+function createCliffs(random: ReturnType<typeof seededRandom>) {
+    return Array.from({ length: Math.floor(random(2, 8)) }, () => {
+        const angle = random(0, Math.PI * 2)
+        return {
+            x: random(16, WIDTH - 16),
+            y: random(16, HEIGHT - 16),
+            cos: Math.cos(angle),
+            sin: Math.sin(angle),
+            span: random(12, 37),
+            depth: random(12, 26),
+            height: random(4.5, 10),
+            phase: random(0, 40),
+        }
+    })
+}
+
+function cliffRelief(
+    x: number,
+    y: number,
+    cliffs: ReturnType<typeof createCliffs>,
+    noise: TerrainNoise,
+) {
+    let relief = 0
+    for (const cliff of cliffs) {
+        const dx = x - cliff.x
+        const dy = y - cliff.y
+        const along = dx * cliff.cos + dy * cliff.sin
+        const across = -dx * cliff.sin + dy * cliff.cos
+        if (Math.abs(along) >= cliff.span || across < -5 || across >= cliff.depth + 5)
+            continue
+
+        const edge = across - 4 * noise.layered(along / 12, cliff.phase)
+        const face = smooth(edge / 1.5)
+        const back = 1 - smooth((edge - 2) / (cliff.depth - 2))
+        const ends = 1 - smooth((Math.abs(along) / cliff.span - 0.4) / 0.6)
+        relief = Math.max(relief, cliff.height * face * back * ends)
+    }
+    return relief
+}
+
+function mountainRelief(
+    x: number,
+    y: number,
+    ranges: ReturnType<typeof createRanges>,
+    noise: TerrainNoise,
+) {
+    const warpedX = x + 9 * noise.layered(x / 28 + 7, y / 28)
+    const warpedY = y + 8 * noise.layered(x / 28, y / 28 - 6)
+    const roughness = noise.layered(x / 10, y / 10)
+    let relief = 0
+    for (const range of ranges) {
+        const dx = warpedX - range.x
+        const dy = warpedY - range.y
+        const along = (dx * range.cos + dy * range.sin) / range.length
+        const across = (-dx * range.sin + dy * range.cos) / range.width
+        if (Math.abs(along) >= 1.4 || Math.abs(across) >= 1.4) continue
+
+        const crest = smooth(1 - Math.abs(along) / 1.4)
+        const spine = Math.max(0, 1 - Math.abs(across + roughness * 0.35))
+        const spur =
+            0.62 * Math.max(0, 1 - Math.abs(across - 0.48 * Math.sin(along * 4)) * 1.7)
+        relief = Math.max(
+            relief,
+            range.height * crest * Math.max(spine, spur) * (0.9 + 0.32 * roughness),
+        )
+    }
+    return relief
 }

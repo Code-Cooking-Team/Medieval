@@ -8,7 +8,8 @@ import { PlayerType } from '+game/player/types'
 import '+game/professions/machines/woodcutterMachine'
 import { Renderer } from '+game/Renderer'
 import { ActorType } from '+game/types'
-import { DEFAULT_WORLD_SEED, generateWorld } from '+game/world/generateWorld'
+import { generateWorld } from '+game/world/generateWorld'
+import { random } from '+helpers/random'
 import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 import { WoodIcon } from '+ui/components/icons/WoodIcon'
@@ -51,11 +52,11 @@ function App() {
             return { game, humanPlayer }
         }
 
-        const seedParam = new URLSearchParams(window.location.search).get('seed')
-        const requestedSeed = seedParam ? Number(seedParam) : DEFAULT_WORLD_SEED
+        const seedParam = new URLSearchParams(window.location.search).get('seed')?.trim()
+        const requestedSeed = seedParam ? Number(seedParam) : NaN
         const seed = Number.isSafeInteger(requestedSeed)
             ? requestedSeed
-            : DEFAULT_WORLD_SEED
+            : Math.floor(random(0, 2 ** 32))
         const world = generateWorld(seed)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()

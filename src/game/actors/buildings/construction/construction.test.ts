@@ -228,6 +228,50 @@ test('loads unfinished legacy footprints as walkable terrain', () => {
     expect(loaded.canPlaceBuildings(loadedSite.blueprint, [site.position], 0)).toBe(false)
 })
 
+test('grades the footprint and nearby slope, then restores the terrain after loading', () => {
+    const { game, player } = fixture()
+    const naturalHeight = (x: number) => (x - 27) * 0.42
+    game.world.forEachTile((tile, [x]) => {
+        if (x >= 20) tile.height = naturalHeight(x)
+    })
+    const first = game.spawnActor(HouseActor, player, [27, 22], 0, 18)!
+    const height = (x: number) => game.world.getTile([x, 22]).height
+    expect(height(27)).toBe(0)
+    expect(height(31)).toBeGreaterThan(0)
+    expect(height(31)).toBeLessThan(naturalHeight(31))
+    expect(height(32)).toBeLessThan(naturalHeight(32))
+    expect(height(34)).toBeLessThan(naturalHeight(34))
+    expect(height(36)).toBe(naturalHeight(36))
+
+    const second = game.spawnActor(HouseActor, player, [38, 22])!
+    const loaded = Game.fromJSON(JSON.parse(JSON.stringify(game.toJSON())))
+    const secondEdge = loaded.world.getTile([33, 22]).height
+    loaded.removeActor(loaded.getActorById(first.id)!)
+    expect(loaded.world.getTile([33, 22]).height).toBe(secondEdge)
+    loaded.removeActor(loaded.getActorById(second.id)!)
+    for (let x = 21; x <= 46; x++) {
+        expect(loaded.world.getTile([x, 22]).height).toBeCloseTo(naturalHeight(x))
+    }
+})
+
+test('the same building seed repeats its uneven grading along a uniform slope', () => {
+    const apron = (seed: number) => {
+        const { game, player } = fixture()
+        game.world.forEachTile((tile, [x]) => {
+            if (x >= 20) tile.height = (x - 27) * 0.42
+        })
+        game.spawnActor(HouseActor, player, [27, 22], 0, seed)
+        return Array.from(
+            { length: 8 },
+            (_, i) => game.world.getTile([32, 18 + i]).height,
+        )
+    }
+    const first = apron(18)
+    expect(Math.max(...first) - Math.min(...first)).toBeGreaterThan(0.03)
+    expect(apron(18)).toEqual(first)
+    expect(apron(19)).not.toEqual(first)
+})
+
 test('group placement converts every worker and appends the same ordered sites', () => {
     const { game, player, human, sites } = fixture()
     const [previous] = sites(ActorType.Stakewall, [[19, 20]])
