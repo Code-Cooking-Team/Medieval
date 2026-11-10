@@ -1,7 +1,7 @@
 import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 
 import { createConfig } from './lib/createConfig'
-import { colorInput, select } from './lib/definitions'
+import { booleanCheckbox, colorInput, select } from './lib/definitions'
 
 const CLOSE_CAMERA_HEIGHT = 0.65
 
@@ -17,6 +17,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         near: 0.1,
         minHeight: CLOSE_CAMERA_HEIGHT,
         maxHeight: 8.0,
+        scrollToPan: booleanCheckbox(false),
     },
 
     debug: {

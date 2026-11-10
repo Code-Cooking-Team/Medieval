@@ -23,7 +23,7 @@ export class World {
     ) {}
 
     public hasTile([x, y]: Position) {
-        return this.tiles?.[y]?.[x]!!
+        return this.tiles?.[y]?.[x]
     }
 
     public getTile([x, y]: Position) {

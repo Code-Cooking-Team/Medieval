@@ -2,10 +2,20 @@ import { config } from '+config'
 import { ClockInfo, Renderable } from '+game/types'
 import { World } from '+game/world/World'
 
-import { MathUtils, MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
+import {
+    MathUtils,
+    MOUSE,
+    PerspectiveCamera,
+    Quaternion,
+    Raycaster,
+    Vector2,
+    Vector3,
+} from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 const CAMERA_SPEED = config.renderer.tileSize * 2
+const SCROLL_PAN_SPEED = CAMERA_SPEED * 0.02
+const UP = new Vector3(0, 1, 0)
 
 export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
@@ -18,6 +28,9 @@ export class RTSCamera implements Renderable {
     private showcaseOrbit?: { radius: number; height: number }
     private controls?: OrbitControls
     private keyPressed: { [key: string]: number } = {}
+    private wheelRay = new Raycaster()
+    private wheelPointer = new Vector2()
+    private scrollMovement = new Vector3()
 
     constructor(private domElement: HTMLElement) {
         this.camera.position.x = 0
@@ -55,7 +68,7 @@ export class RTSCamera implements Renderable {
         if (config.core.orbitalControls) this.orbitalControls()
         window.document.addEventListener('keydown', this.handleKeyDown)
         window.document.addEventListener('keyup', this.handleKeyUp)
-        this.domElement.addEventListener('wheel', this.handleWheel)
+        this.domElement.addEventListener('wheel', this.handleWheel, { passive: false })
     }
 
     public destroy() {
@@ -202,28 +215,50 @@ export class RTSCamera implements Renderable {
     }
 
     private handleWheel = (event: WheelEvent) => {
-        let delta = (event as any).wheelDelta
+        event.preventDefault()
 
-        delta = delta / 240
-        delta = -delta
+        const bounds = this.domElement.getBoundingClientRect()
+        const deltaMode = event.deltaMode
+        const scale =
+            deltaMode === WheelEvent.DOM_DELTA_LINE
+                ? 16
+                : deltaMode === WheelEvent.DOM_DELTA_PAGE
+                  ? bounds.height
+                  : 1
+        const deltaY = event.deltaY * scale
 
-        if (delta <= 0) {
-            delta -= this.camera.position.y * 0.01
-        } else {
-            delta += this.camera.position.y * 0.01
+        // Browsers can report trackpad scroll and mouse wheel input identically.
+        if (config.camera.scrollToPan && !event.ctrlKey && !event.metaKey) {
+            this.scrollMovement
+                .set(event.deltaX * scale, 0, deltaY)
+                .applyAxisAngle(UP, this.camera.rotation.y)
+                .multiplyScalar(SCROLL_PAN_SPEED)
+            this.camera.position.add(this.scrollMovement)
+            return
         }
 
-        const direction = new Vector3(0, 0, 1).applyQuaternion(this.camera.quaternion)
-        const currentHeight = this.camera.position.y
-        const nextHeight = currentHeight + direction.y * delta
-        const clampedHeight = Math.max(
-            config.camera.minHeight,
-            Math.min(config.camera.maxHeight, nextHeight),
+        if (deltaY === 0 || bounds.width === 0 || bounds.height === 0) return
+
+        this.camera.updateMatrixWorld()
+        this.wheelPointer.set(
+            ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
+            1 - ((event.clientY - bounds.top) / bounds.height) * 2,
         )
-        if (Math.abs(direction.y) > 1e-6 && nextHeight !== clampedHeight) {
-            delta = (clampedHeight - currentHeight) / direction.y
-        }
+        this.wheelRay.setFromCamera(this.wheelPointer, this.camera)
+        const direction = this.wheelRay.ray.direction
+        if (direction.y >= -1e-6) this.camera.getWorldDirection(direction)
+        if (direction.y >= -1e-6) return
 
-        this.camera.translateZ(delta)
+        const currentHeight = this.camera.position.y
+        const distance = (-deltaY / 240) * (1 + currentHeight * 0.02)
+        const nextHeight = MathUtils.clamp(
+            currentHeight + direction.y * distance,
+            config.camera.minHeight,
+            config.camera.maxHeight,
+        )
+        this.camera.position.addScaledVector(
+            direction,
+            (nextHeight - currentHeight) / direction.y,
+        )
     }
 }
