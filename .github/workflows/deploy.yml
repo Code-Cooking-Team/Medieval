@@ -7,6 +7,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v7.0.1
@@ -16,20 +18,23 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Setup pnpm 📦
-        uses: pnpm/action-setup@v6.1.1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies 📥
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
 
       - name: Type check 🔍
-        run: pnpm ts
+        run: bun run ts
 
       - name: Run tests 🧪
-        run: pnpm test --run
+        run: bun run test
 
       - name: Build 🔧
-        run: pnpm build
+        run: bun run build
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.9.0

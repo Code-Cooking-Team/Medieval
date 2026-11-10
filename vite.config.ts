@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
@@ -6,7 +7,7 @@ export default defineConfig({
     base: '/Medieval/',
     assetsInclude: ['**/*.gltf', '**/*.hdr'],
     resolve: { tsconfigPaths: true },
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     server: {
         port: 3333,
     },

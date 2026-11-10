@@ -1,14 +1,15 @@
 import { config } from '+config/config'
-import { Actor } from '+game/core/Actor'
-import { BuildingActor } from '+game/core/BuildingActor'
-import { WalkableActor, WalkableActorJSON } from '+game/core/WalkableActor'
+import { type Actor } from '+game/core/Actor'
+import { type BuildingActor } from '+game/core/BuildingActor'
+import { WalkableActor, type WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
-import { Profession, ProfessionJSON } from '+game/professions/Profession'
+import { type Profession, type ProfessionJSON } from '+game/professions/Profession'
 import { ProfessionType } from '+game/professions/types'
-import { ActorType, Position } from '+game/types'
-import { addPosition, distanceBetweenPoints, random } from '+helpers'
+import { ActorType, type Position } from '+game/types'
+import { addPosition, distanceBetweenPoints } from '+helpers/math'
+import { random } from '+helpers/random'
 
-import { Equipment, EquipmentSlot, ItemId, items } from './equipment'
+import { type Equipment, type EquipmentSlot, type ItemId, items } from './equipment'
 
 type HumanAction = 'attack' | 'chop' | 'build'
 

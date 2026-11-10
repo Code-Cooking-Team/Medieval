@@ -1,7 +1,7 @@
-import { Game } from '+game/Game'
-import { Renderer } from '+game/Renderer'
+import { type Game } from '+game/Game'
+import { type Renderer } from '+game/Renderer'
 
-import { HumanPlayer } from '../HumanPlayer'
+import { type HumanPlayer } from '../HumanPlayer'
 import { BuildInteractions } from './methods/BuildInteractions'
 import { KeyboardInteractions } from './methods/KeyboardInteractions'
 import { SelectInteractions } from './methods/SelectInteractions'

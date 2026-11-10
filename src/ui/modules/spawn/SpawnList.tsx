@@ -1,6 +1,5 @@
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType, actorTypesByCategory } from '+game/types'
-import { Box } from '+ui/components/base/Box'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { type ActorType, actorTypesByCategory } from '+game/types'
 import { Button } from '+ui/components/base/Button'
 import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
@@ -45,7 +44,7 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
     }, [humanPlayer])
 
     return (
-        <Box p={3} display="flex" flexDirection="column" rowGap={3}>
+        <div className="flex flex-col gap-4 p-4">
             <Button
                 label={removingBuildings ? '✓ Remove buildings' : 'Remove buildings'}
                 onClick={() =>
@@ -53,11 +52,11 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
                 }
             />
             {removingBuildings && (
-                <Box>Click a building to remove it. Press Esc to cancel.</Box>
+                <div>Click a building to remove it. Press Esc to cancel.</div>
             )}
             {categories.map(([category, actorTypes]) => (
-                <Box key={category} display="flex" flexDirection="column" rowGap={2}>
-                    <Box>{category}</Box>
+                <div key={category} className="flex flex-col gap-2">
+                    <div>{category}</div>
                     {actorTypes.map((actorType) => (
                         <Button
                             key={actorType}
@@ -70,8 +69,8 @@ export const SpawnList = ({ humanPlayer }: SpawnListProps) => {
                             onClick={() => humanPlayer.selectBuilding(actorType)}
                         />
                     ))}
-                </Box>
+                </div>
             ))}
-        </Box>
+        </div>
     )
 }

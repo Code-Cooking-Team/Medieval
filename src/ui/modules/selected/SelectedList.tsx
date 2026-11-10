@@ -1,7 +1,7 @@
 import { ConstructionSiteActor } from '+game/actors/buildings/construction/ConstructionSiteActor'
 import {
     constructionCosts,
-    ConstructionType,
+    type ConstructionType,
     isConstructionType,
 } from '+game/actors/buildings/construction/costs'
 import type { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
@@ -12,19 +12,17 @@ import {
     isHumanActor,
     isHunterHutActor,
 } from '+game/actors/helpers'
-import { EquipmentSlot, items } from '+game/actors/units/human/equipment'
+import { type EquipmentSlot, items } from '+game/actors/units/human/equipment'
 import type { HumanActor } from '+game/actors/units/human/HumanActor'
-import { Actor } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
 import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
-import { HumanPlayer } from '+game/player/HumanPlayer'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { ProfessionType } from '+game/professions/types'
 import type { Renderer } from '+game/Renderer'
 import { ActorType, actorTypesByCategory } from '+game/types'
-import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
-import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
 import { Axe, Hammer, X } from 'lucide-react'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
@@ -97,7 +95,8 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
             singleActor.player === humanPlayer &&
             !singleActor.isDead()
         return (
-            <ActorDetails
+            <div
+                className="game-actor-details"
                 key="single-selection"
                 style={{
                     overflow: 'visible',
@@ -114,14 +113,9 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                     />
                 )}
                 {!showBuildPicker && (
-                    <ActorIdentity>
-                        <Box
-                            as="strong"
-                            display="inline-flex"
-                            alignItems="center"
-                            columnGap={2}
-                        >
-                            <GoldIcon>
+                    <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                        <strong className="inline-flex items-center gap-2">
+                            <span className="inline-flex text-game-gold">
                                 <ActorIcon
                                     type={
                                         singleActor instanceof ConstructionSiteActor
@@ -129,17 +123,17 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                                             : singleActor.type
                                     }
                                 />
-                            </GoldIcon>
+                            </span>
                             {singleActor instanceof ConstructionSiteActor
                                 ? `${buildingName(singleActor.buildingType)} Construction Site`
                                 : singleActor.type}
-                        </Box>
-                        <ActorStats>
-                            <GoldValue>
+                        </strong>
+                        <span className="text-game-gold tabular-nums">
+                            <strong className="font-bold text-game-gold tabular-nums">
                                 {singleActor.hp}/{singleActor.maxHp}
-                            </GoldValue>{' '}
+                            </strong>{' '}
                             HP
-                        </ActorStats>
+                        </span>
                         {isHumanActor(singleActor) && (
                             <HumanDetails
                                 key={singleActor.id}
@@ -158,7 +152,7 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                             isGuildhallActor(singleActor)) && (
                             <HutStock hut={singleActor} />
                         )}
-                    </ActorIdentity>
+                    </div>
                 )}
                 {canBuild && (
                     <BuildControls
@@ -168,45 +162,47 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                         setShowPicker={setShowBuildPicker}
                     />
                 )}
-            </ActorDetails>
+            </div>
         )
     }
 
     return (
-        <ActorDetails key="group-selection" style={{ pointerEvents: 'auto' }}>
-            <SelectionGroups>
+        <div
+            className="game-actor-details"
+            key="group-selection"
+            style={{ pointerEvents: 'auto' }}
+        >
+            <div className="flex w-max flex-nowrap items-start gap-4">
                 {selectedCategories.map(({ category, actors }, categoryIndex) => (
-                    <SelectionCategory key={category} withDivider={categoryIndex > 0}>
+                    <div
+                        key={category}
+                        className={`flex flex-nowrap items-start gap-4 ${categoryIndex > 0 ? 'border-0 border-l border-solid border-game-ink pl-4' : ''}`}
+                    >
                         {actors.map(([type, typedActors]) => (
-                            <Box key={type}>
+                            <div key={type}>
                                 <Button
                                     icon={
-                                        <GoldIcon>
+                                        <span className="inline-flex text-game-gold">
                                             <ActorIcon type={type} />
-                                        </GoldIcon>
+                                        </span>
                                     }
                                     label={`${type} (${typedActors.length})`}
                                     onClick={() => selectActorsByType(type)}
                                 />
-                                <Box
-                                    pt={2}
-                                    display="flex"
-                                    flexWrap="nowrap"
-                                    columnGap={2}
-                                >
+                                <div className="flex flex-nowrap gap-2 pt-2">
                                     {countProfessions(typedActors).map(
                                         ([professionType, count]) => (
-                                            <ProfessionButton
+                                            <Button
                                                 key={professionType}
                                                 icon={
                                                     professionType ===
                                                         ProfessionType.Woodcutter && (
-                                                        <GoldIcon>
+                                                        <span className="inline-flex text-game-gold">
                                                             <Axe
                                                                 size={16}
                                                                 aria-hidden="true"
                                                             />
-                                                        </GoldIcon>
+                                                        </span>
                                                     )
                                                 }
                                                 label={`${professionType} (${count})`}
@@ -219,12 +215,12 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                                             />
                                         ),
                                     )}
-                                </Box>
-                            </Box>
+                                </div>
+                            </div>
                         ))}
-                    </SelectionCategory>
+                    </div>
                 ))}
-            </SelectionGroups>
+            </div>
             <BuildControls
                 key={selectedHumans.map((actor) => actor.id).join(',')}
                 humans={selectedHumans}
@@ -232,7 +228,7 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                 showPicker={showGroupBuildPicker}
                 setShowPicker={setShowGroupBuildPicker}
             />
-        </ActorDetails>
+        </div>
     )
 
     function selectActorsByProfession(actors: Actor[], professionType: string): void {
@@ -279,14 +275,14 @@ const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlaye
     const profession = useSyncExternalStore(subscribeProfession, () => human.profession)
     return (
         <>
-            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
+            <span className="inline-flex items-center gap-2">
                 {profession?.type === ProfessionType.Woodcutter && (
-                    <GoldIcon>
+                    <span className="inline-flex text-game-gold">
                         <Axe size={16} aria-hidden="true" />
-                    </GoldIcon>
+                    </span>
                 )}
                 {profession?.type || noProfession}
-            </Box>
+            </span>
         </>
     )
 }
@@ -314,28 +310,19 @@ const BuildControls = ({
     )
     if (!humans.length) return null
     return (
-        <Box
-            display="flex"
-            alignItems={showPicker ? 'flex-end' : 'center'}
-            flexWrap="wrap"
-            columnGap={2}
-            rowGap={2}
-            style={{
-                pointerEvents: 'auto',
-                marginLeft: 'auto',
-                width: showPicker ? '100%' : undefined,
-                justifyContent: showPicker ? 'flex-end' : undefined,
-            }}
+        <div
+            className={`pointer-events-auto ml-auto flex flex-wrap gap-2 ${showPicker ? 'w-full items-end justify-end' : 'items-center'}`}
         >
             {showPicker ? (
-                <BuildPicker>
-                    <BuildCloseButton
+                <div className="flex w-full flex-col items-end gap-2">
+                    <Button
+                        className="size-11 min-w-11 rounded-full p-0"
                         aria-label="Close build picker"
                         label=""
                         icon={<X size={24} aria-hidden="true" />}
                         onClick={() => setShowPicker(false)}
                     />
-                    <BuildOptions>
+                    <div className="flex w-full flex-wrap justify-end gap-2">
                         {buildOptions.map((type) => (
                             <Button
                                 key={type}
@@ -347,10 +334,11 @@ const BuildControls = ({
                                 }}
                             />
                         ))}
-                    </BuildOptions>
-                </BuildPicker>
+                    </div>
+                </div>
             ) : (
-                <BuildButton
+                <Button
+                    className="size-16 min-w-16 shrink-0 rounded-full p-0 text-[0px]"
                     aria-label="Build"
                     icon={<Hammer size={30} aria-hidden="true" />}
                     label=""
@@ -360,46 +348,9 @@ const BuildControls = ({
             {placing && isConstructionType(placing) && (
                 <span>{buildingName(placing)} · R to rotate · Esc to exit</span>
             )}
-        </Box>
+        </div>
     )
 }
-
-const BuildButton = styled(Button)({
-    width: 64,
-    height: 64,
-    minWidth: 64,
-    padding: 0,
-    borderRadius: '50%',
-    fontSize: 0,
-    justifyContent: 'center',
-    flexShrink: 0,
-    cursor: 'pointer',
-})
-
-const BuildPicker = styled.div({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    width: '100%',
-    gap: 8,
-})
-
-const BuildCloseButton = styled(Button)({
-    width: 44,
-    height: 44,
-    minWidth: 44,
-    padding: 0,
-    borderRadius: '50%',
-    justifyContent: 'center',
-})
-
-const BuildOptions = styled.div({
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-    gap: 8,
-    width: '100%',
-})
 
 const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
     const subscribe = useCallback(
@@ -410,9 +361,9 @@ const SiteProgress = ({ site }: { site: ConstructionSiteActor }) => {
     return (
         <span>
             Wood{' '}
-            <GoldValue>
+            <strong className="font-bold text-game-gold tabular-nums">
                 {wood} / {constructionCosts[site.buildingType]}
-            </GoldValue>
+            </strong>
         </span>
     )
 }
@@ -447,86 +398,12 @@ const CampStock = ({ camp }: { camp: WoodStorageBuilding }) => {
     return (
         <span>
             Wood stock:{' '}
-            <GoldValue>
+            <strong className="font-bold text-game-gold tabular-nums">
                 {woodStock} / {camp.woodCapacity}
-            </GoldValue>
+            </strong>
         </span>
     )
 }
-
-const ProfessionButton = styled(Button)({
-    cursor: 'pointer',
-})
-
-const ActorDetails = styled(Box)({
-    '& > :not(canvas)': { position: 'relative', zIndex: 1 },
-    position: 'fixed',
-    zIndex: 11,
-    bottom: 12,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: '4px 16px',
-    width: 'max-content',
-    minWidth: 'min(360px, calc(100vw - 24px))',
-    maxWidth: 'calc(100% - 24px)',
-    maxHeight: '35vh',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    boxSizing: 'border-box',
-    padding: '8px 16px',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    backdropFilter: 'blur(15px)',
-    borderRadius: 8,
-    pointerEvents: 'none',
-})
-
-const SelectionGroups = styled.div({
-    display: 'flex',
-    alignItems: 'flex-start',
-    flexWrap: 'nowrap',
-    gap: 16,
-    width: 'max-content',
-})
-
-const SelectionCategory = styled.div<{ withDivider: boolean }>(
-    ({ withDivider, theme }) => ({
-        display: 'flex',
-        alignItems: 'flex-start',
-        flexWrap: 'nowrap',
-        gap: 16,
-        paddingLeft: withDivider ? 16 : 0,
-        borderLeft: withDivider ? `1px solid ${theme.colors.black}` : 'none',
-    }),
-)
-
-const ActorIdentity = styled.div({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 4,
-    minWidth: 0,
-    flex: 1,
-})
-
-const ActorStats = styled.span(({ theme }) => ({
-    color: theme.colors.primary,
-    fontVariantNumeric: 'tabular-nums',
-}))
-
-const GoldValue = styled.strong(({ theme }) => ({
-    color: theme.colors.primary,
-    fontWeight: 700,
-    fontVariantNumeric: 'tabular-nums',
-}))
-
-const GoldIcon = styled.span(({ theme }) => ({
-    display: 'inline-flex',
-    color: theme.colors.primary,
-}))
 
 const HutStock = ({ hut }: { hut: HunterHutActor | GuildhallActor }) => {
     const subscribe = useCallback(
@@ -537,9 +414,9 @@ const HutStock = ({ hut }: { hut: HunterHutActor | GuildhallActor }) => {
     return (
         <span>
             Meat stock:{' '}
-            <GoldValue>
+            <strong className="font-bold text-game-gold tabular-nums">
                 {stock} / {hut.meatCapacity}
-            </GoldValue>
+            </strong>
         </span>
     )
 }

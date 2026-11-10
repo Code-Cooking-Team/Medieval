@@ -2,9 +2,9 @@ import type { ConstructionSiteActor } from '+game/actors/buildings/construction/
 import { hasWoodStorage } from '+game/actors/helpers'
 import type { ItemId } from '+game/actors/units/human/equipment'
 import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
-import { ActorType, Path } from '+game/types'
+import { ActorType, type Path } from '+game/types'
 
-import { Profession, ProfessionJSON } from './Profession'
+import { Profession, type ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
 
 const carryCapacity = 150

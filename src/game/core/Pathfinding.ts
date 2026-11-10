@@ -1,5 +1,5 @@
-import { Path, Position } from '+game/types'
-import { World } from '+game/world/World'
+import { type Path, type Position } from '+game/types'
+import { type World } from '+game/world/World'
 
 import EasyStar from 'easystarjs'
 

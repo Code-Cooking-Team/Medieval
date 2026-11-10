@@ -1,39 +1,35 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { BuilderProfession } from '+game/professions/BuilderProfession'
-import { Profession } from '+game/professions/Profession'
+import { type Profession } from '+game/professions/Profession'
 import { ProfessionType } from '+game/professions/types'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
-import { ActorType, ClockInfo } from '+game/types'
-import { Tile } from '+game/world/Tile'
-import {
-    changeColorLightnessSaturation,
-    generateSimilarColor,
-    isSamePosition,
-    loadRawGLTF,
-    updateScale,
-} from '+helpers'
+import { ActorType, type ClockInfo } from '+game/types'
+import { type Tile } from '+game/world/Tile'
+import { changeColorLightnessSaturation, generateSimilarColor } from '+helpers/color'
+import { isSamePosition } from '+helpers/math'
+import { loadRawGLTF, updateScale } from '+helpers/three'
 
 import {
     AdditiveAnimationBlendMode,
-    AnimationAction,
+    type AnimationAction,
     AnimationClip,
     AnimationMixer,
     LoopOnce,
     MathUtils,
     MeshStandardMaterial,
-    Object3D,
+    type Object3D,
     PropertyBinding,
     Quaternion,
     QuaternionKeyframeTrack,
-    SkinnedMesh,
+    type SkinnedMesh,
     Vector3,
 } from 'three'
 
-import { EquipmentSlot, ItemId } from './equipment'
+import { type EquipmentSlot, type ItemId } from './equipment'
 import { carriedLogModel, equipmentModels } from './equipmentModels'
-import { HumanActor } from './HumanActor'
+import { type HumanActor } from './HumanActor'
 import humanModelUrl from './models/human.gltf'
 
 type EquipmentVisual = ItemId | 'carriedLog' | null

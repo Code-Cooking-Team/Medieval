@@ -2,12 +2,12 @@ import { config } from '+config'
 import { actorByType } from '+game/actors'
 import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight } from 'three'
 
-import { WoodCampActor } from './WoodCampActor'
-import { WoodCampBlueprint } from './WoodCampBlueprint'
+import { type WoodCampActor } from './WoodCampActor'
+import { type WoodCampBlueprint } from './WoodCampBlueprint'
 
 export class WoodCampRenderer extends InstancedBuildingRenderer<WoodCampActor> {
     public actorType = ActorType.WoodCamp

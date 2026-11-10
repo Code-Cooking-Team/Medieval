@@ -1,4 +1,4 @@
-import { Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
+import { type Diagonals } from '+game/renderer/lib/DiagonalsPlaneGeometry'
 
 import { createConfig } from './lib/createConfig'
 import { booleanCheckbox, colorInput, select } from './lib/definitions'
@@ -58,6 +58,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
         FXAAEnabled: true,
         bokehEnable: true,
+        bokehAutofocus: booleanCheckbox(true),
         bokehAperture: 0.0005,
         bokehMaxBlur: 0.003,
     },

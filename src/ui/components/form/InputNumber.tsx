@@ -1,6 +1,6 @@
 import { type Ref, useState } from 'react'
 
-import { InputStyleProps, StyledInput } from './Input'
+import { type InputStyleProps, StyledInput } from './Input'
 
 interface NumberInputProps extends InputStyleProps {
     value?: number

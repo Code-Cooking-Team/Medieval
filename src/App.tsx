@@ -1,6 +1,6 @@
 import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { hasWoodStorage, isGuildhallActor, isHunterHutActor } from '+game/actors/helpers'
-import { Game, GameJSON } from '+game/Game'
+import { Game, type GameJSON } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { NaturePlayer } from '+game/player/NaturePlayer'
@@ -10,7 +10,6 @@ import { Renderer } from '+game/Renderer'
 import { ActorType } from '+game/types'
 import { generateWorld } from '+game/world/generateWorld'
 import { random } from '+helpers/random'
-import { Box } from '+ui/components/base/Box'
 import { Button } from '+ui/components/base/Button'
 import { WoodIcon } from '+ui/components/icons/WoodIcon'
 import { Tab } from '+ui/components/tabs/Tab'
@@ -21,7 +20,6 @@ import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 import { TerrainSeed } from '+ui/modules/terrain/TerrainSeed'
 
-import styled from '@emotion/styled'
 import {
     Beef,
     ChevronRight,
@@ -177,23 +175,34 @@ function App() {
                 <SelectedList humanPlayer={humanPlayer} renderer={renderer} />
             )}
             {(isShowcase || gameMenuOpen) && (
-                <GameMenuOverlay showcase={isShowcase}>
-                    <GameMenuPanel>
-                        <GameMenuTitle>MEDIEVAL</GameMenuTitle>
-                        <GameMenuActions>
+                <div
+                    className={`fixed inset-0 z-20 flex items-center ${
+                        isShowcase
+                            ? 'justify-start bg-[linear-gradient(90deg,rgba(5,7,5,0.46),transparent_65%)] p-[clamp(16px,5vw,80px)] max-[700px]:items-end max-[700px]:justify-center'
+                            : 'justify-center bg-[rgba(5,7,5,0.62)] p-6 backdrop-blur-[5px]'
+                    }`}
+                >
+                    <div className="w-[min(440px,100%)] rounded-2xl border border-solid border-game-gold/60 bg-[rgba(24,23,18,0.94)] px-9 py-10 text-center shadow-[0_18px_60px_rgba(0,0,0,0.55)]">
+                        <h1 className="m-0 mb-8 text-[32px] tracking-[0.16em] text-game-gold">
+                            MEDIEVAL
+                        </h1>
+                        <div className="flex flex-col items-stretch gap-3 [&_button]:min-h-11 [&_button]:text-base">
                             {!isShowcase && (
-                                <GameActionButton
+                                <Button
+                                    className="px-2.5"
                                     label="Continue"
                                     onClick={() => setGameMenuOpen(false)}
                                 />
                             )}
-                            <GameActionButton
+                            <Button
+                                className="px-2.5"
                                 label="New Game"
                                 icon={<FilePlus size={16} aria-hidden="true" />}
                                 onClick={newGame}
                             />
                             {!isShowcase && (
-                                <GameActionButton
+                                <Button
+                                    className="px-2.5"
                                     label="Save"
                                     icon={<Save size={16} aria-hidden="true" />}
                                     onClick={() => {
@@ -203,33 +212,29 @@ function App() {
                                 />
                             )}
                             {savedJson && (
-                                <GameActionButton
+                                <Button
+                                    className="px-2.5"
                                     label="Load"
                                     icon={<FolderOpen size={16} aria-hidden="true" />}
                                     onClick={() => loadGame(savedJson)}
                                 />
                             )}
-                        </GameMenuActions>
-                    </GameMenuPanel>
-                </GameMenuOverlay>
+                        </div>
+                    </div>
+                </div>
             )}
             {!isShowcase && (
-                <RightFrame isOpen={rightMenuOpen}>
-                    <Right isOpen={rightMenuOpen}>
+                <div
+                    className={`absolute inset-y-3 right-3 z-10 transition-[width] duration-[180ms] ease-[ease] max-[800px]:top-[84px] ${rightMenuOpen ? 'pointer-events-auto w-[min(90vw,280px)]' : 'pointer-events-none w-0'}`}
+                >
+                    <div className="absolute inset-0 overflow-hidden rounded-lg bg-black/50 backdrop-blur-[15px]">
                         {rightMenuOpen && (
-                            <RightContent>
+                            <div className="flex h-full flex-col overflow-auto">
                                 <Tabs>
                                     <Tab label="Game" icon={Gamepad2}>
-                                        <Box
-                                            p={3}
-                                            display="flex"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                            flexWrap="wrap"
-                                            columnGap={2}
-                                            rowGap={2}
-                                        >
-                                            <GameActionButton
+                                        <div className="flex flex-wrap items-center justify-center gap-2 p-4">
+                                            <Button
+                                                className="px-2.5"
                                                 label="Save"
                                                 icon={
                                                     <Save size={14} aria-hidden="true" />
@@ -239,7 +244,8 @@ function App() {
                                                 }
                                             />
                                             {savedJson && (
-                                                <GameActionButton
+                                                <Button
+                                                    className="px-2.5"
                                                     label="Load"
                                                     icon={
                                                         <FolderOpen
@@ -250,7 +256,8 @@ function App() {
                                                     onClick={() => loadGame(savedJson)}
                                                 />
                                             )}
-                                            <GameActionButton
+                                            <Button
+                                                className="px-2.5"
                                                 label="New"
                                                 icon={
                                                     <FilePlus
@@ -260,7 +267,7 @@ function App() {
                                                 }
                                                 onClick={newGame}
                                             />
-                                        </Box>
+                                        </div>
                                     </Tab>
 
                                     <Tab label="Spawn" icon={Users}>
@@ -277,7 +284,7 @@ function App() {
                                         />
                                     </Tab>
                                 </Tabs>
-                                <GameControls>
+                                <div className="mt-auto flex items-center justify-center gap-2 border-0 border-t border-solid border-game-gold/60 bg-black/45 p-4 backdrop-blur-[15px]">
                                     <Button
                                         label={started ? 'Stop' : 'Start'}
                                         onClick={() =>
@@ -290,11 +297,12 @@ function App() {
                                             onClick={() => game.tick()}
                                         />
                                     )}
-                                </GameControls>
-                            </RightContent>
+                                </div>
+                            </div>
                         )}
-                    </Right>
-                    <CollapseButton
+                    </div>
+                    <Button
+                        className="pointer-events-auto absolute top-1/2 -left-7 z-1 h-12 w-8 min-w-8 -translate-y-1/2 rounded-lg p-0 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                         label=""
                         icon={
                             <ChevronRight
@@ -309,7 +317,7 @@ function App() {
                         }
                         onClick={() => setRightMenuOpen((open) => !open)}
                     />
-                </RightFrame>
+                </div>
             )}
         </>
     )
@@ -368,164 +376,34 @@ const SettlementStatus = ({
     )
 
     return (
-        <SettlementStatusBox p={2} px={3} display="flex" columnGap={3}>
-            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
-                <StatusIcon>
+        <div className="pointer-events-auto fixed top-3 left-1/2 z-10 flex -translate-x-1/2 gap-4 rounded-lg bg-black/50 px-4 py-2 whitespace-nowrap backdrop-blur-[15px]">
+            <span className="inline-flex items-center gap-2">
+                <span className="inline-flex text-game-gold">
                     <Users size={16} aria-hidden="true" />
-                </StatusIcon>
-                Population: <StatusValue>{population}</StatusValue>
-            </Box>
-            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
-                <StatusIcon>
+                </span>
+                Population:{' '}
+                <strong className="font-semibold text-game-gold">{population}</strong>
+            </span>
+            <span className="inline-flex items-center gap-2">
+                <span className="inline-flex text-game-gold">
                     <WoodIcon />
-                </StatusIcon>
-                Wood: <StatusValue>{wood}</StatusValue>
-            </Box>
-            <Box as="span" display="inline-flex" alignItems="center" columnGap={2}>
-                <StatusIcon>
+                </span>
+                Wood: <strong className="font-semibold text-game-gold">{wood}</strong>
+            </span>
+            <span className="inline-flex items-center gap-2">
+                <span className="inline-flex text-game-gold">
                     <Beef size={16} aria-hidden="true" />
-                </StatusIcon>
-                Meat: <StatusValue>{meat}</StatusValue>
-            </Box>
-            <SettingsButton
+                </span>
+                Meat: <strong className="font-semibold text-game-gold">{meat}</strong>
+            </span>
+            <Button
+                className="pointer-events-auto ml-1 rounded-full p-1.5"
                 label=""
                 icon={<Cog size={16} aria-hidden="true" />}
                 onClick={onOpenMenu}
             />
-        </SettlementStatusBox>
+        </div>
     )
 }
-
-const SettlementStatusBox = styled(Box)({
-    position: 'fixed',
-    zIndex: 10,
-    top: 12,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    backdropFilter: 'blur(15px)',
-    borderRadius: 8,
-    whiteSpace: 'nowrap',
-    pointerEvents: 'auto',
-})
-
-const StatusIcon = styled.span(({ theme }) => ({
-    display: 'inline-flex',
-    color: theme.colors.primary,
-}))
-const StatusValue = styled.strong(({ theme }) => ({
-    color: theme.colors.primary,
-    fontWeight: 600,
-}))
-
-const SettingsButton = styled(Button)({
-    padding: 6,
-    marginLeft: 4,
-    borderRadius: '50%',
-    pointerEvents: 'auto',
-    cursor: 'pointer',
-})
-const GameMenuOverlay = styled('div', {
-    shouldForwardProp: (prop) => prop !== 'showcase',
-})<{ showcase: boolean }>(({ showcase }) => ({
-    position: 'fixed',
-    zIndex: 20,
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: showcase ? 'flex-start' : 'center',
-    padding: showcase ? 'clamp(16px, 5vw, 80px)' : 24,
-    background: showcase
-        ? 'linear-gradient(90deg, rgba(5, 7, 5, 0.46), transparent 65%)'
-        : 'rgba(5, 7, 5, 0.62)',
-    backdropFilter: showcase ? undefined : 'blur(5px)',
-    '@media (max-width: 700px)': {
-        alignItems: showcase ? 'flex-end' : 'center',
-        justifyContent: 'center',
-    },
-}))
-const GameMenuPanel = styled.div(({ theme }) => ({
-    width: 'min(440px, 100%)',
-    padding: '40px 36px',
-    borderRadius: 16,
-    border: `1px solid ${theme.colors.primary}99`,
-    background: 'rgba(24, 23, 18, 0.94)',
-    boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
-    textAlign: 'center',
-}))
-const GameMenuTitle = styled.h1(({ theme }) => ({
-    margin: '0 0 32px',
-    color: theme.colors.primary,
-    fontSize: 32,
-    letterSpacing: '0.16em',
-}))
-const GameMenuActions = styled.div({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    gap: 12,
-    '& button': { justifyContent: 'center', minHeight: 44, fontSize: 16 },
-})
-
-const GameActionButton = styled(Button)({
-    paddingInline: 10,
-})
-
-const RightFrame = styled(Box, { shouldForwardProp: (prop) => prop !== 'isOpen' })<{
-    isOpen: boolean
-}>(({ isOpen }) => ({
-    position: 'absolute',
-    zIndex: 10,
-    top: 12,
-    right: 12,
-    bottom: 12,
-    width: isOpen ? 'min(90vw, 280px)' : 0,
-    pointerEvents: isOpen ? 'auto' : 'none',
-    transition: 'width 180ms ease',
-    '@media (max-width: 800px)': { top: 84, bottom: 12 },
-}))
-
-const Right = styled(Box, { shouldForwardProp: (prop) => prop !== 'isOpen' })<{
-    isOpen: boolean
-}>({
-    position: 'absolute',
-    inset: 0,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    backdropFilter: 'blur(15px)',
-    borderRadius: 8,
-})
-
-const RightContent = styled.div({
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflow: 'auto',
-})
-const GameControls = styled(Box)(({ theme }) => ({
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: theme.space[2],
-    marginTop: 'auto',
-    padding: theme.space[3],
-    background: 'rgba(0,0,0,0.45)',
-    borderTop: `1px solid ${theme.colors.primary}99`,
-    backdropFilter: 'blur(15px)',
-}))
-const CollapseButton = styled(Button)({
-    position: 'absolute',
-    zIndex: 1,
-    top: '50%',
-    left: -28,
-    transform: 'translateY(-50%)',
-    width: 32,
-    height: 48,
-    minWidth: 32,
-    padding: 0,
-    borderRadius: 8,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    pointerEvents: 'auto',
-})
 
 export default App

@@ -17,7 +17,7 @@ Stakewall also has a third level, `lod_very_far`, at 160 tiles. It returns to th
 ## Browser fixture
 
 ```sh
-pnpm dev
+bun run dev
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
   node benchmarks/run-buildings.mjs docs/benchmarks/buildings-lod 4
 ```

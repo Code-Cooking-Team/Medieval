@@ -1,8 +1,8 @@
 import { config } from '+config'
-import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
-import { Renderer } from '+game/Renderer'
-import { Position } from '+game/types'
+import { type Actor } from '+game/core/Actor'
+import { type Game } from '+game/Game'
+import { type Renderer } from '+game/Renderer'
+import { type Position } from '+game/types'
 
 import { Raycaster, Vector2 } from 'three'
 

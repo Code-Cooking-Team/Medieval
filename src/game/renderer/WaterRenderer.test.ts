@@ -1,9 +1,10 @@
+import { expect, test } from 'bun:test'
 import { config } from '+config'
 import { MeadowTile } from '+game/world/Tile'
 import type { RiverSample, RiverSection, WaterRegion } from '+game/world/water'
 import { World } from '+game/world/World'
 
-import { Mesh, Raycaster, Vector3 } from 'three'
+import { type Mesh, Raycaster, Vector3 } from 'three'
 
 import { WaterRenderer } from './WaterRenderer'
 
@@ -54,7 +55,7 @@ test.each([
     for (const [x, y] of submerged) tiles[y!]![x!]!.height = -0.3
     const renderer = new WaterRenderer(new World(tiles, [region]))
     const scale = config.renderer.tileSize
-    const castsOntoWater = ([x, z]: number[]) => {
+    const castsOntoWater = ([x, z]: readonly number[]) => {
         const ray = new Raycaster(
             new Vector3(x! * scale, 2, z! * scale),
             new Vector3(0, -1, 0),

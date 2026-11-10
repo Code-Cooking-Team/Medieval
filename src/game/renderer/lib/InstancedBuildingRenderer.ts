@@ -1,13 +1,13 @@
 import { config } from '+config'
-import { BuildingActor } from '+game/core/BuildingActor'
-import { ClockInfo } from '+game/types'
-import { rotationIndexToDeg } from '+helpers'
+import { type BuildingActor } from '+game/core/BuildingActor'
+import { type ClockInfo } from '+game/types'
+import { rotationIndexToDeg } from '+helpers/math'
 
-import { Camera, Matrix4, Vector3 } from 'three'
+import { type Camera, Matrix4, Vector3 } from 'three'
 
 import { ActorRenderer } from './ActorRenderer'
-import { BuildingBatch, BuildingSlot } from './BuildingBatch'
-import { BuildingModel, BuildingPrimitive } from './BuildingModel'
+import { BuildingBatch, type BuildingSlot } from './BuildingBatch'
+import { type BuildingModel, type BuildingPrimitive } from './BuildingModel'
 
 interface Placement {
     level: number

@@ -1,2 +1,5 @@
-pnpm ts
-pnpm test --run
+set -e
+
+bun run lint
+bun run ts
+bun run test

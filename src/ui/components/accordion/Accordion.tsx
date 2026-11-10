@@ -1,6 +1,5 @@
-import styled from '@emotion/styled'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 interface AccordionProps {
     openValue?: string
@@ -9,10 +8,8 @@ interface AccordionProps {
 
 export const Accordion = ({ openValue, children }: AccordionProps) => {
     return (
-        <Root type="single" defaultValue={openValue} collapsible>
+        <AccordionPrimitive.Root type="single" defaultValue={openValue} collapsible>
             {children}
-        </Root>
+        </AccordionPrimitive.Root>
     )
 }
-
-const Root = styled(AccordionPrimitive.Root)({})

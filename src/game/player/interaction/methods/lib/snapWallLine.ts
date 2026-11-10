@@ -1,4 +1,4 @@
-import { Position } from '+game/types'
+import { type Position } from '+game/types'
 
 const directions: Position[] = [
     [1, 0],

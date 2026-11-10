@@ -14,14 +14,14 @@
       "group": "test",
       "problemMatcher": [],
       "label": "npm: test",
-      "detail": "vitest"
+      "detail": "bun test"
     },
     {
       "type": "npm",
       "script": "coverage",
       "problemMatcher": [],
       "label": "npm: coverage",
-      "detail": "vitest run --coverage"
+      "detail": "bun test --coverage"
     }
   ]
 }

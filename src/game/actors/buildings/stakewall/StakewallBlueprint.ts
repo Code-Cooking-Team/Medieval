@@ -1,7 +1,8 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
-import { ActorBlueprint } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF, seededRandom } from '+helpers'
+import { type ActorBlueprint } from '+game/types'
+import { type TileCodeGrid } from '+game/world/tileCodes'
+import { loadGLTF } from '+helpers/three'
+import { seededRandom } from '+helpers/random'
 
 import stakewallUrl from './models/wall.gltf'
 
@@ -44,3 +45,5 @@ export class StakewallBlueprint implements ActorBlueprint {
         return this.grid
     }
 }
+
+export const stakewallBlueprint = new StakewallBlueprint()

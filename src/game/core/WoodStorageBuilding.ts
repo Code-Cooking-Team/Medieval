@@ -1,6 +1,6 @@
-import { Position } from '+game/types'
+import { type Position } from '+game/types'
 
-import { BuildingActor, BuildingActorJSON } from './BuildingActor'
+import { BuildingActor, type BuildingActorJSON } from './BuildingActor'
 
 export abstract class WoodStorageBuilding extends BuildingActor {
     public readonly woodCapacity = 500

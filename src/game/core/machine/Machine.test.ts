@@ -1,3 +1,4 @@
+import { expect, it, mock } from 'bun:test'
 import { createMachine } from './createMachine'
 import { MachineInterpreter } from './Machine'
 
@@ -70,7 +71,7 @@ it('should run actions', () => {
         },
     })
 
-    const dummy = vitest.fn()
+    const dummy = mock()
 
     const interpreter = new MachineInterpreter(machine, { dummy })
 

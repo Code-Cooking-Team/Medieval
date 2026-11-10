@@ -1,8 +1,8 @@
 import { config } from '+config'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { WalkableActorRenderer } from '+game/renderer/lib/WalkableActorRenderer'
-import { ActorType, ClockInfo } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { ActorType, type ClockInfo } from '+game/types'
+import { type Tile } from '+game/world/Tile'
 
 import {
     Bone,
@@ -14,7 +14,7 @@ import {
     Vector3,
 } from 'three'
 
-import { DeerActor } from './DeerActor'
+import { type DeerActor } from './DeerActor'
 import { createDeerGeometry } from './deerGeometry'
 
 interface DeerPose {

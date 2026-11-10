@@ -1,11 +1,11 @@
-import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
-import { BuildingActor, BuildingActorJSON } from '+game/core/BuildingActor'
+import { type Actor } from '+game/core/Actor'
+import { BuildingActor, type BuildingActorJSON } from '+game/core/BuildingActor'
 import { BuilderProfession } from '+game/professions/BuilderProfession'
 import { ActorType } from '+game/types'
 
-import { constructionCosts, ConstructionType } from './costs'
+import { buildingBlueprints } from './blueprints'
+import { constructionCosts, type ConstructionType } from './costs'
 
 export class ConstructionSiteActor extends BuildingActor {
     public type = ActorType.ConstructionSite
@@ -14,7 +14,7 @@ export class ConstructionSiteActor extends BuildingActor {
 
     public setBuildingType(type: ConstructionType) {
         this.buildingType = type
-        this.blueprint = actorByType[type].blueprint!
+        this.blueprint = buildingBlueprints[type]
     }
 
     public get remainingWood() {

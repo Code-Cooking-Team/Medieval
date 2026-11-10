@@ -1,6 +1,6 @@
-import { DynamicDrawUsage, InstancedMesh, Matrix4, Object3D } from 'three'
+import { DynamicDrawUsage, InstancedMesh, Matrix4, type Object3D } from 'three'
 
-import { BuildingPrimitive } from './BuildingModel'
+import { type BuildingPrimitive } from './BuildingModel'
 
 export interface BuildingSlot {
     index: number

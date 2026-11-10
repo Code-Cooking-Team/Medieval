@@ -1,7 +1,7 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
-import { ActorBlueprint, Position } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF } from '+helpers'
+import { type ActorBlueprint, type Position } from '+game/types'
+import { type TileCodeGrid } from '+game/world/tileCodes'
+import { loadGLTF } from '+helpers/three'
 
 import woodCampUrl from './models/woodCamp.gltf'
 
@@ -38,3 +38,5 @@ export class WoodCampBlueprint implements ActorBlueprint {
         return this.grid
     }
 }
+
+export const woodCampBlueprint = new WoodCampBlueprint()

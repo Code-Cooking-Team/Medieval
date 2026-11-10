@@ -1,23 +1,23 @@
 import { config } from '+config'
-import { TreeActor } from '+game/actors/flora/tree/TreeActor'
+import { type TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { hasWoodStorage } from '+game/actors/helpers'
-import { HumanActor } from '+game/actors/units/human/HumanActor'
+import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { MachineInterpreter } from '+game/core/machine/Machine'
 import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
-import { Game } from '+game/Game'
+import { type Game } from '+game/Game'
 import { ActorType } from '+game/types'
-import { distanceBetweenPoints, isSamePosition } from '+helpers'
+import { distanceBetweenPoints, isSamePosition } from '+helpers/math'
 
 import {
     Mesh,
     MeshStandardMaterial,
     NotEqualDepth,
-    Object3D,
+    type Object3D,
     SphereGeometry,
 } from 'three'
 
 import { woodcutterMachine } from './machines/woodcutterMachine'
-import { Profession, ProfessionJSON } from './Profession'
+import { Profession, type ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
 
 export class WoodcutterProfession extends Profession {

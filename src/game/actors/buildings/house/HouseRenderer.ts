@@ -2,12 +2,12 @@ import { config } from '+config'
 import { actorByType } from '+game/actors'
 import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { AxesHelper, PointLight } from 'three'
 
-import { HouseActor } from './HouseActor'
-import { HouseBlueprint } from './HouseBlueprint'
+import { type HouseActor } from './HouseActor'
+import { type HouseBlueprint } from './HouseBlueprint'
 
 export class HouseRenderer extends InstancedBuildingRenderer<HouseActor> {
     public actorType = ActorType.House

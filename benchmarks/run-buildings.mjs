@@ -114,7 +114,7 @@ try {
         'http://localhost:3333/Medieval/benchmarks/buildings.html'
     const response = await fetch(url)
     if (!response.ok)
-        throw new Error(`Run pnpm dev first. Fixture returned HTTP ${response.status}`)
+        throw new Error(`Run bun run dev first. Fixture returned HTTP ${response.status}`)
     await send('Runtime.enable')
     await send('Log.enable')
     await send('Page.navigate', { url })

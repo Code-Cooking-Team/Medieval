@@ -1,3 +1,4 @@
+import { expect, it, test } from 'bun:test'
 import { config } from '+config'
 import { Pathfinding } from '+game/core/Pathfinding'
 import { WaterRenderer } from '+game/renderer/WaterRenderer'

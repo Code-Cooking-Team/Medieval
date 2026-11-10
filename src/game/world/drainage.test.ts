@@ -1,3 +1,4 @@
+import { expect, test } from 'bun:test'
 import { accumulateRunoff, drainTerrain } from './drainage'
 
 test('runoff escapes a depression and joins a single downhill network', () => {

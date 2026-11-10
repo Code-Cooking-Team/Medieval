@@ -1,6 +1,4 @@
-import styled from '@emotion/styled'
-import { InputHTMLAttributes } from 'react'
-import { margin, MarginProps } from 'styled-system'
+import type { ComponentProps, InputHTMLAttributes } from 'react'
 
 interface InputProps extends InputStyleProps {
     value?: string
@@ -52,21 +50,16 @@ export const Input = ({
     }
 }
 
-export interface InputStyleProps extends MarginProps {
+export interface InputStyleProps {
     fullWidth?: boolean
 }
 
-export const StyledInput = styled.input<InputStyleProps>(
-    margin,
-    ({ theme, fullWidth }) => ({
-        background: theme.colors.black,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: theme.colors.border,
-        fontSize: theme.fontSizes[2],
-        padding: theme.space[2],
-        width: fullWidth ? '100%' : '280px',
-        maxWidth: '100%',
-        color: theme.colors.text,
-    }),
+export const StyledInput = ({
+    fullWidth,
+    ...props
+}: ComponentProps<'input'> & InputStyleProps) => (
+    <input
+        className={`game-input max-w-full ${fullWidth ? 'w-full' : 'w-[280px]'}`}
+        {...props}
+    />
 )

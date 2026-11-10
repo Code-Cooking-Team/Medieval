@@ -6,7 +6,6 @@ import { useTimeoutState } from '+ui/hooks/useTimeoutState'
 import { entries, toPairs } from 'lodash'
 import { useState } from 'react'
 
-import { Box } from '../../components/base/Box'
 import { Button } from '../../components/base/Button'
 import { ConfigItem } from './ConfigItem'
 
@@ -19,7 +18,7 @@ export const ConfigForm = () => {
 
     return (
         <>
-            <Box p={2}>
+            <div className="p-2">
                 <Accordion>
                     {toPairs(configOptions).map(([categoryKey, category]) => {
                         const configCategory = (config as any)[categoryKey]
@@ -46,16 +45,9 @@ export const ConfigForm = () => {
                         )
                     })}
                 </Accordion>
-            </Box>
+            </div>
 
-            <Box
-                display="flex"
-                flexDirection="row"
-                paddingY={2}
-                justifyContent="center"
-                columnGap={2}
-                style={{ position: 'sticky', bottom: 0 }}
-            >
+            <div className="sticky bottom-0 flex justify-center gap-2 py-2">
                 {showReload ? (
                     <Button label="Reload" onClick={reload} />
                 ) : (
@@ -76,7 +68,7 @@ export const ConfigForm = () => {
                         reload()
                     }}
                 />
-            </Box>
+            </div>
         </>
     )
 }

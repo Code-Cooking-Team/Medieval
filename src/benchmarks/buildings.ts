@@ -1,15 +1,16 @@
 import { config } from '+config'
 import { actorByType } from '+game/actors'
-import { BuildingActor } from '+game/core/BuildingActor'
+import { type BuildingActor } from '+game/core/BuildingActor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { SelectInteractions } from '+game/player/interaction/methods/SelectInteractions'
 import { Renderer } from '+game/Renderer'
-import { ActorType } from '+game/types'
+import { type ActorType } from '+game/types'
 import { Tile } from '+game/world/Tile'
 import { World } from '+game/world/World'
-import { rotationIndexToDeg, updateObjectPosition } from '+helpers'
+import { rotationIndexToDeg } from '+helpers/math'
+import { updateObjectPosition } from '+helpers/three'
 
 import {
     AmbientLight,
@@ -17,7 +18,7 @@ import {
     DirectionalLight,
     Group,
     InstancedMesh,
-    LOD,
+    type LOD,
     Matrix4,
     Mesh,
     MeshStandardMaterial,

@@ -1,3 +1,4 @@
+import { expect, test } from 'bun:test'
 import { Tile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 

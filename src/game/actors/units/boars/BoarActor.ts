@@ -1,12 +1,13 @@
 import { config } from '+config/config'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import { Game } from '+game/Game'
-import { ActorType, Position } from '+game/types'
-import { addPosition, distanceBetweenPoints, random } from '+helpers'
+import { ActorType, type Position } from '+game/types'
+import { addPosition, distanceBetweenPoints } from '+helpers/math'
+import { random } from '+helpers/random'
 
-import { HumanActor } from '../human/HumanActor'
+import { type HumanActor } from '../human/HumanActor'
 
 export class BoarActor extends WalkableActor {
     public type = ActorType.Boar

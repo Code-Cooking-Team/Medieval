@@ -1,10 +1,11 @@
 import { config } from '+config'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
-import { BuildingActor } from '+game/core/BuildingActor'
-import { ActorType, Position } from '+game/types'
-import { ClassType, random } from '+helpers'
+import { type BuildingActor } from '+game/core/BuildingActor'
+import { ActorType, type Position } from '+game/types'
+import { type ClassType } from '+helpers/types'
+import { random } from '+helpers/random'
 
-import { BuildingTrait, BuildingTraitJSON, BuildingTraitType } from './types'
+import { type BuildingTrait, type BuildingTraitJSON, BuildingTraitType } from './types'
 
 interface HouseActorConfig {
     residentsLimit: number

@@ -1,14 +1,16 @@
+import { expect, mock, test } from 'bun:test'
+import * as helpers from '+helpers/random'
 import type { Actor } from '+game/core/Actor'
 import type { Game } from '+game/Game'
 import { NaturePlayer } from '+game/player/NaturePlayer'
-import { ActorType, Position } from '+game/types'
+import { ActorType, type Position } from '+game/types'
 import { MeadowTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 
 import { FloraSpawner } from './FloraSpawner'
 
-vi.mock('+helpers', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('+helpers')>()),
+mock.module('+helpers/random', () => ({
+    ...helpers,
     seededRandom:
         () =>
         (min = 0, max = 1) =>

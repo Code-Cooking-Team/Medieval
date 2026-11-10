@@ -1,3 +1,4 @@
+import { expect, test } from 'bun:test'
 import '+game/actors'
 import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
 import { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
@@ -7,38 +8,15 @@ import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
-import { BuilderProfession } from '+game/professions/BuilderProfession'
+import { type BuilderProfession } from '+game/professions/BuilderProfession'
 import { GuardianProfession } from '+game/professions/GuardianProfession'
-import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType, Position } from '+game/types'
+import { type WoodcutterProfession } from '+game/professions/WoodcutterProfession'
+import { ActorType, type Position } from '+game/types'
 import { ImportantFootpathTile, InsideTile, Tile, WallTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 
-import { ConstructionSiteActor } from './ConstructionSiteActor'
-import { ConstructionType } from './costs'
-
-vi.mock('+helpers/three', async (importOriginal) => {
-    const { Group } = await import('three')
-    return {
-        ...(await importOriginal<typeof import('+helpers/three')>()),
-        loadGLTF: async () => {
-            const model = new Group()
-            for (const name of [
-                'lod1',
-                'lod2',
-                'lod3',
-                'lod_near',
-                'lod_far',
-                'lod_very_far',
-            ]) {
-                const level = new Group()
-                level.name = name
-                model.add(level)
-            }
-            return model
-        },
-    }
-})
+import { type ConstructionSiteActor } from './ConstructionSiteActor'
+import { type ConstructionType } from './costs'
 
 const fixture = () => {
     const player = new HumanPlayer()

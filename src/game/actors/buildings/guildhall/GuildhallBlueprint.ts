@@ -1,7 +1,7 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
-import { ActorBlueprint } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF } from '+helpers'
+import { type ActorBlueprint } from '+game/types'
+import { type TileCodeGrid } from '+game/world/tileCodes'
+import { loadGLTF } from '+helpers/three'
 
 import { applyGuildhallFlame } from './guildhallFlame'
 import url from './models/guildhallv3.gltf'
@@ -40,3 +40,5 @@ export class GuildhallBlueprint implements ActorBlueprint {
         return this.grid
     }
 }
+
+export const guildhallBlueprint = new GuildhallBlueprint()

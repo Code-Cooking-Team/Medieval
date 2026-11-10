@@ -1,7 +1,10 @@
-import { Game } from '+game/Game'
-import { Player } from '+game/player/types'
-import { ActorType, Position } from '+game/types'
-import { ClassType, maxValue, randomSeed, uuid } from '+helpers'
+import { type Game } from '+game/Game'
+import { type Player } from '+game/player/types'
+import { ActorType, type Position } from '+game/types'
+import { type ClassType } from '+helpers/types'
+import { maxValue } from '+helpers/math'
+import { randomSeed } from '+helpers/random'
+import { v4 as uuid } from 'uuid'
 
 export abstract class Actor {
     public id = uuid()

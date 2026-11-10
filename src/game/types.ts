@@ -1,6 +1,6 @@
-import { Group, LOD } from 'three'
+import { type Group, type LOD } from 'three'
 
-import { TileCodeGrid } from './world/tileCodes'
+import { type TileCodeGrid } from './world/tileCodes'
 
 export type Position = [number, number]
 

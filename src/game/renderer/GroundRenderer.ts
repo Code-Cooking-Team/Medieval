@@ -1,6 +1,7 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
-import { getPositionByIndex, HorizontalPlaneGeometry } from '+helpers'
+import { type Game } from '+game/Game'
+import { getPositionByIndex } from '+helpers/array'
+import { type HorizontalPlaneGeometry } from '+helpers/three'
 
 import {
     BufferAttribute,
@@ -9,12 +10,16 @@ import {
     LinearSRGBColorSpace,
     Mesh,
     MeshStandardMaterial,
+    Ray,
+    type Raycaster,
     RepeatWrapping,
     TextureLoader,
+    Vector3,
 } from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
 import { createWordPlane } from './lib/createWordPlane'
+import { raycastGround } from './lib/raycastGround'
 import colorUrl from './textures/test4color.png'
 import heightUrl from './textures/test4height.png'
 
@@ -121,6 +126,23 @@ export class GroundRenderer extends BasicRenderer {
             this.groundMaterial.bumpScale = 0.007
             this.groundMaterial.needsUpdate = true
         })
+    }
+
+    public focusDistance({ ray, near, far }: Raycaster) {
+        if (!this.groundMesh || !this.geometry || far <= near) return
+        // The ground is translated to the center of the map without rotation or scale.
+        const offset = this.groundMesh.getWorldPosition(new Vector3())
+        const start = ray.at(near, new Vector3()).sub(offset)
+        const [width, height] = this.game.world.getSize()
+        const distance = raycastGround(
+            new Ray(start, ray.direction),
+            this.geometry,
+            width - 1,
+            height - 1,
+            config.renderer.tileSize,
+            far - near,
+        )
+        return distance === undefined ? undefined : distance + near
     }
 
     public init() {

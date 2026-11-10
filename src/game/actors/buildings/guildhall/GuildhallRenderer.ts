@@ -1,13 +1,13 @@
 import { config } from '+config'
 import { actorByType } from '+game/actors'
 import { InstancedBuildingRenderer } from '+game/renderer/lib/InstancedBuildingRenderer'
-import { ActorType, ClockInfo } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { ActorType, type ClockInfo } from '+game/types'
+import { type Tile } from '+game/world/Tile'
 
-import { AxesHelper, Camera, PointLight } from 'three'
+import { AxesHelper, type Camera, PointLight } from 'three'
 
-import { GuildhallActor } from './GuildhallActor'
-import { GuildhallBlueprint } from './GuildhallBlueprint'
+import { type GuildhallActor } from './GuildhallActor'
+import { type GuildhallBlueprint } from './GuildhallBlueprint'
 import { guildhallFlameTime } from './guildhallFlame'
 
 export class GuildhallRenderer extends InstancedBuildingRenderer<GuildhallActor> {

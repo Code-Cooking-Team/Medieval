@@ -20,5 +20,5 @@
     "Stakewall",
     "wireframe"
   ],
-  "vitest.enable": true
+  "npm.packageManager": "bun"
 }

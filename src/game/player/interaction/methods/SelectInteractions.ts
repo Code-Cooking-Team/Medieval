@@ -1,11 +1,12 @@
 import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
-import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
-import { HumanPlayer } from '+game/player/HumanPlayer'
+import { type Actor } from '+game/core/Actor'
+import { CAMERA_GESTURE_START } from '+game/core/RTSCamera'
+import { type Game } from '+game/Game'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Player } from '+game/player/types'
-import { Renderer } from '+game/Renderer'
+import { type Renderer } from '+game/Renderer'
 
 import { first, uniq, xor } from 'lodash'
 import { Scene, Vector2 } from 'three'
@@ -43,6 +44,8 @@ export class SelectInteractions {
         this.el.addEventListener('pointerdown', this.handlePointerDown)
         document.addEventListener('pointermove', this.handlePointerMove)
         document.addEventListener('pointerup', this.handlePointerUp)
+        document.addEventListener('pointercancel', this.cancelSelection)
+        this.el.addEventListener(CAMERA_GESTURE_START, this.cancelSelection)
         this.el.addEventListener('dblclick', this.handleDoubleClick)
     }
 
@@ -52,6 +55,12 @@ export class SelectInteractions {
         this.el.removeEventListener('dblclick', this.handleDoubleClick)
         document.removeEventListener('pointermove', this.handlePointerMove)
         document.removeEventListener('pointerup', this.handlePointerUp)
+        document.removeEventListener('pointercancel', this.cancelSelection)
+        this.el.removeEventListener(CAMERA_GESTURE_START, this.cancelSelection)
+        this.cancelSelection()
+    }
+
+    private cancelSelection = () => {
         this.pressedButton = undefined
         this.selectionDiv.onUp()
     }
@@ -60,6 +69,7 @@ export class SelectInteractions {
     private pointerStart = new Vector2()
 
     private handlePointerDown = (event: PointerEvent) => {
+        if (event.pointerType === 'touch' && !event.isPrimary) return
         if (this.player.selectedBuilding) return
         if (event.button !== LEFT_MOUSE_BUTTON && event.button !== RIGHT_MOUSE_BUTTON)
             return

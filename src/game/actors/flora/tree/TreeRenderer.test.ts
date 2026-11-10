@@ -1,7 +1,8 @@
+import { expect, test } from 'bun:test'
 import { config } from '+config'
 import type { Game } from '+game/Game'
 
-import { InstancedMesh, Matrix4, Vector3 } from 'three'
+import { type InstancedMesh, Matrix4, Vector3 } from 'three'
 
 import { TreeRenderer } from './TreeRenderer'
 

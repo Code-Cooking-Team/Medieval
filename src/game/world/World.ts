@@ -1,10 +1,10 @@
 import { config } from '+config'
 import { Emitter } from '+lib/Emitter'
 
-import { Position } from '../types'
-import { getTileByJSON, Tile } from './Tile'
-import { TileGrid, TileJSON, TileType } from './types'
-import { WaterRegion } from './water'
+import { type Position } from '../types'
+import { getTileByJSON, type Tile } from './Tile'
+import { type TileGrid, type TileJSON, TileType } from './types'
+import { type WaterRegion } from './water'
 
 export interface WordJSON {
     tiles: TileJSON[][]

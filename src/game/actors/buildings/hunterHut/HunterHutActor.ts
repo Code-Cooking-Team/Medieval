@@ -1,15 +1,14 @@
-import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
-import { BuildingActor, BuildingActorJSON } from '+game/core/BuildingActor'
+import { type Actor } from '+game/core/Actor'
+import { BuildingActor, type BuildingActorJSON } from '+game/core/BuildingActor'
 import { HunterProfession } from '+game/professions/HunterProfession'
 import { ActorType } from '+game/types'
 
-import { HunterHutBlueprint } from './HunterHutBlueprint'
+import { hunterHutBlueprint } from './HunterHutBlueprint'
 
 export class HunterHutActor extends BuildingActor {
     public type = ActorType.HunterHut
-    public blueprint = actorByType[this.type].blueprint as HunterHutBlueprint
+    public blueprint = hunterHutBlueprint
     public readonly meatCapacity = 500
     public meatStock = 0
 

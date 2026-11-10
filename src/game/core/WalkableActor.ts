@@ -1,7 +1,7 @@
-import { Path, Position } from '+game/types'
-import { distanceBetweenPoints } from '+helpers'
+import { type Path, type Position } from '+game/types'
+import { distanceBetweenPoints } from '+helpers/math'
 
-import { Actor, ActorJSON } from './Actor'
+import { Actor, type ActorJSON } from './Actor'
 
 export abstract class WalkableActor extends Actor {
     public selectImportance = 4

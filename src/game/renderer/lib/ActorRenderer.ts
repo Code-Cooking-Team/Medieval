@@ -1,16 +1,17 @@
 import { config } from '+config'
 import { isBuildingActor } from '+game/actors/helpers'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
-import { Actor } from '+game/core/Actor'
-import { Game } from '+game/Game'
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { ActorType, ClockInfo, Position } from '+game/types'
-import { Tile } from '+game/world/Tile'
-import { multiplyPosition, rotationIndexToDeg, updateObjectPosition } from '+helpers'
+import { type Actor } from '+game/core/Actor'
+import { type Game } from '+game/Game'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { ActorType, type ClockInfo, Position } from '+game/types'
+import { type Tile } from '+game/world/Tile'
+import { multiplyPosition, rotationIndexToDeg } from '+helpers/math'
+import { updateObjectPosition } from '+helpers/three'
 
 import {
     BoxGeometry,
-    Camera,
+    type Camera,
     CircleGeometry,
     EdgesGeometry,
     Group,
@@ -19,7 +20,7 @@ import {
     Mesh,
     MeshBasicMaterial,
     NotEqualDepth,
-    Object3D,
+    type Object3D,
     Sprite,
     SpriteMaterial,
 } from 'three'

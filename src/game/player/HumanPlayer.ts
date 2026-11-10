@@ -1,11 +1,11 @@
 import { config } from '+config'
 import type { HumanActor } from '+game/actors/units/human/HumanActor'
-import { Actor } from '+game/core/Actor'
-import { ActorType } from '+game/types'
-import { uuid } from '+helpers'
+import { type Actor } from '+game/core/Actor'
+import { type ActorType } from '+game/types'
+import { v4 as uuid } from 'uuid'
 import { Emitter } from '+lib/Emitter'
 
-import { Player, PlayerJSON, PlayerType } from './types'
+import { type Player, type PlayerJSON, PlayerType } from './types'
 
 export class HumanPlayer implements Player {
     public id = uuid()

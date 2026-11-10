@@ -1,5 +1,5 @@
 import { isBuildingActor, isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
 
 import {
     AmbientLight,
@@ -8,7 +8,7 @@ import {
     Group,
     LOD,
     Mesh,
-    Object3D,
+    type Object3D,
     OrthographicCamera,
     Scene,
     SkinnedMesh,

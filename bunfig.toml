@@ -1,0 +1,9 @@
+[install]
+minimumReleaseAge = 259200
+
+[test]
+preload = ["./test/setup.ts"]
+
+[loader]
+".gltf" = "file"
+".hdr" = "file"

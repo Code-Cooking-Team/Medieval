@@ -1,6 +1,6 @@
-import { asArray } from '+helpers'
+import { asArray } from '+helpers/array'
 
-import { Machine, MachineActions, MachineConditions } from './types'
+import { type Machine, type MachineActions, type MachineConditions } from './types'
 
 export class MachineInterpreter {
     public currentState: string

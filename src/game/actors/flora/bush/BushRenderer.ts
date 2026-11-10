@@ -1,7 +1,8 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
-import { ActorType, Renderable } from '+game/types'
-import { seededRandom, updateObjectPosition } from '+helpers'
+import { type Game } from '+game/Game'
+import { ActorType, type Renderable } from '+game/types'
+import { seededRandom } from '+helpers/random'
+import { updateObjectPosition } from '+helpers/three'
 
 import {
     DynamicDrawUsage,
