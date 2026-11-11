@@ -24,6 +24,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
         logSelected: true,
         wireModel: false,
         groundWireframe: false,
+        standingSurfaceMarkers: false,
     },
 
     renderer: {

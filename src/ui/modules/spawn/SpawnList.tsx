@@ -1,6 +1,6 @@
 import { type Game } from '+game/Game'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
-import { type ActorType, actorTypesByCategory } from '+game/types'
+import { ActorType, actorTypesByCategory } from '+game/types'
 import { Button } from '+ui/components/base/Button'
 import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
@@ -9,6 +9,14 @@ import { useEffect, useState } from 'react'
 interface SpawnListProps {
     game: Game
     humanPlayer: HumanPlayer
+}
+
+const actorLabels: Partial<Record<ActorType, string>> = {
+    [ActorType.Gallery]: 'Timber Gallery',
+    [ActorType.GalleryStairs]: 'Gallery Stairs',
+    [ActorType.SmallRock]: 'Small rock (1 × 1)',
+    [ActorType.MediumRock]: 'Medium rock (2 × 2)',
+    [ActorType.LargeRock]: 'Large rock (3 × 3)',
 }
 
 const categories = Object.entries(actorTypesByCategory)
@@ -84,7 +92,7 @@ export const SpawnList = ({ game, humanPlayer }: SpawnListProps) => {
                         <Button
                             key={actorType}
                             icon={<ActorIcon type={actorType} />}
-                            label={`${selectedBuilding === actorType ? '✓ ' : ''}${actorType} (${counts[actorType] ?? 0})`}
+                            label={`${selectedBuilding === actorType ? '✓ ' : ''}${actorLabels[actorType] ?? actorType} (${counts[actorType] ?? 0})`}
                             onClick={() => humanPlayer.selectBuilding(actorType)}
                         />
                     ))}

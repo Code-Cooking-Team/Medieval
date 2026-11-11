@@ -5,7 +5,7 @@ import { WalkableActor, type WalkableActorJSON } from '+game/core/WalkableActor'
 import { professionByType } from '+game/professions'
 import { type Profession, type ProfessionJSON } from '+game/professions/Profession'
 import { ProfessionType } from '+game/professions/types'
-import { ActorType, type Position } from '+game/types'
+import { ActorType, type PathStep, type Position } from '+game/types'
 import { addPosition, distanceBetweenPoints } from '+helpers/math'
 import { random } from '+helpers/random'
 
@@ -104,7 +104,7 @@ export class HumanActor extends WalkableActor {
         return damage + (heldItem ? items[heldItem].damageBonus : 0)
     }
 
-    public setPathTo(position: Position, cancelTarget = true, clip = false) {
+    public setPathTo(position: Position | PathStep, cancelTarget = true, clip = false) {
         if (cancelTarget) {
             this.target = undefined
         }
@@ -159,7 +159,7 @@ export class HumanActor extends WalkableActor {
 
     private walkAround() {
         this.move()
-        if (this.hasPath() || this.isFindingPath) return
+        if (this.hasPath() || this.isFindingPath || this.surface) return
         if (this.game.isNight || Math.random() > config.human.randomWalkChance) return
         if (!this.home) return
 
@@ -187,7 +187,7 @@ export class HumanActor extends WalkableActor {
                 this.target = undefined
             }
         } else {
-            if (this.hasPath() || this.isFindingPath) return
+            if (this.hasPath() || this.isFindingPath || this.surface) return
             this.setPathTo(this.target.position, false, true)
         }
     }

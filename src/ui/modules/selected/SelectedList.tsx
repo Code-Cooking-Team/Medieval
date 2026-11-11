@@ -264,6 +264,8 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
 const buildOptions = Object.keys(constructionCosts) as ConstructionType[]
 
 function buildingName(type: ConstructionType) {
+    if (type === ActorType.Gallery) return 'Timber Gallery'
+    if (type === ActorType.GalleryStairs) return 'Gallery Stairs'
     return type === ActorType.WoodCamp ? 'Wood Camp' : type
 }
 

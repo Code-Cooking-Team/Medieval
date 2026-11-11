@@ -1,12 +1,34 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
 import { type ActorBlueprint } from '+game/types'
 import { type TileCodeGrid } from '+game/world/tileCodes'
-import { loadGLTF } from '+helpers/three'
 import { seededRandom } from '+helpers/random'
+import { loadGLTF } from '+helpers/three'
+
+import { Mesh } from 'three'
 
 import stakewallUrl from './models/wall.gltf'
 
-const stakewallModel = loadGLTF(stakewallUrl)
+const stakewallModel = loadGLTF(stakewallUrl).then((model) => {
+    // Keep decorative posts within the blocked tile, even when the model rotates.
+    model.traverse((node) => {
+        if (!(node instanceof Mesh)) return
+        const positions = node.geometry.getAttribute('position')
+        let radius = 0
+        for (let i = 0; i < positions.count; i++) {
+            radius = Math.max(
+                radius,
+                Math.hypot(
+                    positions.getX(i) * node.scale.x,
+                    positions.getZ(i) * node.scale.z,
+                ),
+            )
+        }
+        if (radius <= 0.49) return
+        node.scale.x *= 0.49 / radius
+        node.scale.z *= 0.49 / radius
+    })
+    return model
+})
 
 export class StakewallBlueprint implements ActorBlueprint {
     public readonly grid: TileCodeGrid = [['🧱']]

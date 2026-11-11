@@ -11,14 +11,17 @@ import type { GuildhallActor } from './actors/buildings/guildhall/GuildhallActor
 import type { HunterHutActor } from './actors/buildings/hunterHut/HunterHutActor'
 import { BushActor } from './actors/flora/bush/BushActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
+import { RockActor } from './actors/RockActor'
 import type { HumanActor } from './actors/units/human/HumanActor'
 import { type Actor, type ActorClass, type ActorJSON } from './core/Actor'
 import { type BuildingActor } from './core/BuildingActor'
+import { buildingSurfaces } from './core/buildingSurfaces'
 import { Pathfinding } from './core/Pathfinding'
 import type { WoodStorageBuilding } from './core/WoodStorageBuilding'
 import { playerFromJSON } from './player'
 import { HumanPlayer } from './player/HumanPlayer'
 import { type ActorBlueprint, ActorType, type Position } from './types'
+import { prepareRockPlacement, rockFootprint } from './world/rockPlacement'
 import { createTerrainNoise, smooth } from './world/terrainNoise'
 import { InsideTile, type Tile, type TileClass, WallTile, WaterTile } from './world/Tile'
 import { applyTileGrid } from './world/tileCodes'
@@ -113,6 +116,8 @@ export class Game {
 
     public addActor(actor: Actor): void {
         this.actors.push(actor)
+        this.pf.update()
+        this.registerBuildingSurfaces(actor)
         this.emitter.emit('actorAdded', actor)
     }
 
@@ -121,6 +126,14 @@ export class Game {
         if (index === -1) return
 
         if (isWalkableActor(actor)) actor.cancelPath()
+        if (actor instanceof RockActor) {
+            this.world.setMultipleTiles((set, get) => {
+                for (const position of rockFootprint(actor.position, actor.size)) {
+                    const previous = get(position).previousTile
+                    if (previous) set(position, previous)
+                }
+            })
+        }
         if (actor instanceof ConstructionSiteActor) actor.unassign()
         if (isBuildingActor(actor)) {
             if (!(actor instanceof ConstructionSiteActor)) {
@@ -136,6 +149,9 @@ export class Game {
         }
 
         removeArrayItem(this.actors, actor)
+        this.pf.surfaces.replace(actor.id, [])
+        this.pf.update()
+        this.resolveUnsupportedUnits()
         for (const player of this.players) {
             if (player instanceof HumanPlayer && player.selectedActors.includes(actor)) {
                 if (player.constructionBuilders.includes(actor as HumanActor)) {
@@ -149,7 +165,6 @@ export class Game {
                 )
             }
         }
-        this.pf.update()
         this.emitter.emit('actorRemoved', actor)
     }
 
@@ -230,6 +245,36 @@ export class Game {
             )
         )
             return
+        if (actor instanceof RockActor) {
+            const replacements = prepareRockPlacement(
+                this.world.tiles,
+                position,
+                actor.size,
+                true,
+            )
+            if (!replacements) return
+            const occupied = new Set(replacements.map(({ x, y }) => `${x},${y}`))
+            if (
+                this.actors.some((existing) => {
+                    if (isBuildingActor(existing)) {
+                        return this.buildingTiles(
+                            existing.blueprint,
+                            existing.position,
+                            existing.rotation,
+                        ).some(
+                            ([position, TileClass]) =>
+                                occupiesBuildingSpace(TileClass) &&
+                                occupied.has(position.join(',')),
+                        )
+                    }
+                    return occupied.has(existing.position.map(Math.round).join(','))
+                })
+            )
+                return
+            this.world.setMultipleTiles((set) => {
+                for (const { x, y, tile } of replacements) set([x, y], tile)
+            })
+        }
         if (isBuildingActor(actor)) {
             if (!this.canPlaceBuildings(actor.blueprint, [position], rotation)) return
             actor.setRotation(rotation)
@@ -323,6 +368,8 @@ export class Game {
         site.unassign()
         this.actors[index] = building
         this.placeBuilding(building)
+        this.pf.update()
+        this.registerBuildingSurfaces(building)
         this.emitter.emit('actorRemoved', site)
         this.emitter.emit('actorAdded', building)
         for (const player of this.players) {
@@ -577,12 +624,37 @@ export class Game {
             if (world.tileRevision) game.pf.update()
         }
         if (!json.buildingTerrainOwners) game.assignLegacyBuildingTerrainOwners()
+        game.actors.forEach((actor) => game.registerBuildingSurfaces(actor))
+        game.resolveUnsupportedUnits()
 
         return game
     }
 
+    private registerBuildingSurfaces(actor: Actor) {
+        if (isBuildingActor(actor) && !(actor instanceof ConstructionSiteActor))
+            this.pf.surfaces.replace(actor.id, buildingSurfaces(actor))
+    }
+
+    private resolveUnsupportedUnits() {
+        const { surfaces } = this.pf
+        for (const unit of this.actors.filter(isWalkableActor)) {
+            if (unit.surface && surfaces.height(unit.standingPosition) === undefined) {
+                unit.surface = undefined
+                unit.cancelPath()
+            } else if (
+                unit.path.some(
+                    (step) => step.surface && surfaces.height(step) === undefined,
+                )
+            ) {
+                unit.cancelPath()
+            }
+        }
+    }
+
     private handleTailUpdate = () => {
         this.pf.update()
+        this.actors.forEach((actor) => this.registerBuildingSurfaces(actor))
+        this.resolveUnsupportedUnits()
     }
 }
 

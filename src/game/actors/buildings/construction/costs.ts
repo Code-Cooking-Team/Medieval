@@ -7,6 +7,8 @@ export const constructionCosts = {
     [ActorType.Barracks]: 450,
     [ActorType.Guildhall]: 600,
     [ActorType.Stakewall]: 30,
+    [ActorType.Gallery]: 40,
+    [ActorType.GalleryStairs]: 30,
 }
 
 export type ConstructionType = keyof typeof constructionCosts

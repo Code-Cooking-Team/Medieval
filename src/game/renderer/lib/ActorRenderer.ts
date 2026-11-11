@@ -1,5 +1,5 @@
 import { config } from '+config'
-import { isBuildingActor } from '+game/actors/helpers'
+import { isBuildingActor, isWalkableActor } from '+game/actors/helpers'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
 import { type Actor } from '+game/core/Actor'
 import { type Game } from '+game/Game'
@@ -95,7 +95,11 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         const interactionShape = this.createInteractionMesh(actor)
         group.add(interactionShape)
 
-        updateObjectPosition(group, actor.position, tile.height)
+        const height =
+            isWalkableActor(actor) && actor.surface
+                ? (this.game.pf.surfaces.height(actor.standingPosition) ?? tile.height)
+                : tile.height
+        updateObjectPosition(group, actor.position, height)
 
         group.rotation.y = rotationIndexToDeg(actor.rotation)
 

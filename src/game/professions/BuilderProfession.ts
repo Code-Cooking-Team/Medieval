@@ -71,6 +71,7 @@ export class BuilderProfession extends Profession {
         }
 
         if (this.job && !this.isCurrent(this.job)) this.job = undefined
+        if (this.actor.surface) return
         const job = (this.job ??= this.planJob())
         if (!job) {
             if (this.queue.length || this.carriedWood) this.retryIn = retryTicks
@@ -79,7 +80,7 @@ export class BuilderProfession extends Profession {
 
         const step = job.path.shift()
         if (step) {
-            this.actor.position = [step.x, step.y]
+            if (!this.actor.moveStep(step)) this.job = undefined
             return
         }
 
