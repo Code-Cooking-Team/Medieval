@@ -1,9 +1,9 @@
 import type { HunterHutActor } from '+game/actors/buildings/hunterHut/HunterHutActor'
-import { Actor } from '+game/core/Actor'
-import { ActorType, Path, Position } from '+game/types'
-import { distanceBetweenPoints, isSamePosition } from '+helpers'
+import { type Actor } from '+game/core/Actor'
+import { ActorType, type Path, type Position } from '+game/types'
+import { distanceBetweenPoints, isSamePosition } from '+helpers/math'
 
-import { Profession, ProfessionJSON } from './Profession'
+import { Profession, type ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
 
 const attackRange = 2.4

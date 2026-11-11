@@ -1,29 +1,24 @@
-import { theme } from '+ui/styles/theme'
-
-import { ThemeProvider } from '@emotion/react'
+import { expect, it, mock } from 'bun:test'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { NumberInput } from './InputNumber'
 
 it('keeps decimal input editable while publishing only finite numbers', async () => {
-    vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
     const host = document.createElement('div')
     document.body.append(host)
     const root = createRoot(host)
-    const changed = vi.fn()
+    const changed = mock()
     const Field = () => {
         const [value, setValue] = useState(1)
         return (
-            <ThemeProvider theme={theme}>
-                <NumberInput
-                    value={value}
-                    onChange={(next) => {
-                        changed(next)
-                        setValue(next)
-                    }}
-                />
-            </ThemeProvider>
+            <NumberInput
+                value={value}
+                onChange={(next) => {
+                    changed(next)
+                    setValue(next)
+                }}
+            />
         )
     }
 
@@ -65,6 +60,5 @@ it('keeps decimal input editable while publishing only finite numbers', async ()
     } finally {
         await act(async () => root.unmount())
         host.remove()
-        vi.unstubAllGlobals()
     }
 })

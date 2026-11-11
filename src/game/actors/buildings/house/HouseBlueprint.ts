@@ -1,6 +1,6 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
-import { ActorBlueprint, Position } from '+game/types'
-import { TileCodeGrid } from '+game/world/tileCodes'
+import { type ActorBlueprint, type Position } from '+game/types'
+import { type TileCodeGrid } from '+game/world/tileCodes'
 import { loadGLTF } from '+helpers/three'
 
 import houseUrl from './models/house.gltf'
@@ -41,3 +41,5 @@ export class HouseBlueprint implements ActorBlueprint {
         return this.grid
     }
 }
+
+export const houseBlueprint = new HouseBlueprint()

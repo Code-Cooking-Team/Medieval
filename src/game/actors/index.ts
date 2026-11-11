@@ -1,27 +1,22 @@
-import { Actor, ActorClass, ActorJSON } from '+game/core/Actor'
-import { Game } from '+game/Game'
-import { Player } from '+game/player/types'
-import { ActorBlueprint, ActorType } from '+game/types'
+import { type Actor, type ActorClass, type ActorJSON } from '+game/core/Actor'
+import { type Game } from '+game/Game'
+import { type Player } from '+game/player/types'
+import { type ActorBlueprint, ActorType } from '+game/types'
 
 import { BarracksActor } from './buildings/barracks/BarracksActor'
-import { BarracksBlueprint } from './buildings/barracks/BarracksBlueprint'
 import { BarracksRenderer } from './buildings/barracks/BarracksRenderer'
+import { buildingBlueprints } from './buildings/construction/blueprints'
 import { ConstructionSiteActor } from './buildings/construction/ConstructionSiteActor'
 import { ConstructionSiteRenderer } from './buildings/construction/ConstructionSiteRenderer'
 import { GuildhallActor } from './buildings/guildhall/GuildhallActor'
-import { GuildhallBlueprint } from './buildings/guildhall/GuildhallBlueprint'
 import { GuildhallRenderer } from './buildings/guildhall/GuildhallRenderer'
 import { HouseActor } from './buildings/house/HouseActor'
-import { HouseBlueprint } from './buildings/house/HouseBlueprint'
 import { HouseRenderer } from './buildings/house/HouseRenderer'
 import { HunterHutActor } from './buildings/hunterHut/HunterHutActor'
-import { HunterHutBlueprint } from './buildings/hunterHut/HunterHutBlueprint'
 import { HunterHutRenderer } from './buildings/hunterHut/HunterHutRenderer'
 import { StakewallActor } from './buildings/stakewall/StakewallActor'
-import { StakewallBlueprint } from './buildings/stakewall/StakewallBlueprint'
 import { StakewallRenderer } from './buildings/stakewall/StakewallRenderer'
 import { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
-import { WoodCampBlueprint } from './buildings/woodCamp/WoodCampBlueprint'
 import { WoodCampRenderer } from './buildings/woodCamp/WoodCampRenderer'
 import { BushActor } from './flora/bush/BushActor'
 import { BushRenderer } from './flora/bush/BushRenderer'
@@ -61,27 +56,27 @@ export const actorByType: Record<
     [ActorType.ConstructionSite]: { actorClass: ConstructionSiteActor },
     [ActorType.Guildhall]: {
         actorClass: GuildhallActor,
-        blueprint: new GuildhallBlueprint(),
+        blueprint: buildingBlueprints[ActorType.Guildhall],
     },
     [ActorType.House]: {
         actorClass: HouseActor,
-        blueprint: new HouseBlueprint(),
+        blueprint: buildingBlueprints[ActorType.House],
     },
     [ActorType.HunterHut]: {
         actorClass: HunterHutActor,
-        blueprint: new HunterHutBlueprint(),
+        blueprint: buildingBlueprints[ActorType.HunterHut],
     },
     [ActorType.WoodCamp]: {
         actorClass: WoodCampActor,
-        blueprint: new WoodCampBlueprint(),
+        blueprint: buildingBlueprints[ActorType.WoodCamp],
     },
     [ActorType.Barracks]: {
         actorClass: BarracksActor,
-        blueprint: new BarracksBlueprint(),
+        blueprint: buildingBlueprints[ActorType.Barracks],
     },
     [ActorType.Stakewall]: {
         actorClass: StakewallActor,
-        blueprint: new StakewallBlueprint(),
+        blueprint: buildingBlueprints[ActorType.Stakewall],
     },
     [ActorType.Human]: {
         actorClass: HumanActor,

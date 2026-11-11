@@ -7,34 +7,13 @@ import { NaturePlayer } from '+game/player/NaturePlayer'
 import { Tile, WallTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 
-import { BoarActor } from './BoarActor'
+import { expect, spyOn, test, vi } from 'bun:test'
 
-vi.mock('+helpers/three', async (importOriginal) => {
-    const { Group } = await import('three')
-    return {
-        ...(await importOriginal<typeof import('+helpers/three')>()),
-        loadGLTF: async () => {
-            const model = new Group()
-            for (const name of [
-                'lod1',
-                'lod2',
-                'lod3',
-                'lod_near',
-                'lod_far',
-                'lod_very_far',
-            ]) {
-                const level = new Group()
-                level.name = name
-                model.add(level)
-            }
-            return model
-        },
-    }
-})
+import { BoarActor } from './BoarActor'
 
 test('a herd across an impassable bank does not stall a movement order', async () => {
     vi.useFakeTimers()
-    const rng = vi.spyOn(Math, 'random').mockReturnValue(0.05)
+    const rng = spyOn(Math, 'random').mockReturnValue(0.05)
     try {
         const world = new World(
             Array.from({ length: 120 }, () =>
@@ -46,7 +25,7 @@ test('a herd across an impassable bank does not stall a movement order', async (
         const player = new HumanPlayer()
         const nature = new NaturePlayer()
         const game = new Game(world, [player, nature])
-        const queuedSearch = vi.spyOn(game.pf, 'findPath')
+        const queuedSearch = spyOn(game.pf, 'findPath')
         const bait = game.spawnActor(HumanActor, player, [112, 20])!
         for (let y = 17; y <= 23; y++) {
             game.spawnActor(BoarActor, nature, [108, y])
@@ -57,7 +36,8 @@ test('a herd across an impassable bank does not stall a movement order', async (
         const order = bait.setPathTo([120, 20])
         for (let tick = 0; tick < 5; tick++) {
             game.tick()
-            await vi.runAllTimersAsync()
+            vi.runAllTimers()
+            await Promise.resolve()
         }
 
         expect(bait.position[0]).toBeGreaterThan(112)

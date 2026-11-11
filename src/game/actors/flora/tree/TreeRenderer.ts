@@ -1,11 +1,12 @@
 import { config } from '+config'
 import { TREE_BARK_COLOR } from '+game/const'
-import { Game } from '+game/Game'
-import { ActorType, ClockInfo, Renderable } from '+game/types'
-import { seededRandom, updateObjectPosition } from '+helpers'
+import { type Game } from '+game/Game'
+import { ActorType, type ClockInfo, type Renderable } from '+game/types'
+import { seededRandom } from '+helpers/random'
+import { updateObjectPosition } from '+helpers/three'
 
 import {
-    BufferGeometry,
+    type BufferGeometry,
     Color,
     CylinderGeometry,
     DynamicDrawUsage,
@@ -20,7 +21,7 @@ import {
 } from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 
-import { TreeActor } from './TreeActor'
+import { type TreeActor } from './TreeActor'
 
 // The crown props up the fallen trunk.
 const fallenAngle = (80 * Math.PI) / 180

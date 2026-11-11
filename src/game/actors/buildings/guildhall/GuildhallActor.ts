@@ -1,15 +1,14 @@
 import { config } from '+config'
-import { actorByType } from '+game/actors'
 import { ResidenceTrait } from '+game/actors/buildingTraits/ResidenceTrait'
-import { BuildingTrait } from '+game/actors/buildingTraits/types'
+import { type BuildingTrait } from '+game/actors/buildingTraits/types'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
 import { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
-import { ActorType, Position } from '+game/types'
-import { addPosition } from '+helpers'
+import { ActorType, type Position } from '+game/types'
+import { addPosition } from '+helpers/math'
 
-import { GuildhallBlueprint } from './GuildhallBlueprint'
+import { guildhallBlueprint } from './GuildhallBlueprint'
 
 // Entrance path relative to the footprint center for each rotation.
 const deliveryOffsets: Position[] = [
@@ -21,7 +20,7 @@ const deliveryOffsets: Position[] = [
 
 export class GuildhallActor extends WoodStorageBuilding {
     public type = ActorType.Guildhall
-    public blueprint = actorByType[this.type].blueprint as GuildhallBlueprint
+    public blueprint = guildhallBlueprint
 
     public maxHp = config.guildhall.hp
     public hp = this.maxHp

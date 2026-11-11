@@ -1,6 +1,6 @@
-import { Path, Position } from '+game/types'
-import { World } from '+game/world/World'
-import { randomArrayItem } from '+helpers'
+import { type Path, type Position } from '+game/types'
+import { type World } from '+game/world/World'
+import { randomArrayItem } from '+helpers/array'
 
 import EasyStar from 'easystarjs'
 

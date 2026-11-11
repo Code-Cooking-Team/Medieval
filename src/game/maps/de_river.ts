@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 import { randomInt } from '../../utils/math'
-import { TileCodeGrid } from '../world/tileCodes'
+import { type TileCodeGrid } from '../world/tileCodes'
 
 // Map generation configuration
 const MAP_SIZE = 312

@@ -1,5 +1,5 @@
-import { Position } from '+game/types'
-import { addPosition } from '+helpers'
+import { type Position } from '+game/types'
+import { addPosition } from '+helpers/math'
 
 const squareVectors: Position[] = [
     // left/right

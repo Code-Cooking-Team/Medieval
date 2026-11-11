@@ -1,14 +1,15 @@
+import { expect, mock, test } from 'bun:test'
 import type { Game } from '+game/Game'
 import type { Player } from '+game/player/types'
-import { ActorType, Position } from '+game/types'
+import { ActorType, type Position } from '+game/types'
 
 import { DeerActor } from './DeerActor'
 
 test.each([ActorType.Human, ActorType.Boar])(
     'a nearby %s interrupts the walk and sends the deer in the opposite direction',
     (type) => {
-        const findPath = vi.fn()
-        const findActorsByPosition = vi.fn(() => [{ type, position: [0, 10] }])
+        const findPath = mock()
+        const findActorsByPosition = mock(() => [{ type, position: [0, 10] }])
         const game = {
             findActorsByPosition,
             pf: { findPath, canStep: () => true },
@@ -29,7 +30,7 @@ test.each([ActorType.Human, ActorType.Boar])(
 )
 
 test('a deer escapes along the riverbank when the land across the river is unreachable', () => {
-    const findPath = vi.fn(async () => undefined)
+    const findPath = mock(async () => undefined)
     const game = {
         findActorsByPosition: () => [{ type: ActorType.Human, position: [5, 10] }],
         pf: { findPath, canStep: () => true },

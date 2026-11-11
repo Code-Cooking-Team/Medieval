@@ -1,5 +1,6 @@
+import { expect, it } from 'bun:test'
 import { config } from '+config'
-import { WalkableActor } from '+game/core/WalkableActor'
+import { type WalkableActor } from '+game/core/WalkableActor'
 
 import { Group, Vector3 } from 'three'
 

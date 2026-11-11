@@ -1,10 +1,7 @@
-import { resetButtonCSS } from '+ui/styles/snippets'
-
-import styled from '@emotion/styled'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import { Children, ReactElement, ReactNode } from 'react'
+import { Children, type ReactElement, type ReactNode } from 'react'
 
-import { TabProps } from './Tab'
+import { type TabProps } from './Tab'
 
 interface TabsProps {
     children: ReactNode
@@ -18,14 +15,18 @@ export const Tabs = (props: TabsProps) => {
 
     return (
         <TabsPrimitive.Root defaultValue={openIndex.toString()}>
-            <List>
+            <TabsPrimitive.List className="grid auto-cols-fr grid-flow-col">
                 {items.map((el, index) => (
-                    <Trigger key={index} value={index.toString()}>
+                    <TabsPrimitive.Trigger
+                        key={index}
+                        value={index.toString()}
+                        className="game-tab flex flex-col items-center justify-center gap-1 truncate rounded-t-sm border-b-2 px-4 py-2 text-center data-[state=active]:border-game-gold"
+                    >
                         {el.props.icon && <el.props.icon size={18} aria-hidden="true" />}
-                        <Label>{el.props.label}</Label>
-                    </Trigger>
+                        <span className="text-xs">{el.props.label}</span>
+                    </TabsPrimitive.Trigger>
                 ))}
-            </List>
+            </TabsPrimitive.List>
             {items.map((el, index) => (
                 <TabsPrimitive.Content key={index} value={index.toString()}>
                     {el.props.children}
@@ -34,34 +35,3 @@ export const Tabs = (props: TabsProps) => {
         </TabsPrimitive.Root>
     )
 }
-
-const List = styled(TabsPrimitive.List)({
-    display: 'grid',
-    gridAutoColumns: '1fr',
-    gridAutoFlow: 'column',
-})
-
-const Label = styled.span({ fontSize: 12 })
-
-const Trigger = styled(TabsPrimitive.Trigger)(resetButtonCSS, ({ theme }) => ({
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    borderBottom: '2px solid',
-    borderRadius: `${theme.borderRadius.normal}px ${theme.borderRadius.normal}px 0 0`,
-    borderColor: theme.colors.black10,
-    textAlign: 'center',
-    padding: `${theme.space[2]}px ${theme.space[3]}px`,
-    ':hover, :focus-visible': {
-        borderColor: `${theme.colors.primary}99`,
-    },
-    '&[data-state="active"]': {
-        borderColor: theme.colors.primary,
-    },
-}))

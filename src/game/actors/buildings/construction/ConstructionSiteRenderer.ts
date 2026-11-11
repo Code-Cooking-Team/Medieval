@@ -1,10 +1,10 @@
 import { ActorRenderer } from '+game/renderer/lib/ActorRenderer'
 import { ActorType } from '+game/types'
-import { Tile } from '+game/world/Tile'
+import { type Tile } from '+game/world/Tile'
 
 import { Mesh, MeshBasicMaterial } from 'three'
 
-import { ConstructionSiteActor } from './ConstructionSiteActor'
+import { type ConstructionSiteActor } from './ConstructionSiteActor'
 
 export class ConstructionSiteRenderer extends ActorRenderer<ConstructionSiteActor> {
     public actorType = ActorType.ConstructionSite

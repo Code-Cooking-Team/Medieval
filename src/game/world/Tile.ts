@@ -1,13 +1,10 @@
-import {
-    changeColorLightnessSaturation,
-    ClassType,
-    generateSimilarColor,
-    random,
-} from '+helpers'
+import { changeColorLightnessSaturation, generateSimilarColor } from '+helpers/color'
+import { type ClassType } from '+helpers/types'
+import { random } from '+helpers/random'
 
 import { omitBy } from 'lodash'
 
-import { TileJSON, TileType } from './types'
+import { type TileJSON, TileType } from './types'
 
 export class Tile {
     public type = TileType.Empty

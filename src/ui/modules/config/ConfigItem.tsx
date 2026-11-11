@@ -1,11 +1,10 @@
 import { ConfigType } from '+config/lib/definitions'
-import { color0xToHex, colorHexTo0x } from '+helpers'
+import { color0xToHex, colorHexTo0x } from '+helpers/color'
 import { NumberInput } from '+ui/components/form/InputNumber'
 import { Switch } from '+ui/components/form/Switch'
 
-import { FC, Ref, useRef } from 'react'
+import { type FC, type Ref, useRef } from 'react'
 
-import { Box } from '../../components/base/Box'
 import { Input } from '../../components/form/Input'
 import { Select } from '../../components/form/Select'
 import { Slider } from '../../components/form/Slider'
@@ -130,7 +129,7 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
     },
     [ConfigType.MinMax]: ({ value, definition, onChange }) => {
         return (
-            <Box display="flex" alignItems="center" columnGap={2}>
+            <div className="flex items-center gap-2">
                 <Slider
                     value={value}
                     min={definition.min}
@@ -139,7 +138,7 @@ const renderers: Record<ConfigType, FC<ConfigItemProps<any>>> = {
                     onChange={onChange}
                 />
                 <b>{value}</b>
-            </Box>
+            </div>
         )
     },
     [ConfigType.Color]: ({ value, onChange }) => {

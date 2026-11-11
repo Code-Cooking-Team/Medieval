@@ -1,4 +1,4 @@
-import { Color, DoubleSide, Group, Mesh, ShaderMaterial, Vector2, Vector3 } from 'three'
+import { Color, DoubleSide, type Group, Mesh, ShaderMaterial, Vector2, Vector3 } from 'three'
 
 export const guildhallFlameTime = { value: 0 }
 

@@ -1,16 +1,16 @@
 import { config } from '+config'
-import { Game } from '+game/Game'
-import { ClockInfo } from '+game/types'
+import { type Game } from '+game/Game'
+import { type ClockInfo } from '+game/types'
 
 import {
     AmbientLight,
-    Camera,
+    type Camera,
     Color,
     DirectionalLight,
     EquirectangularReflectionMapping,
     Fog,
     Object3D,
-    Scene,
+    type Scene,
     TextureLoader,
 } from 'three'
 

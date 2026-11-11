@@ -3,7 +3,7 @@
 Run with Node.js 24 and a fresh Chrome profile. Start Vite in one terminal and run the fixture in another.
 
 ```sh
-pnpm dev
+bun run dev
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
   node benchmarks/run-buildings.mjs docs/benchmarks/buildings 24
 ```

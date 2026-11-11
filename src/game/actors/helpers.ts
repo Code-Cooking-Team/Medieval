@@ -1,4 +1,4 @@
-import { Actor } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
 import { BuildingActor } from '+game/core/BuildingActor'
 import { WalkableActor } from '+game/core/WalkableActor'
 import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'

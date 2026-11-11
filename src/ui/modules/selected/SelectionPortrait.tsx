@@ -3,7 +3,6 @@ import type { Actor } from '+game/core/Actor'
 import type { Renderer } from '+game/Renderer'
 import { selectionPortraitLayout } from '+game/renderer/selectionPortraitLayout'
 
-import styled from '@emotion/styled'
 import { useLayoutEffect, useRef } from 'react'
 
 export function SelectionPortrait({
@@ -18,20 +17,16 @@ export function SelectionPortrait({
         if (canvas.current) return renderer.attachPortrait(canvas.current, actor)
     }, [actor, renderer])
     return (
-        <PortraitCanvas
+        <canvas
+            className="pointer-events-none absolute z-0"
             ref={canvas}
             aria-hidden="true"
-            style={{ bottom: isBuildingActor(actor) ? -28 : 0 }}
+            style={{
+                width: selectionPortraitLayout.width,
+                height: selectionPortraitLayout.height,
+                left: selectionPortraitLayout.centerX - selectionPortraitLayout.width / 2,
+                bottom: isBuildingActor(actor) ? -28 : 0,
+            }}
         />
     )
 }
-
-const PortraitCanvas = styled.canvas({
-    position: 'absolute',
-    width: selectionPortraitLayout.width,
-    height: selectionPortraitLayout.height,
-    left: selectionPortraitLayout.centerX - selectionPortraitLayout.width / 2,
-    bottom: 0,
-    zIndex: 0,
-    pointerEvents: 'none',
-})

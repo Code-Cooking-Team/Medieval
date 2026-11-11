@@ -1,5 +1,5 @@
-import { Config, ConfigOptions } from '+config/types'
-import { localStorageKey } from '+helpers'
+import { type Config, type ConfigOptions } from '+config/types'
+import { localStorageKey } from '+helpers/storage'
 
 import { cloneDeep } from 'lodash'
 

@@ -1,15 +1,14 @@
-import { actorByType } from '+game/actors'
 import { isHumanActor } from '+game/actors/helpers'
-import { Actor } from '+game/core/Actor'
+import { type Actor } from '+game/core/Actor'
 import { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType } from '+game/types'
 
-import { WoodCampBlueprint } from './WoodCampBlueprint'
+import { woodCampBlueprint } from './WoodCampBlueprint'
 
 export class WoodCampActor extends WoodStorageBuilding {
     public type = ActorType.WoodCamp
-    public blueprint = actorByType[this.type].blueprint as WoodCampBlueprint
+    public blueprint = woodCampBlueprint
 
     public getDeliveryPosition() {
         return this.getGlobalPositionOfLocalPoint(this.blueprint.config.deliveryPoint)

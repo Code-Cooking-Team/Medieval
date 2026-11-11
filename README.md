@@ -23,48 +23,50 @@ Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
 - TypeScript
 - Vite
 - Three.js
-- Emotion (styled)
+- Tailwind CSS
 - Radix UI (Accordion, Slider, Switch, Tabs)
-- Vitest + Happy DOM
+- Bun tests + Happy DOM
+- Oxlint
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 24 LTS
-- pnpm (see `packageManager` in `package.json`)
+- Bun (see `packageManager` in `package.json`)
 
 ### Installation
 
 ```bash
-pnpm install
+bun install --frozen-lockfile
 ```
 
 ### Development Server
 
 ```bash
-pnpm run dev
+bun run dev
 # opens http://localhost:3333/Medieval/
 ```
 
 ### Building for Production
 
 ```bash
-pnpm run build
-pnpm run preview
+bun run build
+bun run preview
 ```
 
 ## Available Scripts
 
 | Command             | Description                         |
 | ------------------- | ----------------------------------- |
-| `pnpm run dev`      | Start the development server        |
-| `pnpm run build`    | Compile TypeScript and build assets |
-| `pnpm run preview`  | Preview production build locally    |
-| `pnpm run format`   | Format code with Prettier           |
-| `pnpm run test`     | Run unit tests with Vitest          |
-| `pnpm run coverage` | Run tests with coverage report      |
-| `pnpm run ts`       | Type-check the project              |
+| `bun run dev`      | Start the development server        |
+| `bun run build`    | Compile TypeScript and build assets |
+| `bun run preview`  | Preview production build locally    |
+| `bun run format`   | Format code with Prettier           |
+| `bun run test`     | Run unit tests with Bun          |
+| `bun run coverage` | Run tests with coverage report      |
+| `bun run ts`       | Type-check the project              |
+| `bun run lint`     | Check the project with Oxlint      |
 
 ## Project Structure
 
@@ -104,7 +106,7 @@ Medieval/
 ├── public/                 # Static files and assets (if any)
 ├── index.html              # HTML template
 ├── vite.config.ts          # Vite configuration
-├── vitest.config.ts        # Vitest configuration
+├── bunfig.toml             # Bun install and test configuration
 ├── tsconfig.json           # TypeScript configuration
 └── package.json            # Project metadata & scripts
 ```
@@ -200,7 +202,7 @@ export class WoodcutterProfession extends Profession {
 Place unit tests next to the code using the `.test.ts` suffix:
 
 ```bash
-pnpm test --run src/game/algorithm/squareFloodFill.test.ts
+bun run test src/game/algorithm/squareFloodFill.test.ts
 ```
 
 ## Contributing

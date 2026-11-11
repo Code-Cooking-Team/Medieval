@@ -1,4 +1,5 @@
-import { Position } from '+game/types'
+import { expect, it } from 'bun:test'
+import { type Position } from '+game/types'
 
 import { squareFloodFill } from './squareFloodFill'
 

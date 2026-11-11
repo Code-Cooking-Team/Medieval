@@ -1,7 +1,7 @@
 import { BuilderProfession } from './BuilderProfession'
 import { GuardianProfession } from './GuardianProfession'
 import { HunterProfession } from './HunterProfession'
-import { ProfessionClass, ProfessionJSON } from './Profession'
+import { type ProfessionClass, ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
 import { WoodcutterProfession } from './WoodcutterProfession'
 

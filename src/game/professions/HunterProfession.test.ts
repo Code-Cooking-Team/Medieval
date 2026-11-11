@@ -1,3 +1,4 @@
+import { expect, test } from 'bun:test'
 import '+game/actors'
 import { HunterHutActor } from '+game/actors/buildings/hunterHut/HunterHutActor'
 import { BoarActor } from '+game/actors/units/boars/BoarActor'
@@ -10,30 +11,7 @@ import { ActorType } from '+game/types'
 import { Tile, WallTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
 
-import { HunterProfession } from './HunterProfession'
-
-vi.mock('+helpers/three', async (importOriginal) => {
-    const { Group } = await import('three')
-    return {
-        ...(await importOriginal<typeof import('+helpers/three')>()),
-        loadGLTF: async () => {
-            const model = new Group()
-            for (const name of [
-                'lod1',
-                'lod2',
-                'lod3',
-                'lod_near',
-                'lod_far',
-                'lod_very_far',
-            ]) {
-                const level = new Group()
-                level.name = name
-                model.add(level)
-            }
-            return model
-        },
-    }
-})
+import { type HunterProfession } from './HunterProfession'
 
 const fixture = () => {
     const player = new HumanPlayer()

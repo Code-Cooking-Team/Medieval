@@ -11,7 +11,7 @@ import {
     MeshStandardMaterial,
 } from 'three'
 
-import { ItemId } from './equipment'
+import { type ItemId } from './equipment'
 
 type Vector = [number, number, number]
 

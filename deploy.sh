@@ -4,10 +4,11 @@ set -e
 
 rm -rf ./dist
 
-pnpm ts
-pnpm test --run
+bun run lint
+bun run ts
+bun run test
 
-pnpm build
+bun run build
 
 # navigate into the build output directory
 cd ./dist

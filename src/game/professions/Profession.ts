@@ -1,10 +1,10 @@
 import type { ItemId } from '+game/actors/units/human/equipment'
-import { HumanActor } from '+game/actors/units/human/HumanActor'
+import { type HumanActor } from '+game/actors/units/human/HumanActor'
 import { ACTOR_MODEL_OBJECT3D_NAME } from '+game/const'
-import { Game } from '+game/Game'
-import { ClassType } from '+helpers'
+import { type Game } from '+game/Game'
+import { type ClassType } from '+helpers/types'
 
-import { Group, Object3D } from 'three'
+import { Group, type Object3D } from 'three'
 
 import { ProfessionType } from './types'
 

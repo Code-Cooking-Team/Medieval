@@ -1,3 +1,4 @@
+import { expect, test } from 'bun:test'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import type { Game } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'

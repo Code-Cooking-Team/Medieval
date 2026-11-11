@@ -1,11 +1,12 @@
 import { BushActor } from '+game/actors/flora/bush/BushActor'
+import { canGrowTree } from '+game/actors/flora/tree/canGrowTree'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
-import { Game } from '+game/Game'
-import { NaturePlayer } from '+game/player/NaturePlayer'
-import { ActorType, Position } from '+game/types'
-import { OvergrownTile, Tile } from '+game/world/Tile'
+import { type Game } from '+game/Game'
+import { type NaturePlayer } from '+game/player/NaturePlayer'
+import { type Position } from '+game/types'
+import { OvergrownTile } from '+game/world/Tile'
 import { TileType } from '+game/world/types'
-import { seededRandom } from '+helpers'
+import { seededRandom } from '+helpers/random'
 
 const bushNeighbors: Position[] = [
     [-1, -1],
@@ -35,7 +36,7 @@ export class FloraSpawner {
         const tilePositions: Position[] = []
 
         this.game.world.forEachTile((tile, position) => {
-            if (this.shouldSpawnTree(tile, position)) {
+            if (canGrowTree(this.game, tile, position, this.rng)) {
                 tilePositions.push(position)
                 this.game.addActor(new TreeActor(this.game, this.player, position))
             }
@@ -65,12 +66,6 @@ export class FloraSpawner {
                 this.growBushPatch(position, Math.floor(this.bushRng(2, 5)), occupied)
             }
         })
-    }
-
-    public spawnNewTree(tile: Tile, position: Position) {
-        if (this.shouldSpawnTree(tile, position)) {
-            this.game.spawnActor(TreeActor, this.player, position)
-        }
     }
 
     private growBushPatch(origin: Position, size: number, occupied: Set<string>) {
@@ -114,17 +109,5 @@ export class FloraSpawner {
 
             for (const [dx, dy] of bushNeighbors) addCandidate([x + dx, y + dy])
         }
-    }
-
-    private shouldSpawnTree(tile: Tile, position: Position) {
-        // No three chance so no tree
-        if (tile.treeChance === 0) return false
-
-        // Randomly by tree chance from tile
-        if (this.rng() > tile.treeChance) return false
-
-        return !this.game
-            .findActorsByPosition(position, 1)
-            .some((actor) => actor.type !== ActorType.Bush)
     }
 }

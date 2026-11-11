@@ -1,13 +1,16 @@
 import { actorByType } from '+game/actors'
 import { isConstructionType } from '+game/actors/buildings/construction/costs'
 import { isBuildingActor } from '+game/actors/helpers'
-import { Game } from '+game/Game'
-import { HumanPlayer } from '+game/player/HumanPlayer'
-import { Renderer } from '+game/Renderer'
-import { ActorType, Position } from '+game/types'
-import { randomSeed, rotationIndexToDeg, updateObjectPosition } from '+helpers'
+import { CAMERA_GESTURE_START } from '+game/core/RTSCamera'
+import { type Game } from '+game/Game'
+import { type HumanPlayer } from '+game/player/HumanPlayer'
+import { type Renderer } from '+game/Renderer'
+import { ActorType, type Position } from '+game/types'
+import { rotationIndexToDeg } from '+helpers/math'
+import { randomSeed } from '+helpers/random'
+import { updateObjectPosition } from '+helpers/three'
 
-import { UnsubscribeFunction } from 'emittery'
+import { type UnsubscribeFunction } from 'emittery'
 import { Mesh, MeshBasicMaterial, Object3D } from 'three'
 
 import { RaycastFinder } from './lib/RaycastFinder'
@@ -81,6 +84,7 @@ export class BuildInteractions {
         this.el.addEventListener('pointerup', this.handleUp)
         this.el.addEventListener('pointercancel', this.handleCancel)
         this.el.addEventListener('lostpointercapture', this.handleCancel)
+        this.el.addEventListener(CAMERA_GESTURE_START, this.cancelForCameraGesture)
         this.el.addEventListener('contextmenu', this.handleContextmenu)
         this.renderer.scene.add(this.previews)
     }
@@ -97,6 +101,7 @@ export class BuildInteractions {
         this.el.removeEventListener('pointerup', this.handleUp)
         this.el.removeEventListener('pointercancel', this.handleCancel)
         this.el.removeEventListener('lostpointercapture', this.handleCancel)
+        this.el.removeEventListener(CAMERA_GESTURE_START, this.cancelForCameraGesture)
         this.el.removeEventListener('contextmenu', this.handleContextmenu)
         this.renderer.scene.remove(this.previews)
     }
@@ -235,6 +240,7 @@ export class BuildInteractions {
     }
 
     private handleDown = (event: PointerEvent) => {
+        if (event.pointerType === 'touch' && !event.isPrimary) return
         if (event.button !== 0 || this.wallDrag) return
         this.ignoreClick = false
         if (this.player.selectedBuilding !== ActorType.Stakewall) return
@@ -269,20 +275,26 @@ export class BuildInteractions {
         this.updateHover(undefined)
     }
 
+    private cancelForCameraGesture = () => {
+        this.ignoreClick = true
+        this.clearWallDrag()
+        this.updateHover(undefined)
+    }
+
     private handleClick = (event: MouseEvent) => {
         event.preventDefault()
         if (event.button !== 0) return
+
+        if (this.ignoreClick) {
+            this.ignoreClick = false
+            return
+        }
 
         if (this.player.removingBuildings) {
             const building = this.finder
                 .findActorsByMouseEvent(event)
                 .find(isBuildingActor)
             if (building) this.game.removeActor(building)
-            return
-        }
-
-        if (this.ignoreClick) {
-            this.ignoreClick = false
             return
         }
 
@@ -309,6 +321,8 @@ export class BuildInteractions {
     }
 
     private handleMove = (event: PointerEvent) => {
+        if (event.pointerType === 'touch' && this.renderer.rtsCamera.isTouchGesturing)
+            return
         if (!this.preview) return
         const drag = this.wallDrag
         if (drag && drag.pointerId !== event.pointerId) return

@@ -2,7 +2,9 @@ import { config } from '+config'
 
 import Stats from 'stats.js'
 import {
+    MathUtils,
     PCFShadowMap,
+    Raycaster,
     ReinhardToneMapping,
     Scene,
     Timer,
@@ -19,21 +21,22 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js'
 
 import { actorRenderers, basicRenderers } from './actors'
-import { Actor } from './core/Actor'
+import { type Actor } from './core/Actor'
 import { RTSCamera } from './core/RTSCamera'
-import { Game } from './Game'
-import { HumanPlayer } from './player/HumanPlayer'
+import { type Game } from './Game'
+import { type HumanPlayer } from './player/HumanPlayer'
 import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
-import { ActorRenderer } from './renderer/lib/ActorRenderer'
-import { BasicRenderer } from './renderer/lib/BasicRenderer'
+import { type ActorRenderer } from './renderer/lib/ActorRenderer'
+import { type BasicRenderer } from './renderer/lib/BasicRenderer'
 import { SelectionPortraitRenderer } from './renderer/SelectionPortraitRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
-import { ClockInfo } from './types'
+import { type ClockInfo } from './types'
 
 const stats = new Stats()
 const SHOWCASE_BOKEH_APERTURE = 0.0025
 const SHOWCASE_BOKEH_MAX_BLUR = 0.012
+const AUTOFOCUS_INTERVAL = 0.125
 
 export class Renderer {
     public webGLRenderer = new WebGLRenderer({
@@ -47,6 +50,11 @@ export class Renderer {
     private FXAAPass?: ShaderPass
     private bokehPass?: BokehPass
     private showcase = false
+    private focusRay = new Raycaster()
+    private focusCenter = new Vector2()
+    private nextFocusSample = 0
+    private focusTarget?: number
+    private focusDistance?: number
 
     public rtsCamera = new RTSCamera(this.webGLRenderer.domElement)
     public scene = new Scene()
@@ -193,6 +201,34 @@ export class Renderer {
 
     private getSelectedGroupList() {
         return this.actorRendererList.flatMap((renderer) => renderer.getSelectedGroups())
+    }
+
+    private autofocus(fallback: number, { deltaTime, elapsedTime }: ClockInfo) {
+        const camera = this.rtsCamera.camera
+        if (elapsedTime >= this.nextFocusSample) {
+            this.nextFocusSample = elapsedTime + AUTOFOCUS_INTERVAL
+            camera.updateMatrixWorld()
+            this.focusRay.near = camera.near
+            this.focusRay.far = Math.min(camera.far, config.camera.maxHeight * 4)
+            this.focusRay.setFromCamera(this.focusCenter, camera)
+
+            const terrainDistance = this.ground.focusDistance(this.focusRay)
+            if (terrainDistance !== undefined) this.focusRay.far = terrainDistance
+
+            const shapes = this.getInteractionObjectList()
+            for (const shape of shapes) shape.updateWorldMatrix(true, false)
+            const actorHit = this.focusRay.intersectObjects(shapes, false)[0]
+            // The center ray measures depth along the camera's view axis.
+            this.focusTarget = actorHit?.distance ?? terrainDistance ?? fallback
+        }
+        const target = this.focusTarget ?? fallback
+        this.focusDistance = MathUtils.damp(
+            this.focusDistance ?? target,
+            target,
+            8,
+            deltaTime,
+        )
+        return this.focusDistance
     }
 
     private addComposerPasses() {
@@ -410,7 +446,10 @@ export class Renderer {
                     string,
                     { value: number }
                 >
-                uniforms.focus!.value = focus
+                uniforms.focus!.value =
+                    !this.showcase && config.postProcessing.bokehAutofocus
+                        ? this.autofocus(focus, clockInfo)
+                        : focus
                 const aperture = this.showcase
                     ? SHOWCASE_BOKEH_APERTURE
                     : config.postProcessing.bokehAperture

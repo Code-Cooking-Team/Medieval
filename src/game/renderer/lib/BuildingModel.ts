@@ -1,7 +1,7 @@
 import { config } from '+config'
 import { updateScale } from '+helpers/three'
 
-import { Group, LOD, Matrix4, Mesh, Object3D } from 'three'
+import { Group, LOD, type Matrix4, Mesh, type Object3D } from 'three'
 
 export interface BuildingLevel {
     distanceInTiles: number

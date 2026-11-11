@@ -1,11 +1,5 @@
-import { resetButtonCSS } from '+ui/styles/snippets'
-
-import { keyframes } from '@emotion/react'
-import styled from '@emotion/styled'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
-import { ReactNode } from 'react'
-
-import { Box } from '../base/Box'
+import { type ReactNode } from 'react'
 
 interface AccordionItemProps {
     value: string
@@ -15,60 +9,15 @@ interface AccordionItemProps {
 
 export const AccordionItem = ({ value, label, children }: AccordionItemProps) => {
     return (
-        <Item value={value}>
-            <Header>
-                <Trigger>{label}</Trigger>
-            </Header>
-            <Content>
-                <Box p={2}>{children}</Box>
-            </Content>
-        </Item>
+        <AccordionPrimitive.Item value={value}>
+            <AccordionPrimitive.Header className="m-0 font-normal">
+                <AccordionPrimitive.Trigger className="game-tab block w-full rounded-sm border-l-2 px-2 py-2 text-left data-[state=open]:border-game-gold data-[state=open]:text-game-gold">
+                    {label}
+                </AccordionPrimitive.Trigger>
+            </AccordionPrimitive.Header>
+            <AccordionPrimitive.Content className="game-accordion-content overflow-hidden border-0 border-l-2 border-solid border-black/10 data-[state=open]:border-game-gold">
+                <div className="p-2">{children}</div>
+            </AccordionPrimitive.Content>
+        </AccordionPrimitive.Item>
     )
 }
-
-const slideDown = keyframes({
-    from: { height: 0 },
-    to: { height: 'var(--radix-accordion-content-height)' },
-})
-
-const slideUp = keyframes({
-    from: { height: 'var(--radix-accordion-content-height)' },
-    to: { height: 0 },
-})
-
-const Item = styled(AccordionPrimitive.Item)({})
-
-const Header = styled(AccordionPrimitive.Header)({
-    margin: 0,
-    fontWeight: 'normal',
-})
-
-const Trigger = styled(AccordionPrimitive.Trigger)(resetButtonCSS, ({ theme }) => ({
-    display: 'block',
-    width: '100%',
-    textAlign: 'left',
-    padding: theme.space[2],
-    borderRadius: theme.borderRadius.normal,
-    borderLeft: '2px solid',
-    borderColor: theme.colors.black10,
-    ':hover, :focus-visible': {
-        borderColor: `${theme.colors.primary}99`,
-    },
-    '&[data-state="open"]': {
-        borderColor: theme.colors.primary,
-        color: theme.colors.primary,
-    },
-}))
-
-const Content = styled(AccordionPrimitive.Content)(({ theme }) => ({
-    overflow: 'hidden',
-    borderLeft: '2px solid',
-    borderColor: theme.colors.black10,
-    '&[data-state="open"]': {
-        borderColor: theme.colors.primary,
-        animation: `${slideDown} 300ms cubic-bezier(0.87, 0, 0.13, 1)`,
-    },
-    '&[data-state="closed"]': {
-        animation: `${slideUp} 300ms cubic-bezier(0.87, 0, 0.13, 1)`,
-    },
-}))

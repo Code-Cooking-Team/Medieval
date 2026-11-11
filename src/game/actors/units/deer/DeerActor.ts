@@ -1,6 +1,7 @@
 import { WalkableActor } from '+game/core/WalkableActor'
-import { ActorType, Path, Position } from '+game/types'
-import { distanceBetweenPoints, random } from '+helpers'
+import { ActorType, type Path, type Position } from '+game/types'
+import { distanceBetweenPoints } from '+helpers/math'
+import { random } from '+helpers/random'
 
 const threatRange = 10
 const fleeDistance = 10

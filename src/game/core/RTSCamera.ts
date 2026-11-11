@@ -1,11 +1,23 @@
 import { config } from '+config'
-import { ClockInfo, Renderable } from '+game/types'
-import { World } from '+game/world/World'
+import { type ClockInfo, type Renderable } from '+game/types'
+import { type World } from '+game/world/World'
 
-import { MathUtils, MOUSE, PerspectiveCamera, Quaternion, Vector3 } from 'three'
+import {
+    MathUtils,
+    MOUSE,
+    PerspectiveCamera,
+    Quaternion,
+    Raycaster,
+    Vector2,
+    Vector3,
+} from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 const CAMERA_SPEED = config.renderer.tileSize * 2
+const SCROLL_PAN_SPEED = CAMERA_SPEED * 0.02
+const UP = new Vector3(0, 1, 0)
+
+export const CAMERA_GESTURE_START = 'camera-gesture-start'
 
 export class RTSCamera implements Renderable {
     public camera = new PerspectiveCamera(
@@ -18,6 +30,15 @@ export class RTSCamera implements Renderable {
     private showcaseOrbit?: { radius: number; height: number }
     private controls?: OrbitControls
     private keyPressed: { [key: string]: number } = {}
+    private wheelRay = new Raycaster()
+    private wheelPointer = new Vector2()
+    private scrollMovement = new Vector3()
+    private touchGesture?: { x: number; y: number; span: number }
+    private touchingCamera = false
+
+    public get isTouchGesturing() {
+        return this.touchingCamera
+    }
 
     constructor(private domElement: HTMLElement) {
         this.camera.position.x = 0
@@ -55,7 +76,17 @@ export class RTSCamera implements Renderable {
         if (config.core.orbitalControls) this.orbitalControls()
         window.document.addEventListener('keydown', this.handleKeyDown)
         window.document.addEventListener('keyup', this.handleKeyUp)
-        this.domElement.addEventListener('wheel', this.handleWheel)
+        this.domElement.addEventListener('wheel', this.handleWheel, { passive: false })
+        this.domElement.addEventListener('touchstart', this.handleTouch, {
+            passive: false,
+        })
+        this.domElement.addEventListener('touchmove', this.handleTouch, {
+            passive: false,
+        })
+        this.domElement.addEventListener('touchend', this.handleTouch, { passive: false })
+        this.domElement.addEventListener('touchcancel', this.handleTouch, {
+            passive: false,
+        })
     }
 
     public destroy() {
@@ -63,6 +94,12 @@ export class RTSCamera implements Renderable {
         window.document.removeEventListener('keydown', this.handleKeyDown)
         window.document.removeEventListener('keyup', this.handleKeyUp)
         this.domElement.removeEventListener('wheel', this.handleWheel)
+        this.domElement.removeEventListener('touchstart', this.handleTouch)
+        this.domElement.removeEventListener('touchmove', this.handleTouch)
+        this.domElement.removeEventListener('touchend', this.handleTouch)
+        this.domElement.removeEventListener('touchcancel', this.handleTouch)
+        this.touchGesture = undefined
+        this.touchingCamera = false
     }
 
     public render({ deltaTime, elapsedTime }: ClockInfo) {
@@ -183,6 +220,7 @@ export class RTSCamera implements Renderable {
         this.controls = controls
 
         controls.enableZoom = false
+        controls.touches = { ONE: null, TWO: null }
         controls.mouseButtons = {
             LEFT: undefined as any,
             MIDDLE: MOUSE.ROTATE,
@@ -202,28 +240,94 @@ export class RTSCamera implements Renderable {
     }
 
     private handleWheel = (event: WheelEvent) => {
-        let delta = (event as any).wheelDelta
+        event.preventDefault()
 
-        delta = delta / 240
-        delta = -delta
+        const bounds = this.domElement.getBoundingClientRect()
+        const deltaMode = event.deltaMode
+        const scale =
+            deltaMode === WheelEvent.DOM_DELTA_LINE
+                ? 16
+                : deltaMode === WheelEvent.DOM_DELTA_PAGE
+                  ? bounds.height
+                  : 1
+        const deltaY = event.deltaY * scale
 
-        if (delta <= 0) {
-            delta -= this.camera.position.y * 0.01
-        } else {
-            delta += this.camera.position.y * 0.01
+        // Browsers can report trackpad scroll and mouse wheel input identically.
+        if (config.camera.scrollToPan && !event.ctrlKey && !event.metaKey) {
+            this.pan(event.deltaX * scale, deltaY, SCROLL_PAN_SPEED)
+            return
         }
 
-        const direction = new Vector3(0, 0, 1).applyQuaternion(this.camera.quaternion)
-        const currentHeight = this.camera.position.y
-        const nextHeight = currentHeight + direction.y * delta
-        const clampedHeight = Math.max(
-            config.camera.minHeight,
-            Math.min(config.camera.maxHeight, nextHeight),
+        const distance = (-deltaY / 240) * (1 + this.camera.position.y * 0.02)
+        this.zoom(event.clientX, event.clientY, distance, bounds)
+    }
+
+    private handleTouch = (event: TouchEvent) => {
+        const touches = event.targetTouches
+        if (touches.length >= 2 && !this.touchingCamera) {
+            this.touchingCamera = true
+            this.domElement.dispatchEvent(new Event(CAMERA_GESTURE_START))
+        }
+        if (!this.touchingCamera) return
+        // Suppress the click that mobile browsers can synthesize after a touch.
+        event.preventDefault()
+
+        if (touches.length !== 2) {
+            this.touchGesture = undefined
+            if (touches.length === 0) this.touchingCamera = false
+            return
+        }
+
+        const first = touches[0]!
+        const second = touches[1]!
+        const x = (first.clientX + second.clientX) / 2
+        const y = (first.clientY + second.clientY) / 2
+        const span = Math.hypot(
+            first.clientX - second.clientX,
+            first.clientY - second.clientY,
         )
-        if (Math.abs(direction.y) > 1e-6 && nextHeight !== clampedHeight) {
-            delta = (clampedHeight - currentHeight) / direction.y
-        }
+        const previous = this.touchGesture
+        this.touchGesture = { x, y, span }
+        if (!previous || event.type !== 'touchmove') return
 
-        this.camera.translateZ(delta)
+        const bounds = this.domElement.getBoundingClientRect()
+        if (!bounds.height) return
+        const height = this.camera.position.y
+        this.pan(previous.x - x, previous.y - y, (height * 2) / bounds.height)
+        if (previous.span > 0 && span > 0) {
+            this.zoom(x, y, Math.log(span / previous.span) * height * 1.5, bounds)
+        }
+    }
+
+    private pan(dx: number, dy: number, speed: number) {
+        this.scrollMovement
+            .set(dx, 0, dy)
+            .applyAxisAngle(UP, this.camera.rotation.y)
+            .multiplyScalar(speed)
+        this.camera.position.add(this.scrollMovement)
+    }
+
+    private zoom(x: number, y: number, distance: number, bounds: DOMRect) {
+        if (distance === 0 || bounds.width === 0 || bounds.height === 0) return
+        this.camera.updateMatrixWorld()
+        this.wheelPointer.set(
+            ((x - bounds.left) / bounds.width) * 2 - 1,
+            1 - ((y - bounds.top) / bounds.height) * 2,
+        )
+        this.wheelRay.setFromCamera(this.wheelPointer, this.camera)
+        const direction = this.wheelRay.ray.direction
+        if (direction.y >= -1e-6) this.camera.getWorldDirection(direction)
+        if (direction.y >= -1e-6) return
+
+        const currentHeight = this.camera.position.y
+        const nextHeight = MathUtils.clamp(
+            currentHeight + direction.y * distance,
+            config.camera.minHeight,
+            config.camera.maxHeight,
+        )
+        this.camera.position.addScaledVector(
+            direction,
+            (nextHeight - currentHeight) / direction.y,
+        )
     }
 }

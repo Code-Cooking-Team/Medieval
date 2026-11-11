@@ -1,4 +1,6 @@
 import { Tile, WallTile } from '+game/world/Tile'
+
+import { expect, test, vi } from 'bun:test'
 import { World } from '+game/world/World'
 
 import { Pathfinding } from './Pathfinding'
@@ -81,7 +83,8 @@ test.each(['budget', 'abort'])(
             const ticks = stop === 'abort' ? 1 : 8
             for (let i = 0; i < ticks; i++) {
                 pathfinding.tick()
-                await vi.runAllTimersAsync()
+                vi.runAllTimers()
+                await Promise.resolve()
             }
 
             await expect(blocked).resolves.toBeUndefined()
