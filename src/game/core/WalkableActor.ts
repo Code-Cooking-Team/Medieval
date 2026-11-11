@@ -7,14 +7,22 @@ export abstract class WalkableActor extends Actor {
     public selectImportance = 4
     public path: Path = []
 
-    private pathRequest = 0
-    public isFindingPath = false
+    private pathRequest?: AbortController
+
+    public get isFindingPath() {
+        return this.pathRequest !== undefined
+    }
 
     public async setPathTo(position: Position, clip = false) {
-        const request = ++this.pathRequest
-        this.isFindingPath = true
+        this.pathRequest?.abort()
+        const request = new AbortController()
+        this.pathRequest = request
         try {
-            const path = await this.game.pf.findPath(this.position, position)
+            const path = await this.game.pf.findPath(
+                this.position,
+                position,
+                request.signal,
+            )
             if (request !== this.pathRequest) return
             if (path) {
                 this.path = path
@@ -22,13 +30,13 @@ export abstract class WalkableActor extends Actor {
             }
             return path
         } finally {
-            if (request === this.pathRequest) this.isFindingPath = false
+            if (request === this.pathRequest) this.pathRequest = undefined
         }
     }
 
     public cancelPath() {
-        this.pathRequest++
-        this.isFindingPath = false
+        this.pathRequest?.abort()
+        this.pathRequest = undefined
         this.path = []
     }
 
@@ -49,6 +57,7 @@ export abstract class WalkableActor extends Actor {
     }
 
     public move() {
+        if (this.isFindingPath) return
         const next = this.path.shift()
 
         if (!next) return

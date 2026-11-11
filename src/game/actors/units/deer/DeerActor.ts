@@ -28,7 +28,6 @@ export class DeerActor extends WalkableActor {
 
     private grazeTicks = random(14, 26, true)
     private stepTicks = 0
-    private lookingForPath = false
     private escapeRetryTicks = 0
 
     public tick() {
@@ -69,24 +68,12 @@ export class DeerActor extends WalkableActor {
             return
         }
 
-        if (this.lookingForPath || threat) return
+        if (this.isFindingPath || threat) return
         this.isFleeing = false
         if (--this.grazeTicks > 0) return
 
-        const [x, y] = this.position
-        const destination: Position = [x + random(-3, 3, true), y + random(-3, 3, true)]
         this.grazeTicks = random(14, 26, true)
-        if (!this.canWalkTo(destination)) return
-
-        this.lookingForPath = true
-        void this.game.pf
-            .findPath(this.position, destination)
-            .then((path) => {
-                if (path && !this.isFleeing) this.path = path
-            })
-            .finally(() => {
-                this.lookingForPath = false
-            })
+        this.path = this.game.pf.findIdleStep(this.position)
     }
 
     private canWalkTo(destination: Position) {

@@ -158,7 +158,7 @@ export class HumanActor extends WalkableActor {
 
     private walkAround() {
         this.move()
-        if (this.hasPath()) return
+        if (this.hasPath() || this.isFindingPath) return
         if (Math.random() > config.human.randomWalkChance) return
         if (!this.home) return
 
@@ -186,7 +186,7 @@ export class HumanActor extends WalkableActor {
                 this.target = undefined
             }
         } else {
-            if (this.hasPath()) return
+            if (this.hasPath() || this.isFindingPath) return
             this.setPathTo(this.target.position, false, true)
         }
     }
