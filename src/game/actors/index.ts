@@ -8,6 +8,12 @@ import { BarracksRenderer } from './buildings/barracks/BarracksRenderer'
 import { buildingBlueprints } from './buildings/construction/blueprints'
 import { ConstructionSiteActor } from './buildings/construction/ConstructionSiteActor'
 import { ConstructionSiteRenderer } from './buildings/construction/ConstructionSiteRenderer'
+import {
+    GalleryActor,
+    GalleryRenderer,
+    GalleryStairsActor,
+    GalleryStairsRenderer,
+} from './buildings/gallery/GalleryActor'
 import { GuildhallActor } from './buildings/guildhall/GuildhallActor'
 import { GuildhallRenderer } from './buildings/guildhall/GuildhallRenderer'
 import { HouseActor } from './buildings/house/HouseActor'
@@ -22,6 +28,7 @@ import { BushActor } from './flora/bush/BushActor'
 import { BushRenderer } from './flora/bush/BushRenderer'
 import { TreeActor } from './flora/tree/TreeActor'
 import { TreeRenderer } from './flora/tree/TreeRenderer'
+import { LargeRockActor, MediumRockActor, SmallRockActor } from './RockActor'
 import { BoarActor } from './units/boars/BoarActor'
 import { BoarRenderer } from './units/boars/BoarRenderer'
 import { DeerActor } from './units/deer/DeerActor'
@@ -38,6 +45,8 @@ export const actorRenderers = [
     HunterHutRenderer,
     BarracksRenderer,
     StakewallRenderer,
+    GalleryRenderer,
+    GalleryStairsRenderer,
     BoarRenderer,
     DeerRenderer,
 ]
@@ -78,6 +87,14 @@ export const actorByType: Record<
         actorClass: StakewallActor,
         blueprint: buildingBlueprints[ActorType.Stakewall],
     },
+    [ActorType.Gallery]: {
+        actorClass: GalleryActor,
+        blueprint: buildingBlueprints[ActorType.Gallery],
+    },
+    [ActorType.GalleryStairs]: {
+        actorClass: GalleryStairsActor,
+        blueprint: buildingBlueprints[ActorType.GalleryStairs],
+    },
     [ActorType.Human]: {
         actorClass: HumanActor,
     },
@@ -87,6 +104,9 @@ export const actorByType: Record<
     [ActorType.Bush]: {
         actorClass: BushActor,
     },
+    [ActorType.SmallRock]: { actorClass: SmallRockActor },
+    [ActorType.MediumRock]: { actorClass: MediumRockActor },
+    [ActorType.LargeRock]: { actorClass: LargeRockActor },
     [ActorType.Boar]: {
         actorClass: BoarActor,
     },

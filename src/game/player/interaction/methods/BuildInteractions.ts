@@ -21,6 +21,9 @@ interface Preview {
     seed?: number
 }
 
+const supportsLinePlacement = (type?: ActorType) =>
+    type === ActorType.Stakewall || type === ActorType.Gallery
+
 export class BuildInteractions {
     private finder: RaycastFinder
     private preview?: Preview
@@ -55,7 +58,7 @@ export class BuildInteractions {
             if (preview) preview.root.rotation.y = rotationIndexToDeg(rotation)
         }
         if (this.wallDrag)
-            this.showWallLine(snapWallLine(this.wallDrag.start, this.wallDrag.end))
+            this.showWallLine(this.snapLine(this.wallDrag.start, this.wallDrag.end))
         else this.updateHover(this.hoverPosition)
     }
 
@@ -222,14 +225,23 @@ export class BuildInteractions {
         if (root.userData.valid !== valid) this.colorPreview(root, valid)
     }
 
+    private snapLine(start: Position, end: Position) {
+        return snapWallLine(
+            start,
+            end,
+            this.player.selectedBuilding !== ActorType.Gallery,
+        )
+    }
+
     private showWallLine(positions: Position[]) {
-        if (!this.preview) return
+        const type = this.player.selectedBuilding
+        if (!this.preview || !type) return
         const valid = this.canBuild(positions)
         this.showPreview(this.preview, positions[0]!, valid)
 
         for (let i = 1; i < positions.length; i++) {
             const preview = (this.wallPreviews[i - 1] ??= this.createPreview(
-                ActorType.Stakewall,
+                type,
                 valid,
             )!)
             this.showPreview(preview, positions[i]!, valid)
@@ -243,7 +255,7 @@ export class BuildInteractions {
         if (event.pointerType === 'touch' && !event.isPrimary) return
         if (event.button !== 0 || this.wallDrag) return
         this.ignoreClick = false
-        if (this.player.selectedBuilding !== ActorType.Stakewall) return
+        if (!supportsLinePlacement(this.player.selectedBuilding)) return
 
         this.ignoreClick = true
         const start = this.finder.findPositionByMouseEvent(event)
@@ -259,10 +271,11 @@ export class BuildInteractions {
         if (!drag || drag.pointerId !== event.pointerId || event.button !== 0) return
 
         const end = this.finder.findPositionByMouseEvent(event)
-        if (end && this.player.selectedBuilding === ActorType.Stakewall) {
-            const positions = snapWallLine(drag.start, end)
+        const type = this.player.selectedBuilding
+        if (end && type && supportsLinePlacement(type)) {
+            const positions = this.snapLine(drag.start, end)
             if (this.place(positions, [this.preview, ...this.wallPreviews])) {
-                this.setPlaceholder(ActorType.Stakewall)
+                this.setPlaceholder(type)
             }
         }
         this.clearWallDrag()
@@ -306,7 +319,7 @@ export class BuildInteractions {
 
         if (this.place([position], [this.preview])) {
             if (this.player.singleBuildingPlacement) this.player.unselectBuilding()
-            else if (selectedBuilding === ActorType.Stakewall) {
+            else if (supportsLinePlacement(selectedBuilding)) {
                 this.setPlaceholder(selectedBuilding)
             }
         }
@@ -332,7 +345,7 @@ export class BuildInteractions {
             if (!position || (position[0] === drag.end[0] && position[1] === drag.end[1]))
                 return
             drag.end = position
-            this.showWallLine(snapWallLine(drag.start, position))
+            this.showWallLine(this.snapLine(drag.start, position))
         } else {
             this.updateHover(position)
         }

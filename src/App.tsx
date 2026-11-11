@@ -16,6 +16,7 @@ import { Tab } from '+ui/components/tabs/Tab'
 import { Tabs } from '+ui/components/tabs/Tabs'
 import { useLocalStorage } from '+ui/hooks/useLocalStorage'
 import { ConfigForm } from '+ui/modules/config/ConfigForm'
+import { GameClock } from '+ui/modules/config/GameClock'
 import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 import { TerrainSeed } from '+ui/modules/terrain/TerrainSeed'
@@ -102,6 +103,7 @@ function App() {
 
         const floraSpawner = new FloraSpawner(game, naturePlayer, seed)
         floraSpawner.bulkSpawnPlants()
+        game.wildlife?.seed(seed)
 
         if (!isShowcase) humanPlayer.selectBuilding(ActorType.Guildhall, undefined, true)
 
@@ -271,11 +273,14 @@ function App() {
                                     </Tab>
 
                                     <Tab label="Spawn" icon={Users}>
-                                        <SpawnList humanPlayer={humanPlayer} />
+                                        <SpawnList
+                                            game={game}
+                                            humanPlayer={humanPlayer}
+                                        />
                                     </Tab>
 
                                     <Tab label="Config" icon={Settings}>
-                                        <ConfigForm />
+                                        <ConfigForm game={game} />
                                     </Tab>
                                     <Tab label="Terrain" icon={Mountain}>
                                         <TerrainSeed
@@ -376,25 +381,29 @@ const SettlementStatus = ({
     )
 
     return (
-        <div className="pointer-events-auto fixed top-3 left-1/2 z-10 flex -translate-x-1/2 gap-4 rounded-lg bg-black/50 px-4 py-2 whitespace-nowrap backdrop-blur-[15px]">
+        <div className="pointer-events-auto fixed top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-4 rounded-lg bg-black/50 px-4 py-2 whitespace-nowrap backdrop-blur-[15px] max-[540px]:gap-2 max-[540px]:px-2">
+            <GameClock game={game} />
+            <span aria-hidden="true" className="h-4 w-px shrink-0 bg-game-gold/60" />
             <span className="inline-flex items-center gap-2">
                 <span className="inline-flex text-game-gold">
                     <Users size={16} aria-hidden="true" />
                 </span>
-                Population:{' '}
+                <span className="max-[540px]:sr-only">Population:</span>
                 <strong className="font-semibold text-game-gold">{population}</strong>
             </span>
             <span className="inline-flex items-center gap-2">
                 <span className="inline-flex text-game-gold">
                     <WoodIcon />
                 </span>
-                Wood: <strong className="font-semibold text-game-gold">{wood}</strong>
+                <span className="max-[540px]:sr-only">Wood:</span>
+                <strong className="font-semibold text-game-gold">{wood}</strong>
             </span>
             <span className="inline-flex items-center gap-2">
                 <span className="inline-flex text-game-gold">
                     <Beef size={16} aria-hidden="true" />
                 </span>
-                Meat: <strong className="font-semibold text-game-gold">{meat}</strong>
+                <span className="max-[540px]:sr-only">Meat:</span>
+                <strong className="font-semibold text-game-gold">{meat}</strong>
             </span>
             <Button
                 className="pointer-events-auto ml-1 rounded-full p-1.5"

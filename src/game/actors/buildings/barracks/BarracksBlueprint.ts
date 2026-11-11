@@ -1,3 +1,4 @@
+import { type BuildingSurface } from '+game/core/buildingSurfaces'
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
 import { type ActorBlueprint } from '+game/types'
 import { type TileCodeGrid } from '+game/world/tileCodes'
@@ -21,6 +22,13 @@ export class BarracksBlueprint implements ActorBlueprint {
         ['🟢', '🧱', '🧱', '🧱', '🛖', '🦶🏽', '🦶🏽', '🦶🏽', '🦶🏽', '🟢', '🟢', '🟢', '🟢'],
         ['🟢', '🧱', '🛖', '🧱', '🦶🏽', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢'],
         ['🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢', '🟢'],
+    ]
+
+    // East entrance: low ramp tread and the raised landing on the model.
+    public readonly standingSurfaces: BuildingSurface[] = [
+        { offset: [5, -3], height: 0.28, exits: [[6, -3]], links: [1] },
+        { offset: [4, -3], height: 0.96, links: [0, 2] },
+        { offset: [4, -2], height: 0.96, links: [1] },
     ]
 
     public height = 4
