@@ -90,6 +90,7 @@ export class Game {
         const index = this.actors.indexOf(actor)
         if (index === -1) return
 
+        if (isWalkableActor(actor)) actor.cancelPath()
         if (actor instanceof ConstructionSiteActor) actor.unassign()
         if (isBuildingActor(actor)) {
             if (!(actor instanceof ConstructionSiteActor)) {

@@ -2,9 +2,8 @@ import { config } from '+config/config'
 import { isHumanActor } from '+game/actors/helpers'
 import { type Actor } from '+game/core/Actor'
 import { WalkableActor } from '+game/core/WalkableActor'
-import { Game } from '+game/Game'
-import { ActorType, type Position } from '+game/types'
-import { addPosition, distanceBetweenPoints } from '+helpers/math'
+import { ActorType } from '+game/types'
+import { distanceBetweenPoints } from '+helpers/math'
 import { random } from '+helpers/random'
 
 import { type HumanActor } from '../human/HumanActor'
@@ -14,6 +13,7 @@ export class BoarActor extends WalkableActor {
     public maxHp = config.boar.hp
     public hp = this.maxHp
     public target?: Actor
+    private retryTicks = 0
 
     public tick(): void {
         super.tick()
@@ -24,12 +24,20 @@ export class BoarActor extends WalkableActor {
             (actor) => actor.type === ActorType.Human,
         ) as HumanActor
 
-        if (human) {
-            this.setTarget(human)
+        if (human) this.setTarget(human)
+        const pursuitRadius = Math.ceil(config.boar.lookEnemyDistance) + 4
+        if (
+            this.target &&
+            (this.target.isDead() ||
+                distanceBetweenPoints(this.position, this.target.position) >
+                    pursuitRadius)
+        ) {
+            this.target = undefined
+            this.cancelPath()
         }
 
         if (this.target) {
-            this.fight()
+            this.fight(pursuitRadius)
         } else {
             this.walkAround()
         }
@@ -42,24 +50,21 @@ export class BoarActor extends WalkableActor {
     }
 
     public setTarget(target: Actor) {
+        if (target === this.target) return
+        this.cancelPath()
         this.target = target
+        this.retryTicks = 0
     }
 
     private walkAround() {
         this.move()
-        if (this.hasPath()) return
+        if (this.hasPath() || this.isFindingPath) return
         if (Math.random() > 0.1) return
 
-        const dis = 5
-        const vector = [random(dis, -dis, true), random(dis, -dis, true)] as Position
-        const position = addPosition(this.position, vector)
-
-        if (this.game.world.hasTile(position)) {
-            this.setPathTo(position)
-        }
+        this.path = this.game.pf.findIdleStep(this.position)
     }
 
-    private fight() {
+    private fight(pursuitRadius: number) {
         if (!this.target) return
         this.move()
 
@@ -70,8 +75,20 @@ export class BoarActor extends WalkableActor {
             if (this.target.isDead()) {
                 this.target = undefined
             }
-        } else {
-            this.setPathTo(this.target.position, true)
+        } else if (!this.hasPath() && !this.isFindingPath && --this.retryTicks <= 0) {
+            const route = this.game.pf.findRoute(
+                this.position,
+                [{ target: this.target, positions: [this.target.position] }],
+                true,
+                pursuitRadius,
+            )
+            if (route) {
+                this.path = route.path
+                this.clipPath()
+                if (this.hasPath()) return
+            }
+            this.path = this.game.pf.findIdleStep(this.position)
+            this.retryTicks = random(4, 8, true)
         }
     }
 
