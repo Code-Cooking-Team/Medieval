@@ -103,6 +103,7 @@ function App() {
 
         const floraSpawner = new FloraSpawner(game, naturePlayer, seed)
         floraSpawner.bulkSpawnPlants()
+        game.wildlife?.seed(seed)
 
         if (!isShowcase) humanPlayer.selectBuilding(ActorType.Guildhall, undefined, true)
 
@@ -272,7 +273,10 @@ function App() {
                                     </Tab>
 
                                     <Tab label="Spawn" icon={Users}>
-                                        <SpawnList humanPlayer={humanPlayer} />
+                                        <SpawnList
+                                            game={game}
+                                            humanPlayer={humanPlayer}
+                                        />
                                     </Tab>
 
                                     <Tab label="Config" icon={Settings}>

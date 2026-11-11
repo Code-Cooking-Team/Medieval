@@ -1,5 +1,5 @@
 import { config } from '+config/config'
-import { type Player, type PlayerJSON } from '+game/player/types'
+import { type Player, type PlayerJSON, PlayerType } from '+game/player/types'
 import { removeArrayItem } from '+helpers/array'
 import { distanceBetweenPoints } from '+helpers/math'
 import { Emitter } from '+lib/Emitter'
@@ -24,6 +24,7 @@ import { InsideTile, type Tile, type TileClass, WallTile, WaterTile } from './wo
 import { applyTileGrid } from './world/tileCodes'
 import { TileType } from './world/types'
 import { SHORE_OVERLAP } from './world/water'
+import { type WildlifeJSON, WildlifePopulation } from './world/WildlifePopulation'
 import { type WordJSON, World } from './world/World'
 
 const DAY_MINUTES = 24 * 60
@@ -34,6 +35,7 @@ const occupiesBuildingSpace = (TileClass: TileClass) =>
 export class Game {
     public pf: Pathfinding
     public actors: Actor[] = []
+    public readonly wildlife?: WildlifePopulation
     loop: any
     private clockMinutes = 8 * 60
 
@@ -56,6 +58,8 @@ export class Game {
         public players: Player[],
     ) {
         this.pf = new Pathfinding(world)
+        const nature = players.find((player) => player.type === PlayerType.Nature)
+        if (nature) this.wildlife = new WildlifePopulation(this, nature)
     }
 
     public start(): void {
@@ -100,6 +104,7 @@ export class Game {
         // One real second is one game minute.
         this.setTimeOfDay(this.clockMinutes + deltaMs / 1000)
         this.pf.tick()
+        this.wildlife?.tick(deltaMs)
         this.actors.forEach((actor) => {
             actor.tick()
         })
@@ -538,6 +543,7 @@ export class Game {
         return {
             world: this.world.toJSON(),
             timeOfDay: this.clockMinutes,
+            wildlife: this.wildlife?.toJSON(),
             constructionTerrainDeferred: true,
             buildingTerrainOwners: true,
             players: this.players.map((player) => player.toJSON()),
@@ -550,6 +556,7 @@ export class Game {
         const players = json.players.map((player) => playerFromJSON(player))
 
         const game = new Game(world, players)
+        if (json.wildlife) game.wildlife?.restore(json.wildlife)
         if (json.timeOfDay !== undefined) game.setTimeOfDay(json.timeOfDay)
 
         game.actors = json.actors.map((actorJson) => {
@@ -582,6 +589,7 @@ export class Game {
 export interface GameJSON {
     world: WordJSON
     timeOfDay?: number
+    wildlife?: WildlifeJSON
     constructionTerrainDeferred?: true
     buildingTerrainOwners?: true
     players: PlayerJSON[]
