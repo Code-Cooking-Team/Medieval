@@ -5,7 +5,6 @@ import { type ClockInfo } from '+game/types'
 import {
     AmbientLight,
     type Camera,
-    Color,
     DirectionalLight,
     EquirectangularReflectionMapping,
     Fog,
@@ -15,6 +14,7 @@ import {
 } from 'three'
 
 import { BasicRenderer } from './lib/BasicRenderer'
+import { SkyRenderer } from './SkyRenderer'
 import hdrUrl from './textures/bg.jpg'
 
 const SHADOW_SCALE = 3
@@ -22,6 +22,8 @@ const SHADOW_SCALE = 3
 export class EnvironmentRenderer extends BasicRenderer {
     // Three.js used to multiply these light intensities by PI.
     public readonly sun = new DirectionalLight(0xfff2c7, 3.2 * Math.PI)
+    private readonly sky = new SkyRenderer()
+    private readonly fog = new Fog(this.sky.horizon)
     private sunTarget = new Object3D()
     public readonly ambient = new AmbientLight(0xdae6e8, 0.1 * Math.PI)
 
@@ -32,12 +34,15 @@ export class EnvironmentRenderer extends BasicRenderer {
     ) {
         super()
 
-        if (config.renderer.fog) {
-            const fog = new Fog(new Color(0xa2d3e8), 0, 150)
-            this.scene.fog = fog
+        this.scene.add(this.sky.mesh)
+        this.scene.onBeforeRender = () => {
+            // Depth and outline passes use override materials.
+            this.sky.mesh.visible = this.scene.overrideMaterial === null
         }
 
-        this.scene.background = new Color(0xa2d3e8)
+        this.scene.onAfterRender = () => {
+            this.sky.mesh.visible = true
+        }
 
         if (config.renderer.shadow) {
             this.sun.castShadow = true
@@ -65,7 +70,6 @@ export class EnvironmentRenderer extends BasicRenderer {
         loader.load(hdrUrl, (texture) => {
             texture.mapping = EquirectangularReflectionMapping
             this.scene.environment = texture
-            // this.scene.background = texture
         })
 
         this.scene.add(this.sun)
@@ -74,7 +78,14 @@ export class EnvironmentRenderer extends BasicRenderer {
     }
 
     public render({ elapsedTime }: ClockInfo) {
-        if (!config.renderer.dayAndNightMode) return
+        if (!config.renderer.dayAndNightMode) {
+            this.sun.position.set(4, 10, 1)
+            this.sunTarget.position.set(0, 0, 0)
+            this.sun.color.setHex(0xfff2c7)
+            this.ambient.color.setHex(0xdae6e8)
+            this.updateSky()
+            return
+        }
 
         const time =
             elapsedTime / config.renderer.dayAndNightTimeScale +
@@ -86,7 +97,6 @@ export class EnvironmentRenderer extends BasicRenderer {
 
         this.sunTarget.position.copy(this.camera.position)
         this.sunTarget.position.y = 0
-        this.sun.target = this.sunTarget
 
         this.sun.shadow.camera.left = -SHADOW_SCALE * this.camera.position.y
         this.sun.shadow.camera.right = SHADOW_SCALE * this.camera.position.y
@@ -105,27 +115,26 @@ export class EnvironmentRenderer extends BasicRenderer {
             (Math.sin(time * 1 + 1.9) * 0.5 + 0.6) / 4,
         )
 
-        this.scene.background = new Color().setHSL(
-            10 + Math.sin(time * 1) * 0.1,
-            Math.sin(time * 1) / 2,
-            // Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
-            0.3, // for bloom to keep the eyes from burning
-        )
+        this.updateSky(time)
+    }
 
-        if (config.renderer.fog) {
-            const fogColor = new Color().setHSL(
-                10 + Math.sin(time * 1) * 0.1,
-                Math.sin(time * 1) / 2,
-                // Math.sin(time * 1 + 1.9) * 0.4 + 0.5,
-                0.3, // for bloom to keep the eyes from burning
-            )
-
-            this.scene.fog = new Fog(
-                fogColor,
-                config.renderer.fogTransparency,
-                (Math.sin(time * 1) + config.renderer.fogTransparency * 1.5 * 50 + 400) *
-                    config.renderer.tileSize,
+    private updateSky(phase?: number) {
+        this.sky.update(this.sun.position, this.sunTarget.position, phase)
+        const { fog, fogTransparency, tileSize } = config.renderer
+        this.scene.fog = fog ? this.fog : null
+        if (fog) {
+            this.fog.color.copy(this.sky.horizon)
+            this.fog.near = fogTransparency
+            this.fog.far = Math.max(
+                fogTransparency + tileSize,
+                (fogTransparency * 75 + 65) * tileSize,
             )
         }
+    }
+
+    public destroy() {
+        this.sky.destroy()
+        this.scene.onBeforeRender = () => {}
+        this.scene.onAfterRender = () => {}
     }
 }
