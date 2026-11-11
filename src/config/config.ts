@@ -33,8 +33,6 @@ export const { config, resetConfig, saveConfig } = createConfig({
         fog: true,
         fogTransparency: 3,
         dayAndNightMode: true,
-        dayAndNightTimeScale: 600,
-        dayAndNightTimeStart: 1,
         shadow: true,
         shadowResolution: select('1280', ['512', '1024', '1280', '2048', '4096']),
         treeWaving: true,

@@ -160,7 +160,7 @@ export class HumanActor extends WalkableActor {
     private walkAround() {
         this.move()
         if (this.hasPath() || this.isFindingPath) return
-        if (Math.random() > config.human.randomWalkChance) return
+        if (this.game.isNight || Math.random() > config.human.randomWalkChance) return
         if (!this.home) return
 
         const dis = config.human.walkAroundHomeDistance

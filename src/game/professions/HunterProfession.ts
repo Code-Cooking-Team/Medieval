@@ -80,6 +80,7 @@ export class HunterProfession extends Profession {
 
         let prey = this.preyId ? this.game.getActorById(this.preyId) : undefined
         if (!prey || !this.isLive(prey)) {
+            if (this.game.isNight) return
             const route = this.game.pf.findRoute(
                 this.actor.position,
                 this.game

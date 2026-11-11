@@ -1,7 +1,7 @@
 import { config } from '+config/config'
 import { type Player, type PlayerJSON } from '+game/player/types'
-import { distanceBetweenPoints } from '+helpers/math'
 import { removeArrayItem } from '+helpers/array'
+import { distanceBetweenPoints } from '+helpers/math'
 import { Emitter } from '+lib/Emitter'
 
 import { actorByType, actorFromJSON } from './actors'
@@ -26,6 +26,7 @@ import { TileType } from './world/types'
 import { SHORE_OVERLAP } from './world/water'
 import { type WordJSON, World } from './world/World'
 
+const DAY_MINUTES = 24 * 60
 const BUILDING_APRON_RADIUS = 5
 const occupiesBuildingSpace = (TileClass: TileClass) =>
     TileClass === WallTile || TileClass === InsideTile || TileClass === WaterTile
@@ -34,9 +35,11 @@ export class Game {
     public pf: Pathfinding
     public actors: Actor[] = []
     loop: any
+    private clockMinutes = 8 * 60
 
     public emitter = new Emitter<{
         tick: undefined
+        timeChanged: undefined
         actorAdded: Actor
         actorRemoved: Actor
         equipmentChanged: HumanActor
@@ -58,8 +61,11 @@ export class Game {
     public start(): void {
         this.emitter.emit('started')
 
+        let previousTick = performance.now()
         this.loop = setInterval(() => {
-            this.tick()
+            const now = performance.now()
+            this.tick(now - previousTick)
+            previousTick = now
         }, config.core.tickTime)
 
         this.world.emitter.on('tailUpdate', this.handleTailUpdate)
@@ -73,7 +79,26 @@ export class Game {
         this.world.emitter.off('tailUpdate', this.handleTailUpdate)
     }
 
-    public tick(): void {
+    public get timeOfDay() {
+        return this.clockMinutes
+    }
+
+    public get isNight() {
+        return this.clockMinutes < 6 * 60 || this.clockMinutes >= 18 * 60
+    }
+
+    public setTimeOfDay(minutes: number) {
+        if (!Number.isFinite(minutes)) return
+        const previousMinute = Math.floor(this.clockMinutes)
+        this.clockMinutes = ((minutes % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES
+        if (Math.floor(this.clockMinutes) !== previousMinute) {
+            this.emitter.emit('timeChanged')
+        }
+    }
+
+    public tick(deltaMs = config.core.tickTime): void {
+        // One real second is one game minute.
+        this.setTimeOfDay(this.clockMinutes + deltaMs / 1000)
         this.pf.tick()
         this.actors.forEach((actor) => {
             actor.tick()
@@ -512,6 +537,7 @@ export class Game {
     public toJSON(): GameJSON {
         return {
             world: this.world.toJSON(),
+            timeOfDay: this.clockMinutes,
             constructionTerrainDeferred: true,
             buildingTerrainOwners: true,
             players: this.players.map((player) => player.toJSON()),
@@ -524,6 +550,7 @@ export class Game {
         const players = json.players.map((player) => playerFromJSON(player))
 
         const game = new Game(world, players)
+        if (json.timeOfDay !== undefined) game.setTimeOfDay(json.timeOfDay)
 
         game.actors = json.actors.map((actorJson) => {
             const player = players.find((player) => player.id === actorJson.playerId)
@@ -554,6 +581,7 @@ export class Game {
 
 export interface GameJSON {
     world: WordJSON
+    timeOfDay?: number
     constructionTerrainDeferred?: true
     buildingTerrainOwners?: true
     players: PlayerJSON[]
