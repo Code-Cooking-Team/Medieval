@@ -50,7 +50,7 @@ export class SelectionPortraitRenderer {
         if (isBuildingActor(actor)) {
             const { model, promise } = actor.blueprint.getPlaceholder(actor.seed)
             void promise.then(() => {
-                if (this.disposed) return
+                if (this.disposed || this.model) return
                 model.traverse((node) => {
                     if (node instanceof LOD) node.autoUpdate = false
                 })
@@ -67,7 +67,7 @@ export class SelectionPortraitRenderer {
         sun: DirectionalLight,
         ambient: AmbientLight,
     ) {
-        if (!isBuildingActor(this.actor) && source) {
+        if (source) {
             const nodes: Object3D[] = []
             source.traverse((node) => nodes.push(node))
             if (

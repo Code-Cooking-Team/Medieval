@@ -9,6 +9,7 @@ import { ConstructionSiteActor } from './actors/buildings/construction/Construct
 import { type ConstructionType } from './actors/buildings/construction/costs'
 import type { GuildhallActor } from './actors/buildings/guildhall/GuildhallActor'
 import type { HunterHutActor } from './actors/buildings/hunterHut/HunterHutActor'
+import { TimberGateActor } from './actors/buildings/timberGate/TimberGateActor'
 import { BushActor } from './actors/flora/bush/BushActor'
 import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
 import { RockActor } from './actors/RockActor'
@@ -135,6 +136,7 @@ export class Game {
             })
         }
         if (actor instanceof ConstructionSiteActor) actor.unassign()
+        if (actor instanceof TimberGateActor) actor.setOpen(true)
         if (isBuildingActor(actor)) {
             if (!(actor instanceof ConstructionSiteActor)) {
                 this.restoreBuildingTerrain(actor)

@@ -4,48 +4,22 @@ import { BuildingModel } from '+game/renderer/lib/BuildingModel'
 import { type ActorBlueprint } from '+game/types'
 import { type TileCodeGrid } from '+game/world/tileCodes'
 
-import { BoxGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
+import { Group } from 'three'
+
+import { boards, brace, plank, timberDeck } from '../timberModel'
 
 const stairLength = 4
 const stairCenter = -0.5
 const stairRisePerTile = deckHeight / stairLength
 
-const timber = new MeshStandardMaterial({ color: 0x68472d })
-const boards = new MeshStandardMaterial({ color: 0x9a7249 })
-
-function plank(
-    model: Group,
-    width: number,
-    height: number,
-    depth: number,
-    x: number,
-    y: number,
-    z: number,
-    material = timber,
-) {
-    const mesh = new Mesh(new BoxGeometry(width, height, depth), material)
-    mesh.position.set(x, y, z)
-    mesh.castShadow = mesh.receiveShadow = true
-    model.add(mesh)
-    return mesh
-}
-
 function galleryModel() {
     const model = new Group()
-    for (let board = 0; board < 4; board++) {
-        plank(model, 1, 0.12, 0.25, 0, deckHeight - 0.06, -0.375 + board / 4, boards)
+    timberDeck(model, 1, deckHeight)
+    for (const x of [-0.35, 0.35]) {
+        plank(model, 0.18, deckHeight - 0.26, 0.2, x, (deckHeight - 0.38) / 2, 0)
     }
-    for (const x of [-0.37, 0.37]) {
-        plank(model, 0.13, 0.17, 1, x, deckHeight - 0.19, 0)
-        for (const z of [-0.35, 0.35])
-            plank(model, 0.12, deckHeight, 0.12, x, deckHeight / 2 - 0.09, z)
-        plank(model, 0.09, 0.09, 0.76, x, deckHeight - 0.36, 0).rotation.x =
-            Math.sign(x) * 0.32
-    }
-    for (const z of [-0.35, 0.35]) {
-        plank(model, 0.78, 0.09, 0.09, 0, deckHeight - 0.36, z).rotation.z =
-            Math.sign(z) * 0.32
-    }
+    plank(model, 1, 0.21, 0.23, 0, deckHeight - 0.265, 0)
+    brace(model, [-0.35, deckHeight - 1.08, 0], [0.35, deckHeight - 0.35, 0], 0.11)
     return model
 }
 
@@ -57,7 +31,16 @@ function stairModel() {
     for (let step = 0; step < stepCount; step++) {
         const z = bottom - (step + 0.5) * treadDepth
         const height = ((step + 1) * deckHeight) / stepCount
-        plank(model, 0.94, 0.13, treadDepth, 0, height - 0.065, z, boards)
+        plank(
+            model,
+            0.94,
+            0.13,
+            treadDepth - 0.006,
+            0,
+            height - 0.065,
+            z,
+            boards[step % boards.length],
+        )
     }
     const slope = Math.atan2(deckHeight, stairLength)
     for (const x of [-0.36, 0.36]) {

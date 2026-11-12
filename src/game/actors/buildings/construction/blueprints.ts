@@ -7,6 +7,7 @@ import { woodCampBlueprint } from '+game/actors/buildings/woodCamp/WoodCampBluep
 import { type ActorBlueprint, ActorType } from '+game/types'
 
 import { galleryBlueprint, galleryStairsBlueprint } from '../gallery/galleryBlueprints'
+import { timberGateBlueprint } from '../timberGate/timberGateBlueprint'
 import type { ConstructionType } from './costs'
 
 export const buildingBlueprints = {
@@ -17,5 +18,6 @@ export const buildingBlueprints = {
     [ActorType.Gallery]: galleryBlueprint,
     [ActorType.GalleryStairs]: galleryStairsBlueprint,
     [ActorType.Stakewall]: stakewallBlueprint,
+    [ActorType.TimberGate]: timberGateBlueprint,
     [ActorType.WoodCamp]: woodCampBlueprint,
 } satisfies Record<ConstructionType, ActorBlueprint>

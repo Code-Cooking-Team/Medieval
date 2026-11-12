@@ -29,7 +29,6 @@ import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { type ActorRenderer } from './renderer/lib/ActorRenderer'
 import { type BasicRenderer } from './renderer/lib/BasicRenderer'
-import { InstancedBuildingRenderer } from './renderer/lib/InstancedBuildingRenderer'
 import { SelectionPortraitRenderer } from './renderer/SelectionPortraitRenderer'
 import { StandingSurfaceRenderer } from './renderer/StandingSurfaceRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
@@ -182,9 +181,7 @@ export class Renderer {
 
     public getStandingSurfaceHit(raycaster: Raycaster) {
         const buildings = this.actorRendererList.flatMap((renderer) =>
-            renderer instanceof InstancedBuildingRenderer
-                ? renderer.getSolidMeshes()
-                : [],
+            renderer.getSolidMeshes(),
         )
         for (const mesh of buildings) mesh.updateWorldMatrix(true, false)
         const ground = raycaster.intersectObjects(this.getGroundChildren())[0]
