@@ -1,6 +1,6 @@
 import { changeColorLightnessSaturation, generateSimilarColor } from '+helpers/color'
-import { type ClassType } from '+helpers/types'
 import { random } from '+helpers/random'
+import { type ClassType } from '+helpers/types'
 
 import { omitBy } from 'lodash'
 
@@ -86,6 +86,17 @@ export class StepTile extends Tile {
     public height = random(1, 2) + 0.2
 }
 
+export class RockTile extends Tile {
+    public type = TileType.Rock
+    public rockSize: 1 | 2 | 3 = 2
+
+    public override getData(): Partial<TileJSON> {
+        return { ...super.getData(), rockSize: this.rockSize }
+    }
+    public canBuild = false
+    public canWalk = false
+}
+
 export class WaterTile extends Tile {
     public type = TileType.Water
     public color = generateSimilarColor(0xbdb675, 10)
@@ -140,6 +151,7 @@ const tileByType: Record<TileType, TileClass> = {
     [TileType.Meadow]: MeadowTile,
     [TileType.Sand]: SandTile,
     [TileType.Step]: StepTile,
+    [TileType.Rock]: RockTile,
     [TileType.Water]: WaterTile,
     [TileType.Wall]: WallTile,
     [TileType.Inside]: InsideTile,

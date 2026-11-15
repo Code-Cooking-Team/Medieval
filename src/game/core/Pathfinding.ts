@@ -1,8 +1,18 @@
-import { type Path, type Position } from '+game/types'
+import { getCliffFaceSurfaces } from '+game/world/cliffFaceSurfaces'
+import { type Path, type PathStep, type Position } from '+game/types'
+import { getCliffShelves } from '+game/world/cliffShelves'
+import { SMALL_ROCK_TOP } from '+game/world/rockPlacement'
+import { RockTile } from '+game/world/Tile'
 import { type World } from '+game/world/World'
 import { randomArrayItem } from '+helpers/array'
 
 import EasyStar from 'easystarjs'
+
+import {
+    MAX_STEP_HEIGHT,
+    type StandingSurface,
+    StandingSurfaces,
+} from './StandingSurfaces'
 
 type FindPathResult =
     | {
@@ -32,8 +42,10 @@ const entryDirections = [
     EasyStar.BOTTOM_LEFT,
     EasyStar.BOTTOM_RIGHT,
 ]
-const MAX_STEP_HEIGHT = 1.1
 const MAX_SEARCH_TICKS = 8
+const MAX_LAYERED_EXPANSIONS = 8000
+
+export const rockSurfaceId = (position: Position) => `rock:${position.join(',')}`
 
 export interface RouteGoal<T> {
     target: T
@@ -44,8 +56,12 @@ export class Pathfinding {
     private easyStar = new EasyStar.js()
     private pending = new Map<number, { ticksAtFront: number; expire: () => void }>()
     private gridRevision = -1
+    private lowCliffClearance = new Set<string>()
+
+    public readonly surfaces: StandingSurfaces
 
     constructor(private word: World) {
+        this.surfaces = new StandingSurfaces(word)
         this.loadTilesGrid()
     }
 
@@ -65,7 +81,7 @@ export class Pathfinding {
     }
 
     public async findPath(start: Position, end: Position, signal?: AbortSignal) {
-        if (signal?.aborted || !this.word.hasTile(start) || !this.word.hasTile(end))
+        if (signal?.aborted || !this.word.hasTile(start) || !this.canStandOnGround(end))
             return
         const [sx, sy] = start
         const [ex, ey] = end
@@ -108,6 +124,82 @@ export class Pathfinding {
         })
     }
 
+    public canMove(from: PathStep, to: PathStep) {
+        if (!to.surface && !this.canStandOnGround([to.x, to.y])) return false
+        return from.surface || to.surface
+            ? this.surfaces.canStep(from, to)
+            : this.canStep([from.x, from.y], [to.x, to.y])
+    }
+
+    // Preserve ordinary ground routes, but allow a raised route to bridge a
+    // gap if the terrain planner cannot reach the destination.
+    public async findMovementPath(start: PathStep, end: PathStep, signal?: AbortSignal) {
+        if (!start.surface && !end.surface) {
+            const ground = await this.findPath([start.x, start.y], [end.x, end.y], signal)
+            if (ground || !this.surfaces.all().next().value) return ground
+        }
+        if (
+            signal?.aborted ||
+            this.surfaces.height(start) === undefined ||
+            this.surfaces.height(end) === undefined ||
+            (!end.surface && !this.canStandOnGround([end.x, end.y]))
+        )
+            return
+
+        const key = (step: PathStep) => step.surface ?? `${step.x},${step.y}`
+        const heuristic = (step: PathStep) =>
+            Math.max(Math.abs(end.x - step.x), Math.abs(end.y - step.y))
+        type Entry = { step: PathStep; cost: number; parent?: Entry }
+        const startEntry = { step: start, cost: 0 }
+        const best = new Map([[key(start), 0]])
+        const buckets = new Map<number, Entry[]>([[heuristic(start), [startEntry]]])
+        let score = heuristic(start)
+        let expansions = 0
+        while (buckets.size && expansions < MAX_LAYERED_EXPANSIONS) {
+            const bucket = buckets.get(score)
+            if (!bucket) {
+                score++
+                continue
+            }
+            const current = bucket.pop()!
+            if (!bucket.length) buckets.delete(score)
+            const { step, cost } = current
+            if (best.get(key(step)) !== cost) continue
+            expansions++
+            if (key(step) === key(end)) {
+                const path: Path = []
+                for (let entry = current; entry.parent; entry = entry.parent)
+                    path.push(entry.step)
+                return path.reverse()
+            }
+            const neighbors = [...this.surfaces.neighbors(step)]
+            if (!step.surface) {
+                for (const [dx, dy] of steps)
+                    neighbors.push({ x: step.x + dx, y: step.y + dy })
+            }
+            for (const next of neighbors) {
+                const nextCost =
+                    cost +
+                    1 +
+                    (next.surface
+                        ? 0
+                        : (this.word.hasTile([next.x, next.y])?.walkCost ?? 0))
+                const nextKey = key(next)
+                if (
+                    (best.get(nextKey) ?? Infinity) <= nextCost ||
+                    !this.canMove(step, next)
+                )
+                    continue
+                best.set(nextKey, nextCost)
+                const priority = nextCost + heuristic(next)
+                const entry = { step: next, cost: nextCost, parent: current }
+                const pending = buckets.get(priority)
+                if (pending) pending.push(entry)
+                else buckets.set(priority, [entry])
+            }
+        }
+    }
+
     public findIdleStep([x, y]: Position) {
         const neighbors = steps.map(([dx, dy]): Position => [x + dx, y + dy])
         const next = randomArrayItem(
@@ -123,7 +215,7 @@ export class Pathfinding {
 
         const from = this.word.hasTile([x, y])
         const to = this.word.hasTile([nextX, nextY])
-        if (!from || !to?.canWalk) return false
+        if (!from || !to || !this.canStandOnGround([nextX, nextY])) return false
 
         const rise = Math.abs(to.height - from.height)
         if (!dx || !dy) return rise <= MAX_STEP_HEIGHT
@@ -131,7 +223,8 @@ export class Pathfinding {
 
         const horizontal = this.word.hasTile([nextX, y])
         const vertical = this.word.hasTile([x, nextY])
-        if (!horizontal?.canWalk || !vertical?.canWalk) return false
+        if (!horizontal || !vertical ||
+            !this.canStandOnGround([nextX, y]) || !this.canStandOnGround([x, nextY])) return false
         // A diagonal needs a walkable way around the slope within the same square.
         return (
             Math.max(
@@ -169,7 +262,7 @@ export class Pathfinding {
         const destinations = new Map<number, { target: T; priority: number }>()
         goals.forEach(({ positions, target }, order) => {
             for (const position of positions) {
-                if (!this.word.hasTile(position)?.canWalk) continue
+                if (!this.canStandOnGround(position)) continue
                 const index = indexOf(position)
                 if (index !== -1 && !destinations.has(index))
                     destinations.set(index, { target, priority: inOrder ? order : 0 })
@@ -212,17 +305,50 @@ export class Pathfinding {
         return { target: best.target, path: path.reverse() }
     }
 
-    private loadTilesGrid() {
-        const tiles = this.word.tiles.map((row) =>
-            row.map((tile) => (tile.canWalk ? 1 : 0)),
-        )
+    public canStandOnGround(position: Position) {
+        return !!this.word.hasTile(position)?.canWalk &&
+            !this.lowCliffClearance.has(position.join(','))
+    }
 
+    private loadTilesGrid() {
         this.easyStar.removeAllAdditionalPointCosts()
         this.easyStar.removeAllDirectionalConditions()
 
+        const rocks: StandingSurface[] = []
+        this.word.forEachTile((tile, [x, y]) => {
+            if (tile instanceof RockTile && tile.rockSize === 1) {
+                const ground = steps
+                    .slice(0, 4)
+                    .map(([dx, dy]): Position => [x + dx, y + dy])
+                rocks.push({
+                    id: rockSurfaceId([x, y]),
+                    position: [x, y],
+                    height: tile.height + SMALL_ROCK_TOP,
+                    ground,
+                    links: [],
+                    halfWidth: 0.22,
+                })
+            }
+        })
+
+        this.surfaces.replace('rocks', rocks)
+        const shelves = getCliffShelves(this.word).flatMap(({ surfaces }) => surfaces)
+        const occupied = new Set([...rocks, ...shelves].map(({ position }) => position.join(',')))
+        const cliffs = [...shelves, ...getCliffFaceSurfaces(this.word, occupied)]
+        this.surfaces.replace('cliffs', cliffs)
+        this.lowCliffClearance.clear()
+        for (const { position, height } of cliffs) {
+            const clearance = height - this.word.getTile(position).height
+            if (clearance > 0 && clearance < 2.4) {
+                this.lowCliffClearance.add(position.join(','))
+            }
+        }
+        const tiles = this.word.tiles.map((row, y) =>
+            row.map((_, x) => this.canStandOnGround([x, y]) ? 1 : 0),
+        )
         this.word.forEachTile((tile, [x, y]) => {
             if (tile.walkCost) this.easyStar.setAdditionalPointCost(x, y, tile.walkCost)
-            if (!tile.canWalk) return
+            if (!this.canStandOnGround([x, y])) return
             const allowed = entryDirections.filter((_, i) => {
                 const [dx, dy] = steps[i]!
                 return this.canStep([x + dx, y + dy], [x, y])

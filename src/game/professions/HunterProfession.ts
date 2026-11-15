@@ -57,14 +57,10 @@ export class HunterProfession extends Profession {
         if (this.actor.isFindingPath || this.actor.hasPath()) {
             this.route = undefined
             this.preyId = undefined
-            if (!this.actor.isFindingPath) {
-                const next = this.actor.path[0]!
-                if (this.game.pf.canStep(this.actor.position, [next.x, next.y]))
-                    this.actor.move()
-                else this.actor.cancelPath()
-            }
+            if (!this.actor.isFindingPath) this.actor.move()
             return
         }
+        if (this.actor.surface) return
         if (this.retryIn-- > 0) return
 
         if (this.carriedMeat > 0) {
@@ -80,6 +76,7 @@ export class HunterProfession extends Profession {
 
         let prey = this.preyId ? this.game.getActorById(this.preyId) : undefined
         if (!prey || !this.isLive(prey)) {
+            if (this.game.isNight) return
             const route = this.game.pf.findRoute(
                 this.actor.position,
                 this.game
@@ -208,12 +205,10 @@ export class HunterProfession extends Profession {
             this.route = undefined
             return false
         }
-        const position: Position = [next.x, next.y]
-        if (!this.game.pf.canStep(this.actor.position, position)) {
+        if (!this.actor.moveStep(next)) {
             this.route = undefined
             return false
         }
-        this.actor.position = position
         return true
     }
 

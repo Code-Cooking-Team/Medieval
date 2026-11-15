@@ -91,6 +91,12 @@ export abstract class InstancedBuildingRenderer<
         for (const batch of this.outlinedBatches.values()) batch.flush()
     }
 
+    public getSolidMeshes() {
+        return [...this.batches.values(), ...this.outlinedBatches.values()]
+            .map(({ mesh }) => mesh)
+            .filter(({ count }) => count > 0)
+    }
+
     public getSelectedGroups() {
         // OutlinePass can mask the whole batch because it contains only selected actors.
         return Array.from(this.outlinedBatches.values(), ({ mesh }) => mesh).filter(

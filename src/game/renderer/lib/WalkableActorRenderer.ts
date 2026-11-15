@@ -24,7 +24,10 @@ export abstract class WalkableActorRenderer<
 
             const tileX = x * config.renderer.tileSize
             const tileY = y * config.renderer.tileSize
-            const tileHeight = tile.height * config.renderer.tileSize
+            const height = actor.surface
+                ? (this.game.pf.surfaces.height(actor.standingPosition) ?? tile.height)
+                : tile.height
+            const tileHeight = height * config.renderer.tileSize
 
             group.position.x += (tileX - group.position.x) * speed
             group.position.z += (tileY - group.position.z) * speed

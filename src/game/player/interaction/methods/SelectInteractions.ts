@@ -2,6 +2,7 @@ import { isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
 import { type Actor } from '+game/core/Actor'
 import { CAMERA_GESTURE_START } from '+game/core/RTSCamera'
+import { toStep } from '+game/core/StandingSurfaces'
 import { type Game } from '+game/Game'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
@@ -154,6 +155,58 @@ export class SelectInteractions {
         const currentSelected = this.player.selectedActors
         if (!currentSelected.length) return
 
+        const walkableActors = currentSelected.filter(isWalkableActor)
+        const surface = this.finder.findStandingSurfaceByMouseEvent(event)
+        if (surface) {
+            const { surfaces } = this.game.pf
+            const height = surfaces.height(surface)
+            const group = surface.surface && surfaces.get(surface.surface)?.group
+            const destinations = [surface]
+            if (group) {
+                const otherSpots = [...surfaces.all()]
+                    .filter((spot) => spot.group === group && spot.id !== surface.surface)
+                    .sort(
+                        (a, b) =>
+                            Math.hypot(
+                                a.position[0] - surface.x,
+                                a.position[1] - surface.y,
+                            ) -
+                            Math.hypot(
+                                b.position[0] - surface.x,
+                                b.position[1] - surface.y,
+                            ),
+                    )
+                destinations.push(...otherSpots.map(toStep))
+            }
+            const seen = new Set([surface.surface])
+            for (
+                let i = 0;
+                !group &&
+                i < destinations.length &&
+                destinations.length < walkableActors.length;
+                i++
+            ) {
+                const current = destinations[i]!
+                for (const next of surfaces.neighbors(current)) {
+                    if (
+                        !next.surface ||
+                        seen.has(next.surface) ||
+                        Math.abs((surfaces.height(next) ?? Infinity) - (height ?? 0)) >
+                            0.35 ||
+                        !surfaces.canStep(current, next)
+                    )
+                        continue
+                    seen.add(next.surface)
+                    destinations.push(next)
+                }
+            }
+            walkableActors.forEach((actor, index) => {
+                const destination = destinations[index]
+                if (destination) actor.setPathTo(destination)
+            })
+            return
+        }
+
         const interactionActor = this.finder.findActorsByMouseEvent(event)
 
         for (const actor of interactionActor) {
@@ -163,8 +216,6 @@ export class SelectInteractions {
 
         const position = this.finder.findPositionByMouseEvent(event)
         if (!position) return
-
-        const walkableActors = currentSelected.filter(isWalkableActor)
 
         const positions = squareFloodFill(position, walkableActors.length, (position) => {
             if (!this.game.world.hasTile(position)) return false

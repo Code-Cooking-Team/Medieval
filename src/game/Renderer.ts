@@ -29,7 +29,9 @@ import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { type ActorRenderer } from './renderer/lib/ActorRenderer'
 import { type BasicRenderer } from './renderer/lib/BasicRenderer'
+import { InstancedBuildingRenderer } from './renderer/lib/InstancedBuildingRenderer'
 import { SelectionPortraitRenderer } from './renderer/SelectionPortraitRenderer'
+import { StandingSurfaceRenderer } from './renderer/StandingSurfaceRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
 import { type ClockInfo } from './types'
 
@@ -60,6 +62,7 @@ export class Renderer {
     public scene = new Scene()
 
     private clock = new Timer()
+    private standingSurfaceRenderer?: StandingSurfaceRenderer
     private ground: GroundRenderer
     private environment: EnvironmentRenderer
     private water: WaterRenderer
@@ -146,6 +149,7 @@ export class Renderer {
         })
 
         // TODO fix "WARNING: Too many active WebGL contexts three"
+        this.ground.destroy()
         this.basicRendererList.forEach((renderer) => renderer.destroy?.())
         this.composer.passes.forEach((pass) => pass.dispose())
         this.composer.dispose()
@@ -170,6 +174,25 @@ export class Renderer {
 
     public getGroundChildren() {
         return this.ground!.group.children
+    }
+
+    public pickStandingSurfaceMarker(raycaster: Raycaster) {
+        return this.standingSurfaceRenderer?.pick(raycaster)
+    }
+
+    public getStandingSurfaceHit(raycaster: Raycaster) {
+        const buildings = this.actorRendererList.flatMap((renderer) =>
+            renderer instanceof InstancedBuildingRenderer
+                ? renderer.getSolidMeshes()
+                : [],
+        )
+        for (const mesh of buildings) mesh.updateWorldMatrix(true, false)
+        const ground = raycaster.intersectObjects(this.getGroundChildren())[0]
+        const hit = [
+            ...raycaster.intersectObjects(buildings, false),
+            ...(this.ground?.raycastRocks(raycaster) ?? []),
+        ].sort((a, b) => a.distance - b.distance)[0]
+        if (hit && (!ground || hit.distance < ground.distance)) return hit
     }
 
     public getInteractionObjectList() {
@@ -313,6 +336,12 @@ export class Renderer {
 
     private loadRenderers() {
         this.addBasicRenderer(this.ground, false)
+        if (!this.showcase) {
+            this.standingSurfaceRenderer = new StandingSurfaceRenderer(
+                this.game.pf.surfaces,
+            )
+            this.addBasicRenderer(this.standingSurfaceRenderer)
+        }
         this.addBasicRenderer(this.environment)
         this.addBasicRenderer(this.water)
 

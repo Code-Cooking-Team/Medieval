@@ -1,4 +1,4 @@
-import { type Path, type Position } from '+game/types'
+import { type Path, type PathStep, type Position } from '+game/types'
 import { distanceBetweenPoints } from '+helpers/math'
 
 import { Actor, type ActorJSON } from './Actor'
@@ -6,6 +6,11 @@ import { Actor, type ActorJSON } from './Actor'
 export abstract class WalkableActor extends Actor {
     public selectImportance = 4
     public path: Path = []
+    public surface?: string
+
+    public get standingPosition(): PathStep {
+        return { x: this.position[0], y: this.position[1], surface: this.surface }
+    }
 
     private pathRequest?: AbortController
 
@@ -13,17 +18,24 @@ export abstract class WalkableActor extends Actor {
         return this.pathRequest !== undefined
     }
 
-    public async setPathTo(position: Position, clip = false) {
+    public async setPathTo(position: Position | PathStep, clip = false) {
         this.pathRequest?.abort()
         const request = new AbortController()
         this.pathRequest = request
         try {
-            const path = await this.game.pf.findPath(
-                this.position,
-                position,
+            const path = await this.game.pf.findMovementPath(
+                this.standingPosition,
+                Array.isArray(position) ? { x: position[0], y: position[1] } : position,
                 request.signal,
             )
             if (request !== this.pathRequest) return
+            if (
+                path?.some(
+                    (step) =>
+                        step.surface && this.game.pf.surfaces.height(step) === undefined,
+                )
+            )
+                return
             if (path) {
                 this.path = path
                 if (clip) this.clipPath()
@@ -62,27 +74,37 @@ export abstract class WalkableActor extends Actor {
 
         if (!next) return
 
+        if (!this.moveStep(next)) this.cancelPath()
+    }
+
+    public moveStep(next: PathStep) {
         const position: Position = [next.x, next.y]
-        if (!this.game.pf.canStep(this.position, position)) {
-            this.cancelPath()
-            return
-        }
+        const allowed =
+            this.surface || next.surface
+                ? this.game.pf.canMove(this.standingPosition, next)
+                : this.game.pf.canStep(this.position, position)
+        if (!allowed) return false
         this.position = position
+        this.surface = next.surface
+        return true
     }
 
     public toJSON(): WalkableActorJSON {
         return {
             ...super.toJSON(),
             path: [...this.path],
+            surface: this.surface,
         }
     }
 
-    public fromJSON({ path, ...json }: WalkableActorJSON) {
+    public fromJSON({ path, surface, ...json }: WalkableActorJSON) {
         super.fromJSON(json)
         this.path = [...path]
+        this.surface = surface
     }
 }
 
 export interface WalkableActorJSON extends ActorJSON {
     path: Path
+    surface?: string
 }

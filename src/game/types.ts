@@ -1,10 +1,12 @@
 import { type Group, type LOD } from 'three'
 
+import { type BuildingSurface } from './core/buildingSurfaces'
 import { type TileCodeGrid } from './world/tileCodes'
 
 export type Position = [number, number]
 
-export type Path = { x: number; y: number }[]
+export type PathStep = { x: number; y: number; surface?: string }
+export type Path = PathStep[]
 
 export enum ActorType {
     Empty = 'Empty',
@@ -16,10 +18,15 @@ export enum ActorType {
     HunterHut = 'HunterHut',
     Barracks = 'Barracks',
     Stakewall = 'Stakewall',
+    Gallery = 'Gallery',
+    GalleryStairs = 'GalleryStairs',
     ConstructionSite = 'ConstructionSite',
 
     Tree = 'Tree',
     Bush = 'Bush',
+    SmallRock = 'SmallRock',
+    MediumRock = 'MediumRock',
+    LargeRock = 'LargeRock',
     Boar = 'Boar',
     Deer = 'Deer',
 }
@@ -33,8 +40,16 @@ export const actorTypesByCategory = {
         ActorType.HunterHut,
         ActorType.Barracks,
         ActorType.Stakewall,
+        ActorType.Gallery,
+        ActorType.GalleryStairs,
     ],
-    Other: [ActorType.Tree, ActorType.Bush],
+    Other: [
+        ActorType.Tree,
+        ActorType.Bush,
+        ActorType.SmallRock,
+        ActorType.MediumRock,
+        ActorType.LargeRock,
+    ],
 }
 
 export const allActorTypes = Object.values(ActorType).filter(
@@ -47,6 +62,7 @@ export interface ClockInfo {
 }
 
 export interface ActorBlueprint {
+    standingSurfaces?: readonly BuildingSurface[]
     getPlaceholder(seed?: number): { model: Group | LOD; promise: Promise<void> }
     getGrid(): TileCodeGrid
     height: number

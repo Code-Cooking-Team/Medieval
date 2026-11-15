@@ -2,9 +2,11 @@ import { seededRandom } from '+helpers/random'
 
 import { generateWater } from './generateWater'
 import { riverDatum } from './riverRouting'
+import { prepareRockPlacement, type RockSize } from './rockPlacement'
 import { createTerrainNoise, mix, smooth } from './terrainNoise'
 import { createTerrainRegions } from './terrainRegions'
-import { ForestTile, MeadowTile, SandTile, StepTile, WaterTile } from './Tile'
+import { ForestTile, MeadowTile, RockTile, SandTile, StepTile, WaterTile } from './Tile'
+import { type TileGrid, TileType } from './types'
 import { World } from './World'
 
 export const DEFAULT_WORLD_SEED = 18
@@ -106,7 +108,57 @@ export function generateWorld(seed = DEFAULT_WORLD_SEED, chunkY = 0) {
             return tile
         })
     })
+    placeRockFormations(tiles, seed, offsetY)
     return new World(tiles, regions, seed)
+}
+
+function placeRockFormations(tiles: TileGrid, seed: number, offsetY: number) {
+    const random = seededRandom(seed ^ offsetY ^ 0x471ac83)
+    const clusterRandom = seededRandom(seed ^ offsetY ^ 0x6bca531)
+    const spacing = 20
+    const offsets = [
+        [-4, 0],
+        [4, 0],
+        [0, -4],
+        [0, 4],
+    ] as const
+    const sizeRandom = seededRandom(seed ^ offsetY ^ 0x283bd1)
+    const place = (x: number, y: number) => {
+        const height = tiles[y]![x]!.height
+        const nearCliff = offsets.some(([dx, dy]) => {
+            const neighbor = tiles[y + dy]?.[x + dx]
+            return (
+                neighbor &&
+                (neighbor.type === TileType.Step ||
+                    Math.abs(neighbor.height - height) > 2)
+            )
+        })
+        if (sizeRandom() > (nearCliff ? 0.92 : 0.24)) return false
+        const sizeRoll = sizeRandom()
+        const size: RockSize = sizeRoll < 0.28 ? 1 : sizeRoll < 0.79 ? 2 : 3
+        const replacements = prepareRockPlacement(tiles, [x, y], size)
+        if (!replacements) return false
+        for (const { x, y, tile } of replacements) tiles[y]![x] = tile
+        return true
+    }
+
+    for (let top = 4; top + spacing < tiles.length - 4; top += spacing) {
+        for (let left = 4; left + spacing < tiles[0]!.length - 4; left += spacing) {
+            if (random() > 0.48) continue
+            const x = left + Math.floor(random(2, spacing - 2))
+            const y = top + Math.floor(random(2, spacing - 2))
+            if (!place(x, y) || clusterRandom() > 0.45) continue
+
+            // Try neighboring sites around the first rock, with space between footprints.
+            const first = Math.floor(clusterRandom(0, offsets.length))
+            const target = Math.floor(clusterRandom(1, 3))
+            let placed = 0
+            for (let i = 0; i < offsets.length && placed < target; i++) {
+                const [dx, dy] = offsets[(first + i) % offsets.length]!
+                if (place(x + dx, y + dy)) placed++
+            }
+        }
+    }
 }
 
 function blendColor(dark: number, light: number, tint: number) {

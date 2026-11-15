@@ -238,3 +238,21 @@ test('hunters wait when all huts are full and resume after space becomes availab
     hut.meatStock = 0
     tickUntil(game, () => hut.meatStock === 20)
 })
+
+test('restores the clock and starts new hunts only during daytime', () => {
+    const { game, hunter, deer } = fixture()
+    const prey = deer()
+    game.setTimeOfDay(23 * 60 + 30)
+    game.tick(60_000)
+    expect(game.timeOfDay).toBe(30)
+    expect(hunter.preyId).toBeUndefined()
+
+    const save = game.toJSON()
+    expect(Game.fromJSON(save).timeOfDay).toBe(30)
+    delete save.timeOfDay
+    expect(Game.fromJSON(save).timeOfDay).toBe(8 * 60)
+
+    game.setTimeOfDay(6 * 60)
+    game.tick()
+    expect(hunter.preyId).toBe(prey.id)
+})

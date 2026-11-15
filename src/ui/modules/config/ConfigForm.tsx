@@ -1,4 +1,5 @@
 import { config, configOptions, resetConfig, saveConfig } from '+config'
+import type { Game } from '+game/Game'
 import { Accordion } from '+ui/components/accordion/Accordion'
 import { AccordionItem } from '+ui/components/accordion/AccordionItem'
 import { useTimeoutState } from '+ui/hooks/useTimeoutState'
@@ -8,8 +9,9 @@ import { useState } from 'react'
 
 import { Button } from '../../components/base/Button'
 import { ConfigItem } from './ConfigItem'
+import { GameClock } from './GameClock'
 
-export const ConfigForm = () => {
+export const ConfigForm = ({ game }: { game: Game }) => {
     const [showReload, setShowReload] = useTimeoutState(false)
 
     const [, count] = useState(0)
@@ -20,6 +22,9 @@ export const ConfigForm = () => {
         <>
             <div className="p-2">
                 <Accordion>
+                    <AccordionItem value="time" label="Time">
+                        <GameClock game={game} editable />
+                    </AccordionItem>
                     {toPairs(configOptions).map(([categoryKey, category]) => {
                         const configCategory = (config as any)[categoryKey]
 

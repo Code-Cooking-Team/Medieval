@@ -6,6 +6,7 @@ export enum TileType {
     Meadow = 'Meadow',
     Sand = 'Sand',
     Step = 'Step',
+    Rock = 'Rock',
     Water = 'Water',
     Wall = 'Wall',
     Inside = 'Inside',
@@ -24,6 +25,7 @@ export interface TileJSON {
     color?: number
     height?: number
     treeChance?: number
+    rockSize?: 1 | 2 | 3
     buildingId?: string
     previousTile?: TileJSON
 }

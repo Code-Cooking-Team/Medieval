@@ -1,6 +1,5 @@
 import { config } from '+config'
 import { type Game } from '+game/Game'
-import { type ClockInfo } from '+game/types'
 
 import {
     AmbientLight,
@@ -77,8 +76,9 @@ export class EnvironmentRenderer extends BasicRenderer {
         this.scene.add(this.ambient)
     }
 
-    public render({ elapsedTime }: ClockInfo) {
+    public render() {
         if (!config.renderer.dayAndNightMode) {
+            this.sun.intensity = 3.2 * Math.PI
             this.sun.position.set(4, 10, 1)
             this.sunTarget.position.set(0, 0, 0)
             this.sun.color.setHex(0xfff2c7)
@@ -87,12 +87,12 @@ export class EnvironmentRenderer extends BasicRenderer {
             return
         }
 
-        const time =
-            elapsedTime / config.renderer.dayAndNightTimeScale +
-            config.renderer.dayAndNightTimeStart
+        const time = ((this.game.timeOfDay / 60 - 12) / 24) * 2 * Math.PI
+        const daylight = Math.max(0, Math.cos(time))
+        this.sun.intensity = 3.2 * Math.PI * daylight
 
         this.sun.position.x = this.camera.position.x + Math.sin(time * 1) * 50
-        this.sun.position.y = 20 + Math.cos(time * 1) * 50
+        this.sun.position.y = Math.cos(time) * 50
         this.sun.position.z = this.camera.position.z + Math.cos(time * 1) * 50 * -1
 
         this.sunTarget.position.copy(this.camera.position)
@@ -106,13 +106,13 @@ export class EnvironmentRenderer extends BasicRenderer {
         this.sun.color.setHSL(
             10 + Math.sin(time * 1) * 0.1,
             Math.sin(time * 1),
-            Math.sin(time * 1 + 1.9) * 0.5 + 0.12,
+            0.45 + daylight * 0.4,
         )
 
         this.ambient.color.setHSL(
             10 + Math.sin(time * 1) * 0.1,
             Math.sin(time * 1),
-            (Math.sin(time * 1 + 1.9) * 0.5 + 0.6) / 4,
+            0.12 + daylight * 0.18,
         )
 
         this.updateSky(time)
