@@ -1,7 +1,10 @@
-import { isBuildingActor } from '+game/actors/helpers'
+import { isBuildingActor, isHumanActor } from '+game/actors/helpers'
 import type { Actor } from '+game/core/Actor'
 import type { Renderer } from '+game/Renderer'
-import { selectionPortraitLayout } from '+game/renderer/selectionPortraitLayout'
+import {
+    selectionPortraitCenterX,
+    selectionPortraitSize,
+} from '+game/renderer/selectionPortraitLayout'
 
 import { useLayoutEffect, useRef } from 'react'
 
@@ -13,6 +16,7 @@ export function SelectionPortrait({
     renderer: Renderer
 }) {
     const canvas = useRef<HTMLCanvasElement>(null)
+    const { width, height } = selectionPortraitSize(isHumanActor(actor))
     useLayoutEffect(() => {
         if (canvas.current) return renderer.attachPortrait(canvas.current, actor)
     }, [actor, renderer])
@@ -22,9 +26,9 @@ export function SelectionPortrait({
             ref={canvas}
             aria-hidden="true"
             style={{
-                width: selectionPortraitLayout.width,
-                height: selectionPortraitLayout.height,
-                left: selectionPortraitLayout.centerX - selectionPortraitLayout.width / 2,
+                width,
+                height,
+                left: selectionPortraitCenterX - width / 2,
                 bottom: isBuildingActor(actor) ? -28 : 0,
             }}
         />
