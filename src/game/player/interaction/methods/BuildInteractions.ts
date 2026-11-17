@@ -199,15 +199,14 @@ export class BuildInteractions {
             )
         }
         if (actorByType[type].blueprint && !this.canBuild(positions)) return false
-        return positions.every(
-            (position, index) =>
-                !!this.game.spawnActor(
-                    actorByType[type].actorClass,
-                    this.player,
-                    position,
-                    rotation,
-                    previews[index]?.seed,
-                ),
+        return this.game.spawnActors(
+            actorByType[type].actorClass,
+            this.player,
+            positions.map((position, index) => ({
+                position,
+                seed: previews[index]?.seed,
+            })),
+            rotation,
         )
     }
 

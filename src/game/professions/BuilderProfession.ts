@@ -1,8 +1,10 @@
 import type { ConstructionSiteActor } from '+game/actors/buildings/construction/ConstructionSiteActor'
-import { hasWoodStorage } from '+game/actors/helpers'
+import { hasWoodStorage, isHumanActor } from '+game/actors/helpers'
 import type { ItemId } from '+game/actors/units/human/equipment'
 import type { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
-import { ActorType, type Path } from '+game/types'
+import { ActorType, type Path, type Position } from '+game/types'
+
+import { shuffle } from 'lodash'
 
 import { Profession, type ProfessionJSON } from './Profession'
 import { ProfessionType } from './types'
@@ -14,6 +16,7 @@ const retryTicks = 4
 type Job = {
     site?: ConstructionSiteActor
     camp?: WoodStorageBuilding
+    work?: { position: Position; target: Position }
     path: Path
     tileRevision: number
 }
@@ -84,11 +87,11 @@ export class BuilderProfession extends Profession {
             return
         }
 
-        const { site, camp } = job
-        if (site && !camp) {
+        const { site, camp, work } = job
+        if (site && work) {
             const delivered = site.deliver(this, Math.min(this.carriedWood, woodPerTick))
             this.carriedWood -= delivered
-            if (delivered > 0) this.actor.recordAction('build', site)
+            if (delivered > 0) this.actor.recordAction('build', work.target)
             if (!this.carriedWood) this.job = undefined
             return
         }
@@ -111,25 +114,38 @@ export class BuilderProfession extends Profession {
             )
             .filter((site) => site.isAssignedTo(this) && site.remainingWood > 0)
         this.queue = sites.map(({ id }) => id)
+        if (!sites.length && !this.carriedWood) return
 
         const tileRevision = this.game.world.tileRevision
         const activeSite = sites.find((site) => site.id === this.activeSiteId)
         const candidates = activeSite
             ? [activeSite, ...sites.filter((site) => site !== activeSite)]
             : sites
+        const occupied = new Set<string>()
+        for (const actor of this.game.actors) {
+            if (actor === this.actor || actor.isDead() || !isHumanActor(actor)) continue
+            const profession = actor.profession
+            if (profession instanceof BuilderProfession && profession.job?.work) {
+                occupied.add(profession.job.work.position.join(','))
+            }
+        }
         const siteRoute = this.game.pf.findRoute(
             this.actor.position,
-            candidates.map((site) => ({
-                target: site,
-                positions: this.game.getBuildingApproaches(site),
-            })),
+            candidates.flatMap((site) => {
+                const spots = shuffle(this.game.getConstructionWorkSpots(site))
+                // Prefer unoccupied spots while still allowing work at a narrow site.
+                return [
+                    ...spots.filter(({ position }) => !occupied.has(position.join(','))),
+                    ...spots.filter(({ position }) => occupied.has(position.join(','))),
+                ].map((work) => ({ target: { site, work }, positions: [work.position] }))
+            }),
         )
-        this.activeSiteId = siteRoute?.target.id
+        const site = siteRoute?.target.site
+        this.activeSiteId = site?.id
         if (siteRoute && this.carriedWood > 0) {
-            return { site: siteRoute.target, path: siteRoute.path, tileRevision }
+            return { ...siteRoute.target, path: siteRoute.path, tileRevision }
         }
         if (sites.length && !siteRoute) return
-        if (!sites.length && !this.carriedWood) return
 
         const camps = this.game.actors
             .filter(hasWoodStorage)
@@ -143,15 +159,23 @@ export class BuilderProfession extends Profession {
             this.actor.position,
             camps.map((camp) => ({
                 target: camp,
-                positions: [camp.getDeliveryPosition()],
+                positions: camp.getDeliveryPositions(),
             })),
             false,
         )
         if (!campRoute) return
+        const camp = campRoute.target
+        const deliveryRoute = this.game.pf.findRoute(
+            this.actor.position,
+            shuffle(camp.getDeliveryPositions()).map((position) => ({
+                target: camp,
+                positions: [position],
+            })),
+        )
         return {
-            site: siteRoute?.target,
-            camp: campRoute.target,
-            path: campRoute.path,
+            site,
+            camp,
+            path: deliveryRoute?.path ?? campRoute.path,
             tileRevision,
         }
     }

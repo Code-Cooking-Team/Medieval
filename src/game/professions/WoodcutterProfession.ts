@@ -8,6 +8,7 @@ import { type Game } from '+game/Game'
 import { ActorType } from '+game/types'
 import { distanceBetweenPoints, isSamePosition } from '+helpers/math'
 
+import { shuffle } from 'lodash'
 import {
     Mesh,
     MeshStandardMaterial,
@@ -51,7 +52,6 @@ export class WoodcutterProfession extends Profession {
         readyToUnload: () => this.hasWood && this.nearCamp(),
         nearTree: this.nearTree.bind(this),
         nearCamp: this.nearCamp.bind(this),
-        reachedCamp: this.reachedCamp.bind(this),
     }
 
     private machine = new MachineInterpreter(woodcutterMachine, this.actions, this.guards)
@@ -250,15 +250,25 @@ export class WoodcutterProfession extends Profession {
         const tree = this.getTree()
         if (!tree || !this.isWithinChoppingRange(tree)) return
 
-        this.actor.recordAction('chop', tree)
+        this.actor.recordAction('chop', tree.position)
         const damage = Math.round(config.woodcutter.choppingDamage * Math.random())
         this.collectedTreeHP += tree.hit(damage)
     }
 
-    private findCamp() {
+    private async findCamp() {
         const camp = this.getCamp()
         if (!camp) return
-        return this.actor.setPathTo(camp.getDeliveryPosition())
+        for (const position of shuffle(camp.getDeliveryPositions())) {
+            if (await this.actor.setPathTo(position, false)) return
+            if (
+                this.movingByOrder ||
+                this.actor.target ||
+                this.actor.profession !== this ||
+                this.actor.isDead() ||
+                this.getCamp() !== camp
+            )
+                return
+        }
     }
 
     private gatherWood() {
@@ -303,14 +313,16 @@ export class WoodcutterProfession extends Profession {
 
     private nearCamp() {
         const camp = this.getCamp()
-        if (!camp) return false
-        return isSamePosition(this.actor.position, camp.getDeliveryPosition())
-    }
-
-    private reachedCamp() {
-        const camp = this.getCamp()
-        if (!camp) return false
-        return isSamePosition(camp.getDeliveryPosition(), this.actor.position)
+        return (
+            !this.actor.surface &&
+            !!camp
+                ?.getDeliveryPositions()
+                .some(
+                    (position) =>
+                        isSamePosition(position, this.actor.position) &&
+                        this.game.pf.canStandOnGround(position),
+                )
+        )
     }
 }
 

@@ -122,7 +122,7 @@ for (const actors of actorRenderers) {
 }
 renderer.getInteractionObjectList = () =>
     actorRenderers.flatMap((item) => item.getInteractionShapes())
-renderer.getGroundChildren = () => [ground]
+renderer.groundDistance = (raycaster) => raycaster.intersectObject(ground)[0]?.distance
 
 type Layout = 'empty' | BuildingLayout | 'mixed'
 type View = 'near' | 'mixed' | 'far'

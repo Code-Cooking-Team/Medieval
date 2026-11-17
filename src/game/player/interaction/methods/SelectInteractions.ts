@@ -1,10 +1,11 @@
-import { isWalkableActor } from '+game/actors/helpers'
+import { isBuildingActor, isWalkableActor } from '+game/actors/helpers'
 import { squareFloodFill } from '+game/algorithm/squareFloodFill'
 import { type Actor } from '+game/core/Actor'
 import { CAMERA_GESTURE_START } from '+game/core/RTSCamera'
 import { toStep } from '+game/core/StandingSurfaces'
 import { type Game } from '+game/Game'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
+import type { ControlHints } from '+game/player/interaction/ControlHints'
 import { SelectionDiv } from '+game/player/interaction/methods/lib/SelectionDiv'
 import { Player } from '+game/player/types'
 import { type Renderer } from '+game/Renderer'
@@ -25,11 +26,13 @@ export class SelectInteractions {
     private selectionTargets = new Scene()
     private selectionDiv: SelectionDiv
     private el: HTMLCanvasElement
+    private hints?: ControlHints
 
     constructor(
         public game: Game,
         public renderer: Renderer,
         public player: HumanPlayer,
+        private onHintsChanged?: (hints?: ControlHints) => void,
     ) {
         this.el = this.renderer.webGLRenderer.domElement
         this.selectionDiv = new SelectionDiv(renderer.webGLRenderer)
@@ -43,25 +46,41 @@ export class SelectInteractions {
     public enable() {
         this.el.addEventListener('contextmenu', this.handleContextmenu)
         this.el.addEventListener('pointerdown', this.handlePointerDown)
+        this.el.addEventListener('pointermove', this.updateHints)
+        this.el.addEventListener('pointerleave', this.resetHints)
+        this.el.addEventListener('wheel', this.resetHints)
+        window.addEventListener('blur', this.resetHints)
+        this.player.emitter.on('selectActors', this.resetHints)
+        this.player.emitter.on('unselectActors', this.resetHints)
         document.addEventListener('pointermove', this.handlePointerMove)
         document.addEventListener('pointerup', this.handlePointerUp)
         document.addEventListener('pointercancel', this.cancelSelection)
         this.el.addEventListener(CAMERA_GESTURE_START, this.cancelSelection)
         this.el.addEventListener('dblclick', this.handleDoubleClick)
+        this.resetHints()
+        this.onHintsChanged?.(this.hints)
     }
 
     public disable() {
         this.el.removeEventListener('contextmenu', this.handleContextmenu)
         this.el.removeEventListener('pointerdown', this.handlePointerDown)
+        this.el.removeEventListener('pointermove', this.updateHints)
+        this.el.removeEventListener('pointerleave', this.resetHints)
+        this.el.removeEventListener('wheel', this.resetHints)
+        window.removeEventListener('blur', this.resetHints)
+        this.player.emitter.off('selectActors', this.resetHints)
+        this.player.emitter.off('unselectActors', this.resetHints)
         this.el.removeEventListener('dblclick', this.handleDoubleClick)
         document.removeEventListener('pointermove', this.handlePointerMove)
         document.removeEventListener('pointerup', this.handlePointerUp)
         document.removeEventListener('pointercancel', this.cancelSelection)
         this.el.removeEventListener(CAMERA_GESTURE_START, this.cancelSelection)
         this.cancelSelection()
+        this.setHints()
     }
 
     private cancelSelection = () => {
+        this.resetHints()
         this.pressedButton = undefined
         this.selectionDiv.onUp()
     }
@@ -91,6 +110,76 @@ export class SelectInteractions {
         if (this.pressedButton !== LEFT_MOUSE_BUTTON) return
 
         this.selectionDiv.onMove(event)
+    }
+
+    private setHints(hints?: ControlHints) {
+        if (
+            this.hints?.mode === hints?.mode &&
+            this.hints?.left === hints?.left &&
+            this.hints?.right === hints?.right
+        )
+            return
+        this.hints = hints
+        this.onHintsChanged?.(hints)
+    }
+
+    private resetHints = () => {
+        this.setHints(
+            this.player.selectedActors.length ? { mode: 'selection' } : { mode: 'idle' },
+        )
+    }
+
+    private updateHints = (event: PointerEvent) => {
+        if (!this.onHintsChanged) return
+        const selected = this.player.selectedActors
+        if (
+            event.pointerType === 'touch' ||
+            event.buttons !== 0 ||
+            this.pressedButton !== undefined
+        ) {
+            this.resetHints()
+            return
+        }
+
+        const actors = this.finder.findActorsByMouseEvent(event)
+        if (!selected.length) {
+            this.setHints({
+                mode: 'idle',
+                left: actors[0] && isWalkableActor(actors[0]) ? 'Select unit' : undefined,
+            })
+            return
+        }
+
+        if (!actors.length) {
+            this.setHints({
+                mode: 'selection',
+                left: event.shiftKey || event.ctrlKey ? undefined : 'Deselect',
+                right:
+                    selected.some(isWalkableActor) &&
+                    this.finder.findPositionByMouseEvent(event)
+                        ? 'Move'
+                        : undefined,
+            })
+            return
+        }
+
+        const target = actors.find(
+            (actor) =>
+                isBuildingActor(actor) &&
+                actor.workerAssignmentLabel &&
+                selected.some((worker) => actor.canAssignWorker(worker)),
+        )
+        if (!target || !isBuildingActor(target)) {
+            this.setHints({ mode: 'selection' })
+            return
+        }
+
+        this.setHints({
+            mode: 'selection',
+            right: this.finder.findStandingSurfaceByMouseEvent(event)
+                ? 'Move'
+                : target.workerAssignmentLabel,
+        })
     }
 
     private handlePointerUp = (event: PointerEvent) => {

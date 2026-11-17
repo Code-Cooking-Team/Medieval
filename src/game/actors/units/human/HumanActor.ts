@@ -37,12 +37,12 @@ export class HumanActor extends WalkableActor {
         }
     }
 
-    public recordAction(kind: HumanAction, target: Actor) {
+    public recordAction(kind: HumanAction, target: Position) {
         // Keep the strike direction available even if the hit removes the target.
         this.lastAction = {
             kind,
             origin: [...this.position],
-            target: [...target.position],
+            target: [...target],
         }
     }
 
@@ -186,7 +186,7 @@ export class HumanActor extends WalkableActor {
         if (distance < config.human.attackDistance) {
             this.cancelPath()
             const damage = this.getAttackDamage()
-            this.recordAction('attack', this.target)
+            this.recordAction('attack', this.target.position)
             this.target.hit(damage, this)
             if (this.target.isDead()) {
                 this.target = undefined

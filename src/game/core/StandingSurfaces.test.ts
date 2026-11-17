@@ -347,4 +347,16 @@ test.each([2, 3])('a %i-wide cliff shelf matches the mesh and is reachable in bo
     expect(pickCliffShelfTop(sideHit, middleX, sideZ)?.position[1]).toBeCloseTo(sideZ - 0.6)
     geometry.dispose()
     material.dispose()
+
+    const position = outerSpot.position
+    const original = world.getTile(position)
+    world.setTile(position, Object.assign(new WallTile(original), { buildingId: 'wall' }))
+    pf.update()
+    expect(pf.surfaces.get(outerSpot.id)).toBeUndefined()
+    const rebuilt = new Pathfinding(new World(world.tiles, world.waterRegions, world.seed))
+    expect([...pf.surfaces.all()]).toEqual([...rebuilt.surfaces.all()])
+
+    world.setTile(position, original)
+    pf.update()
+    expect([...pf.surfaces.all()]).toEqual(spots)
 })

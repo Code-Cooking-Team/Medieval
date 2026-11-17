@@ -171,8 +171,8 @@ export class Renderer {
         }
     }
 
-    public getGroundChildren() {
-        return this.ground!.group.children
+    public groundDistance(raycaster: Raycaster) {
+        return this.ground?.groundDistance(raycaster)
     }
 
     public pickStandingSurfaceMarker(raycaster: Raycaster) {
@@ -184,12 +184,13 @@ export class Renderer {
             renderer.getSolidMeshes(),
         )
         for (const mesh of buildings) mesh.updateWorldMatrix(true, false)
-        const ground = raycaster.intersectObjects(this.getGroundChildren())[0]
+        const groundDistance = this.groundDistance(raycaster)
         const hit = [
             ...raycaster.intersectObjects(buildings, false),
             ...(this.ground?.raycastRocks(raycaster) ?? []),
         ].sort((a, b) => a.distance - b.distance)[0]
-        if (hit && (!ground || hit.distance < ground.distance)) return hit
+        if (hit && (groundDistance === undefined || hit.distance < groundDistance))
+            return hit
     }
 
     public getInteractionObjectList() {

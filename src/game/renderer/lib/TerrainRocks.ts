@@ -94,7 +94,7 @@ export class TerrainRocks {
         this.shelves.castShadow = this.shelves.receiveShadow = true
         this.shelves.raycast = () => {}
         this.shelves.visible = this.shelves.geometry.hasAttribute('position')
-        this.shelfRevision = world.tileRevision
+        this.shelfRevision = world.cliffRevision
         this.group.add(this.cliffs, this.shelves)
         const [width, height] = world.getSize()
         this.batches = rockProfiles.map((_, variant) => {
@@ -124,13 +124,15 @@ export class TerrainRocks {
         return hits
     }
 
-    public update() {
-        if (this.shelfRevision !== this.world.tileRevision) {
-            this.shelfRevision = this.world.tileRevision
+    public update(updateInstances: boolean) {
+        if (this.shelfRevision !== this.world.cliffRevision) {
+            this.shelfRevision = this.world.cliffRevision
             this.shelves.geometry.dispose()
             this.shelves.geometry = createCliffShelfGeometry(this.world, this.tileSize)
             this.shelves.visible = this.shelves.geometry.hasAttribute('position')
         }
+        if (!updateInstances) return
+
         const color = new Color()
         const groundTint = new Color()
         const transform = new Object3D()

@@ -118,7 +118,7 @@ export class HunterProfession extends Profession {
             ) {
                 this.route = undefined
                 this.actor.cancelPath()
-                this.actor.recordAction('attack', target)
+                this.actor.recordAction('attack', target.position)
                 const damage = target.hit(this.actor.getAttackDamage(), this.actor)
                 if (damage > 0 && target.isDead()) {
                     if (

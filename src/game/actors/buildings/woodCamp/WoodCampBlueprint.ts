@@ -1,5 +1,5 @@
 import { BuildingModel } from '+game/renderer/lib/BuildingModel'
-import { type ActorBlueprint, type Position } from '+game/types'
+import { type ActorBlueprint } from '+game/types'
 import { type TileCodeGrid } from '+game/world/tileCodes'
 import { loadGLTF } from '+helpers/three'
 
@@ -20,10 +20,6 @@ export class WoodCampBlueprint implements ActorBlueprint {
     ]
 
     public height = 3
-
-    public config = {
-        deliveryPoint: [2, 5] as Position,
-    }
 
     public readonly buildingModel = new BuildingModel(woodCampModel, [
         { node: 'lod_near', distanceInTiles: 0 },

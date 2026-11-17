@@ -43,12 +43,43 @@
         animation: accordion-close 300ms cubic-bezier(0.87, 0, 0.13, 1);
     }
 
+    .game-selection-hud {
+        @apply pointer-events-none fixed bottom-3 left-1/2 z-11 flex w-max max-w-[calc(100%-24px)] -translate-x-1/2 flex-col items-center gap-2;
+    }
+
     .game-actor-details {
-        @apply pointer-events-none fixed bottom-3 left-1/2 z-11 flex max-h-[35vh] w-max min-w-[min(360px,calc(100vw-24px))] max-w-[calc(100%-24px)] -translate-x-1/2 flex-nowrap items-center justify-start gap-x-4 gap-y-1 overflow-x-auto overflow-y-hidden rounded-lg bg-black/50 px-4 py-2 backdrop-blur-[15px];
+        @apply pointer-events-none relative flex max-h-[35vh] w-max min-w-[min(360px,calc(100vw-24px))] max-w-full flex-nowrap items-center justify-start gap-x-4 gap-y-1 overflow-x-auto overflow-y-hidden rounded-lg bg-black/50 px-4 py-2 backdrop-blur-[15px];
     }
 
     .game-actor-details > :not(canvas) {
         @apply relative z-1;
+    }
+
+    .game-control-hints {
+        @apply pointer-events-none relative z-1 flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-1 rounded-lg border border-solid border-game-gold/60 bg-game-ink/95 px-3 py-2 text-sm text-game-text shadow-lg;
+        font-family: system-ui, sans-serif;
+    }
+
+    .game-control-mouse {
+        @apply relative h-[21px] w-[15px] shrink-0 overflow-hidden rounded-[7px] border border-solid border-game-gold;
+    }
+
+    .game-control-mouse::after {
+        content: '';
+        @apply absolute inset-x-0 top-0 h-[8px] border-0 border-b border-solid border-game-gold;
+        background: linear-gradient(
+            to right,
+            transparent 50%,
+            var(--color-game-gold) 50%
+        );
+    }
+
+    .game-control-mouse[data-button='left']::after {
+        background: linear-gradient(to left, transparent 50%, var(--color-game-gold) 50%);
+    }
+
+    .game-control-key {
+        @apply rounded-sm border border-solid border-game-gold/60 px-1 py-0.5 font-sans text-xs leading-none text-game-gold;
     }
 }
 

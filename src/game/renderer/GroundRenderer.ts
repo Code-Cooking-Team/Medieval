@@ -31,6 +31,11 @@ export class GroundRenderer extends BasicRenderer {
     private groundMesh?: Mesh
     private groundMaterial: MeshStandardMaterial
     private readonly unsubscribeTileUpdate: () => void
+    private readonly untrackTileChanges: () => void
+    private readonly changedTiles = new Set<number>()
+    private rockRevision = -1
+    private cliffRevision = -1
+    private wireframeMesh?: Mesh
     private readonly leafLitter: ReturnType<typeof createTerrainNoise>
     private readonly rocks: TerrainRocks
     private geometry?: HorizontalPlaneGeometry
@@ -87,10 +92,13 @@ export class GroundRenderer extends BasicRenderer {
             wireframeMesh.receiveShadow = true
             wireframeMesh.position.y = 0.01
             this.group.add(wireframeMesh)
+            this.wireframeMesh = wireframeMesh
         }
 
-        this.unsubscribeTileUpdate = this.game.world.emitter.on('tailUpdate', () => {
-            this.render()
+        this.untrackTileChanges = game.world.trackTileChanges(this.changedTiles)
+        this.unsubscribeTileUpdate = game.world.emitter.on('tailUpdate', () => {
+            if (this.changedTiles.size) this.renderTiles(this.changedTiles)
+            this.changedTiles.clear()
         })
     }
 
@@ -151,10 +159,18 @@ export class GroundRenderer extends BasicRenderer {
         })
     }
 
-    public focusDistance({ ray, near, far }: Raycaster) {
+    public groundDistance(raycaster: Raycaster) {
+        const ground = this.focusDistance(raycaster)
+        if (!this.wireframeMesh) return ground
+        const wireframe = this.focusDistance(raycaster, this.wireframeMesh.position.y)
+        return wireframe === undefined ? ground : Math.min(ground ?? Infinity, wireframe)
+    }
+
+    public focusDistance({ ray, near, far }: Raycaster, verticalOffset = 0) {
         if (!this.groundMesh || !this.geometry || far <= near) return
         // The ground is translated to the center of the map without rotation or scale.
         const offset = this.groundMesh.getWorldPosition(new Vector3())
+        offset.y += verticalOffset
         const start = ray.at(near, new Vector3()).sub(offset)
         const [width, height] = this.game.world.getSize()
         const distance = raycastGround(
@@ -169,27 +185,54 @@ export class GroundRenderer extends BasicRenderer {
     }
 
     public init() {
-        this.render()
+        this.renderTiles()
     }
 
     public destroy() {
         this.unsubscribeTileUpdate()
+        this.untrackTileChanges()
         this.rocks.dispose()
     }
 
-    public render() {
+    private renderTiles(indices?: Iterable<number>) {
         if (!this.groundMesh || !this.geometry) return
 
-        const [wordWidth] = this.game.world.getSize()
+        const { world } = this.game
+        const [wordWidth] = world.getSize()
 
-        const position = this.groundMesh.geometry.attributes.position!
-        const colors = this.geometry.attributes.color!
+        const position = this.geometry.attributes.position as BufferAttribute
+        const colors = this.geometry.attributes.color as BufferAttribute
         const color = new Color()
 
-        for (let i = 0; i < position.count; i++) {
+        let heightsChanged = false
+        let rocksChanged = this.rockRevision !== world.rockRevision
+        const vertex = new Vector3()
+        const bounds = this.geometry.boundingSphere
+        for (const i of indices ?? Array.from({ length: position.count }, (_, i) => i)) {
             const positionOnMap = getPositionByIndex(i, wordWidth)
-            const tile = this.game.world.getTile(positionOnMap)
-            position.setY(i, tile.height * config.renderer.tileSize)
+            const tile = world.getTile(positionOnMap)
+            const height = Math.fround(tile.height * config.renderer.tileSize)
+            if (position.getY(i) !== height) {
+                position.setY(i, height)
+                heightsChanged = true
+                if (indices) {
+                    position.addUpdateRange(i * 3, 3)
+                    if (bounds) {
+                        // Keep frustum culling conservative without scanning every vertex.
+                        vertex.fromBufferAttribute(position, i)
+                        bounds.radius = Math.max(
+                            bounds.radius,
+                            bounds.center.distanceTo(vertex),
+                        )
+                    }
+                    // Rock bases sample the terrain under their footprint.
+                    rocksChanged ||= world.hasTileTypeNear(
+                        ...positionOnMap,
+                        TileType.Rock,
+                        6,
+                    )
+                }
+            }
             // Saved tile palettes were authored as linear RGB.
             const wornPath =
                 tile.type === TileType.ImportantFootpath ||
@@ -229,11 +272,16 @@ export class GroundRenderer extends BasicRenderer {
                 )
             }
             colors.setXYZ(i, color.r, color.g, color.b)
+            if (indices) colors.addUpdateRange(i * 3, 3)
         }
 
         colors.needsUpdate = true
-        position.needsUpdate = true
-        this.geometry.computeBoundingSphere()
-        this.rocks.update()
+        if (heightsChanged) position.needsUpdate = true
+        if (!indices) this.geometry.computeBoundingSphere()
+        if (rocksChanged || this.cliffRevision !== world.cliffRevision) {
+            this.rocks.update(rocksChanged)
+            this.rockRevision = world.rockRevision
+            this.cliffRevision = world.cliffRevision
+        }
     }
 }

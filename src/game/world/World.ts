@@ -12,9 +12,27 @@ export interface WordJSON {
     seed?: number
 }
 
+// Covers the shelf footprint, shifted copies of cliff faces, and their approaches.
+const CLIFF_TERRAIN_RADIUS = 12
+const CLIFF_REVISION_REGION_SIZE = 32
+
 export class World {
     public tileRevision = 0
+    public cliffRevision = 0
+    public rockRevision = 0
     public emitter = new Emitter<{ tailUpdate: undefined }>('Word')
+    private readonly cliffRegionRevisions = new Map<string, number>()
+    private tileBatchDepth = 0
+    private readonly tileChangeTrackers = new Set<Set<number>>()
+
+    public get batchingTiles() {
+        return this.tileBatchDepth > 0
+    }
+
+    public trackTileChanges(changes: Set<number>) {
+        this.tileChangeTrackers.add(changes)
+        return () => this.tileChangeTrackers.delete(changes)
+    }
 
     constructor(
         public tiles: TileGrid,
@@ -33,8 +51,7 @@ export class World {
     }
 
     public setTile(position: Position, tile: Tile) {
-        this.setTileAt(position, tile)
-        this.emitter.emit('tailUpdate')
+        this.batchTileUpdates(() => this.setTileAt(position, tile))
     }
 
     public setMultipleTiles(
@@ -44,8 +61,21 @@ export class World {
             tiles: Tile[][],
         ) => void,
     ) {
-        setCallback(this.setTileAt.bind(this), this.getTile.bind(this), this.tiles)
-        this.emitter.emit('tailUpdate')
+        this.batchTileUpdates(() =>
+            setCallback(this.setTileAt.bind(this), this.getTile.bind(this), this.tiles),
+        )
+    }
+
+    public batchTileUpdates<T>(update: () => T): T {
+        const revision = this.tileRevision
+        this.tileBatchDepth++
+        try {
+            return update()
+        } finally {
+            this.tileBatchDepth--
+            if (!this.batchingTiles && this.tileRevision !== revision)
+                this.emitter.emit('tailUpdate')
+        }
     }
 
     public getSize() {
@@ -82,6 +112,63 @@ export class World {
         if (!currentTile) throw new Error(`[Word:setTile] No tile at ${x}, ${y}`)
         this.tiles[y]![x] = tile
         this.tileRevision++
+        const index = y * this.tiles[0]!.length + x
+        for (const changes of this.tileChangeTrackers) changes.add(index)
+
+        if (currentTile.type === TileType.Rock || tile.type === TileType.Rock)
+            this.rockRevision++
+        // Cliff faces and shelves sample local terrain around a Step tile.
+        // Include the old tile because this replacement may remove the source.
+        if (
+            currentTile.type === TileType.Step ||
+            this.hasTileTypeNear(x, y, TileType.Step, CLIFF_TERRAIN_RADIUS)
+        ) {
+            this.cliffRevision++
+            const col = Math.floor(x / CLIFF_REVISION_REGION_SIZE)
+            const row = Math.floor(y / CLIFF_REVISION_REGION_SIZE)
+            this.cliffRegionRevisions.set(`${col},${row}`, this.cliffRevision)
+        }
+    }
+
+    public getCliffRevisionForArea(
+        left: number,
+        top: number,
+        right: number,
+        bottom: number,
+    ) {
+        const size = CLIFF_REVISION_REGION_SIZE
+        const firstCol = Math.max(0, Math.floor((left - CLIFF_TERRAIN_RADIUS) / size))
+        const firstRow = Math.max(0, Math.floor((top - CLIFF_TERRAIN_RADIUS) / size))
+        const lastCol = Math.floor((right + CLIFF_TERRAIN_RADIUS) / size)
+        const lastRow = Math.floor((bottom + CLIFF_TERRAIN_RADIUS) / size)
+        let revision = 0
+        for (let row = firstRow; row <= lastRow; row++) {
+            for (let col = firstCol; col <= lastCol; col++) {
+                revision = Math.max(
+                    revision,
+                    this.cliffRegionRevisions.get(`${col},${row}`) ?? 0,
+                )
+            }
+        }
+        return revision
+    }
+
+    public hasTileTypeNear(x: number, y: number, type: TileType, radius: number) {
+        const width = this.tiles[0]!.length
+        for (
+            let row = Math.max(0, y - radius);
+            row <= Math.min(this.tiles.length - 1, y + radius);
+            row++
+        ) {
+            for (
+                let col = Math.max(0, x - radius);
+                col <= Math.min(width - 1, x + radius);
+                col++
+            ) {
+                if (this.tiles[row]![col]!.type === type) return true
+            }
+        }
+        return false
     }
 }
 

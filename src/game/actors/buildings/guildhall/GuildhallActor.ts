@@ -2,21 +2,13 @@ import { config } from '+config'
 import { ResidenceTrait } from '+game/actors/buildingTraits/ResidenceTrait'
 import { type BuildingTrait } from '+game/actors/buildingTraits/types'
 import { isHumanActor } from '+game/actors/helpers'
+import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { type Actor } from '+game/core/Actor'
 import { WoodStorageBuilding } from '+game/core/WoodStorageBuilding'
 import { WoodcutterProfession } from '+game/professions/WoodcutterProfession'
 import { ActorType, type Position } from '+game/types'
-import { addPosition } from '+helpers/math'
 
 import { guildhallBlueprint } from './GuildhallBlueprint'
-
-// Entrance path relative to the footprint center for each rotation.
-const deliveryOffsets: Position[] = [
-    [0, -6],
-    [6, 0],
-    [0, 6],
-    [-6, 0],
-]
 
 export class GuildhallActor extends WoodStorageBuilding {
     public type = ActorType.Guildhall
@@ -36,9 +28,13 @@ export class GuildhallActor extends WoodStorageBuilding {
         }),
     ]
 
-    public getDeliveryPosition(): Position {
-        return addPosition(this.position, deliveryOffsets[this.rotation]!)
-    }
+    protected readonly deliveryOffsets: Position[] = [
+        [0, -6],
+        [-1, -6],
+        [1, -6],
+        [-1, 5],
+        [1, 5],
+    ]
 
     public getFreeMeatStorage() {
         return this.meatCapacity - this.meatStock
@@ -53,13 +49,33 @@ export class GuildhallActor extends WoodStorageBuilding {
         return accepted
     }
 
+    public withdrawMeat(amount: number): number {
+        const withdrawn = Math.min(this.meatStock, amount)
+        if (withdrawn <= 0) return 0
+
+        this.meatStock -= withdrawn
+        this.game.emitter.emit('meatStockChanged', this)
+        return withdrawn
+    }
+
+    public readonly workerAssignmentLabel: string = 'Set wood drop-off'
+
+    public canAssignWorker(
+        actor: Actor,
+    ): actor is HumanActor & { profession: WoodcutterProfession } {
+        return (
+            !this.isDead() &&
+            isHumanActor(actor) &&
+            actor.player === this.player &&
+            !actor.isDead() &&
+            actor.profession instanceof WoodcutterProfession
+        )
+    }
+
     public interact(actors: Actor[]) {
-        if (this.isDead()) return false
         let assigned = false
         for (const actor of actors) {
-            if (!isHumanActor(actor) || actor.player !== this.player || actor.isDead())
-                continue
-            if (!(actor.profession instanceof WoodcutterProfession)) continue
+            if (!this.canAssignWorker(actor)) continue
             actor.profession.setCamp(this)
             assigned = true
         }

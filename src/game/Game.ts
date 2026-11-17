@@ -1,7 +1,7 @@
 import { config } from '+config/config'
 import { type Player, type PlayerJSON, PlayerType } from '+game/player/types'
 import { removeArrayItem } from '+helpers/array'
-import { distanceBetweenPoints } from '+helpers/math'
+import { addPosition, distanceBetweenPoints } from '+helpers/math'
 import { Emitter } from '+lib/Emitter'
 
 import { actorByType, actorFromJSON } from './actors'
@@ -11,7 +11,13 @@ import type { GuildhallActor } from './actors/buildings/guildhall/GuildhallActor
 import type { HunterHutActor } from './actors/buildings/hunterHut/HunterHutActor'
 import { TimberGateActor } from './actors/buildings/timberGate/TimberGateActor'
 import { BushActor } from './actors/flora/bush/BushActor'
-import { isBuildingActor, isHumanActor, isWalkableActor } from './actors/helpers'
+import {
+    isBuildingActor,
+    isGuildhallActor,
+    isHumanActor,
+    isHunterHutActor,
+    isWalkableActor,
+} from './actors/helpers'
 import { RockActor } from './actors/RockActor'
 import type { HumanActor } from './actors/units/human/HumanActor'
 import { type Actor, type ActorClass, type ActorJSON } from './core/Actor'
@@ -32,7 +38,14 @@ import { type WildlifeJSON, WildlifePopulation } from './world/WildlifePopulatio
 import { type WordJSON, World } from './world/World'
 
 const DAY_MINUTES = 24 * 60
+const MEAL_MINUTES = [8 * 60, 12 * 60, 18 * 60]
 const BUILDING_APRON_RADIUS = 5
+const constructionApproachOffsets: Position[] = [
+    [0, -1],
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+]
 const occupiesBuildingSpace = (TileClass: TileClass) =>
     TileClass === WallTile || TileClass === InsideTile || TileClass === WaterTile
 
@@ -98,7 +111,8 @@ export class Game {
     public setTimeOfDay(minutes: number) {
         if (!Number.isFinite(minutes)) return
         const previousMinute = Math.floor(this.clockMinutes)
-        this.clockMinutes = ((minutes % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES
+        const wrapped = minutes % DAY_MINUTES
+        this.clockMinutes = wrapped < 0 ? (wrapped + DAY_MINUTES) % DAY_MINUTES : wrapped
         if (Math.floor(this.clockMinutes) !== previousMinute) {
             this.emitter.emit('timeChanged')
         }
@@ -106,13 +120,44 @@ export class Game {
 
     public tick(deltaMs = config.core.tickTime): void {
         // One real second is one game minute.
-        this.setTimeOfDay(this.clockMinutes + deltaMs / 1000)
+        const previous = this.clockMinutes
+        const next = previous + deltaMs / 1000
+        this.setTimeOfDay(next)
+        if (Number.isFinite(next) && next > previous) {
+            let meals = 0
+            for (const minute of MEAL_MINUTES) {
+                // Count crossings in (previous, next], including across midnight.
+                meals +=
+                    Math.floor((next - minute) / DAY_MINUTES) -
+                    Math.floor((previous - minute) / DAY_MINUTES)
+            }
+            if (meals > 0) this.consumeMealMeat(meals)
+        }
         this.pf.tick()
         this.wildlife?.tick(deltaMs)
         this.actors.forEach((actor) => {
             actor.tick()
         })
         this.emitter.emit('tick')
+    }
+
+    private consumeMealMeat(meals: number): void {
+        const demand = new Map<Player, number>()
+        for (const actor of this.actors) {
+            if (isHumanActor(actor) && !actor.isDead()) {
+                demand.set(actor.player, (demand.get(actor.player) ?? 0) + meals)
+            }
+        }
+        for (const actor of this.actors) {
+            const remaining = demand.get(actor.player) ?? 0
+            if (
+                remaining > 0 &&
+                (isGuildhallActor(actor) || isHunterHutActor(actor)) &&
+                !actor.isDead()
+            ) {
+                demand.set(actor.player, remaining - actor.withdrawMeat(remaining))
+            }
+        }
     }
 
     public addActor(actor: Actor): void {
@@ -217,6 +262,24 @@ export class Game {
 
             return currDist < prevDist ? curr : prev
         }, actors[0])
+    }
+
+    public spawnActors<T extends Actor>(
+        ActorClass: ActorClass<T>,
+        player: Player,
+        placements: { position: Position; seed?: number }[],
+        rotation: number,
+    ) {
+        try {
+            return this.world.batchTileUpdates(() =>
+                placements.every(
+                    ({ position, seed }) =>
+                        !!this.spawnActor(ActorClass, player, position, rotation, seed),
+                ),
+            )
+        } finally {
+            this.pf.update()
+        }
     }
 
     public spawnActor<T extends Actor>(
@@ -385,18 +448,20 @@ export class Game {
         }
     }
 
-    public getBuildingApproaches(actor: BuildingActor) {
-        const tiles = this.buildingTiles(actor.blueprint, actor.position, actor.rotation)
-        const [[left, top]] = tiles[0]!
-        const [[right, bottom]] = tiles[tiles.length - 1]!
-        const positions: Position[] = []
-        for (let x = left; x <= right; x++) {
-            positions.push([x, top - 1], [x, bottom + 1])
-        }
-        for (let y = top; y <= bottom; y++) {
-            positions.push([left - 1, y], [right + 1, y])
-        }
-        return positions
+    public getConstructionWorkSpots(site: ConstructionSiteActor) {
+        const tiles = this.buildingTiles(site.blueprint, site.position, site.rotation)
+        const footprint = tiles.filter(([, TileClass]) =>
+            occupiesBuildingSpace(TileClass),
+        )
+        const walls = footprint.filter(([, TileClass]) => TileClass === WallTile)
+        const occupied = new Set(footprint.map(([position]) => position.join(',')))
+        const spots = (walls.length ? walls : footprint).flatMap(([target]) =>
+            constructionApproachOffsets.map((offset) => ({
+                target,
+                position: addPosition(target, offset),
+            })),
+        )
+        return spots.filter(({ position }) => !occupied.has(position.join(',')))
     }
 
     private placeBuilding(actor: BuildingActor) {
@@ -524,8 +589,10 @@ export class Game {
                     tile = tile.previousTile
                 }
                 if (!tile?.previousTile) continue
-                if (above) above.previousTile = tile.previousTile
-                else set(position, tile.previousTile)
+                if (above) {
+                    above.previousTile = tile.previousTile
+                    set(position, get(position))
+                } else set(position, tile.previousTile)
             }
         })
     }
@@ -563,8 +630,10 @@ export class Game {
 
                 if (layer !== depth || !(tile instanceof TileClass) || !tile.previousTile)
                     continue
-                if (above) above.previousTile = tile.previousTile
-                else set(position, tile.previousTile)
+                if (above) {
+                    above.previousTile = tile.previousTile
+                    set(position, get(position))
+                } else set(position, tile.previousTile)
             }
         })
     }

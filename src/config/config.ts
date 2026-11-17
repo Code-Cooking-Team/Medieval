@@ -94,7 +94,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
     },
 
     boar: {
-        hp: 80,
+        hp: 180,
         randomWalkChance: 0.01,
         attackDistance: 1.5,
         lookEnemyDistance: 8,
@@ -112,7 +112,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     woodcutter: {
         hp: 100,
-        choppingDamage: 20,
+        choppingDamage: 7,
         gatheringSpeed: 30,
         capacity: 50,
         attackDamage: 10,
@@ -121,7 +121,7 @@ export const { config, resetConfig, saveConfig } = createConfig({
 
     guardian: {
         hp: 100,
-        attackDamage: 15,
+        attackDamage: 5,
         color: colorInput(0x225c43),
     },
 })
