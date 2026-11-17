@@ -18,6 +18,10 @@ export abstract class WalkableActor extends Actor {
         return this.pathRequest !== undefined
     }
 
+    public orderMoveTo(position: Position | PathStep) {
+        return this.setPathTo(position)
+    }
+
     public async setPathTo(position: Position | PathStep, clip = false) {
         this.pathRequest?.abort()
         const request = new AbortController()

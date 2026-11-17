@@ -7,6 +7,7 @@ export const constructionCosts = {
     [ActorType.Barracks]: 450,
     [ActorType.Guildhall]: 600,
     [ActorType.Stakewall]: 30,
+    [ActorType.TimberGate]: 90,
     [ActorType.Gallery]: 40,
     [ActorType.GalleryStairs]: 30,
 }

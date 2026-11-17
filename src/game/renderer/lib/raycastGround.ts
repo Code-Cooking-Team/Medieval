@@ -49,11 +49,11 @@ export function raycastGround(
                 nearest = Math.min(nearest, hit.distanceTo(ray.origin))
             }
         }
-        if (nearest <= maxDistance) return nearest
+        if (Number.isFinite(nearest) && nearest <= maxDistance) return nearest
 
         // Advance to the next cell, crossing both edges when the ray hits a corner.
         const next = Math.min(nextX, nextZ)
-        if (next > maxDistance) return
+        if (!Number.isFinite(next) || next > maxDistance) return
         if (nextX === next) {
             x += stepX
             nextX += strideX

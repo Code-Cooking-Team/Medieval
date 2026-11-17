@@ -6,6 +6,8 @@ import {
     GalleryStairsActor,
 } from '+game/actors/buildings/gallery/GalleryActor'
 import { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
+import { TimberGateActor } from '+game/actors/buildings/timberGate/TimberGateActor'
+import { TimberGateRenderer } from '+game/actors/buildings/timberGate/TimberGateRenderer'
 import { SmallRockActor } from '+game/actors/RockActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
 import { Game } from '+game/Game'
@@ -188,6 +190,80 @@ test('units can reach a gallery beside the top of the stairs', async () => {
     ])
 })
 
+test('units can cross above and below a rotated timber gate', async () => {
+    const { game, player } = fixture()
+    game.spawnActor(GalleryStairsActor, player, [12, 17])!
+    const gate = game.spawnActor(TimberGateActor, player, [12, 13], 1)!
+    const gallery = game.spawnActor(GalleryActor, player, [12, 11])!
+    const human = game.spawnActor(HumanActor, player, [12, 19])!
+    const target = toStep(game.pf.surfaces.get(`building:${gallery.id}:0`)!)
+
+    const path = await human.setPathTo(target)
+    expect(path?.slice(-4).map(({ surface }) => surface)).toEqual([
+        `building:${gate.id}:2`,
+        `building:${gate.id}:1`,
+        `building:${gate.id}:0`,
+        target.surface,
+    ])
+    expect(game.pf.canStep([11, 13], [12, 13])).toBe(true)
+    expect(game.pf.canStep([12, 13], [13, 13])).toBe(true)
+})
+
+test('closing a timber gate blocks two ground tiles and preserves its raised deck', () => {
+    const { game, player } = fixture()
+    const gate = game.spawnActor(TimberGateActor, player, [12, 13], 1)!
+    const human = game.spawnActor(HumanActor, player, [11, 13])!
+    const front = game.world.getTile([11, 13])
+
+    expect(gate.setOpen(false)).toBe(false)
+    expect(gate.open).toBe(true)
+    human.position = [10, 13]
+    expect(gate.setOpen(false)).toBe(true)
+    expect(game.world.getTile([11, 13]).canWalk).toBe(false)
+    expect(game.world.getTile([12, 13]).canWalk).toBe(false)
+    expect(game.pf.canStep([10, 13], [11, 13])).toBe(false)
+    const left = toStep(game.pf.surfaces.get(`building:${gate.id}:0`)!)
+    const middle = toStep(game.pf.surfaces.get(`building:${gate.id}:1`)!)
+    expect(game.pf.canMove(left, middle)).toBe(true)
+
+    const restored = Game.fromJSON(game.toJSON())
+    const restoredGate = restored.getActorById(gate.id) as TimberGateActor
+    expect(restoredGate.open).toBe(false)
+    expect(restored.world.getTile([11, 13]).canWalk).toBe(false)
+    expect(restored.world.getTile([12, 13]).canWalk).toBe(false)
+    restored.removeActor(restoredGate)
+    expect(restored.world.getTile([11, 13]).canWalk).toBe(true)
+    expect(restored.world.getTile([12, 13]).canWalk).toBe(true)
+
+    expect(gate.setOpen(true)).toBe(true)
+    expect(game.world.getTile([11, 13])).toBe(front)
+    expect(game.pf.canStep([11, 13], [12, 13])).toBe(true)
+})
+
+test('the gate shows intermediate poses even after a stalled render frame', () => {
+    const { game, player } = fixture()
+    const gate = game.spawnActor(TimberGateActor, player, [12, 13])!
+    const renderer = new TimberGateRenderer(game, player)
+    renderer.init()
+    try {
+        const model = renderer.getPortraitModel(gate)!
+        const leaf = model.getObjectByName('gate-leaf-1')!
+        const openAngle = leaf.rotation.y
+
+        gate.setOpen(false)
+        renderer.render({ deltaTime: 1.5, elapsedTime: 1.5 })
+        expect(leaf.rotation.y).toBeLessThan(openAngle)
+        expect(leaf.rotation.y).toBeGreaterThan(-Math.PI)
+
+        for (let frame = 1; frame <= 80; frame++) {
+            renderer.render({ deltaTime: 1 / 60, elapsedTime: 1.5 + frame / 60 })
+        }
+        expect(leaf.rotation.y).toBeCloseTo(-Math.PI)
+    } finally {
+        renderer.destroy()
+    }
+})
+
 test('the raised marker receives movement clicks near the edge of the square', () => {
     const { game } = fixture()
     const position = [5, 5] as const
@@ -271,4 +347,16 @@ test.each([2, 3])('a %i-wide cliff shelf matches the mesh and is reachable in bo
     expect(pickCliffShelfTop(sideHit, middleX, sideZ)?.position[1]).toBeCloseTo(sideZ - 0.6)
     geometry.dispose()
     material.dispose()
+
+    const position = outerSpot.position
+    const original = world.getTile(position)
+    world.setTile(position, Object.assign(new WallTile(original), { buildingId: 'wall' }))
+    pf.update()
+    expect(pf.surfaces.get(outerSpot.id)).toBeUndefined()
+    const rebuilt = new Pathfinding(new World(world.tiles, world.waterRegions, world.seed))
+    expect([...pf.surfaces.all()]).toEqual([...rebuilt.surfaces.all()])
+
+    world.setTile(position, original)
+    pf.update()
+    expect([...pf.surfaces.all()]).toEqual(spots)
 })

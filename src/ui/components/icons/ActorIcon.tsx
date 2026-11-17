@@ -2,6 +2,7 @@ import { ActorType } from '+game/types'
 
 import {
     Castle,
+    DoorOpen,
     Fence,
     Hammer,
     House,
@@ -23,6 +24,7 @@ const icons = {
     [ActorType.HunterHut]: House,
     [ActorType.Barracks]: Castle,
     [ActorType.Stakewall]: Fence,
+    [ActorType.TimberGate]: DoorOpen,
     [ActorType.Gallery]: Warehouse,
     [ActorType.GalleryStairs]: Hammer,
     [ActorType.ConstructionSite]: Hammer,

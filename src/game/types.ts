@@ -18,6 +18,7 @@ export enum ActorType {
     HunterHut = 'HunterHut',
     Barracks = 'Barracks',
     Stakewall = 'Stakewall',
+    TimberGate = 'TimberGate',
     Gallery = 'Gallery',
     GalleryStairs = 'GalleryStairs',
     ConstructionSite = 'ConstructionSite',
@@ -39,7 +40,10 @@ export const actorTypesByCategory = {
         ActorType.WoodCamp,
         ActorType.HunterHut,
         ActorType.Barracks,
+    ],
+    Fortifications: [
         ActorType.Stakewall,
+        ActorType.TimberGate,
         ActorType.Gallery,
         ActorType.GalleryStairs,
     ],

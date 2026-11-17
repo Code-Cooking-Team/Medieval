@@ -17,6 +17,7 @@ import {
     AnimationClip,
     AnimationMixer,
     LoopOnce,
+    LoopRepeat,
     MathUtils,
     MeshStandardMaterial,
     type Object3D,
@@ -34,18 +35,30 @@ import humanModelUrl from './models/human.gltf'
 
 type EquipmentVisual = ItemId | 'carriedLog' | null
 
+const motionTransitionTime = 0.28
+
 interface HumanLocomotion {
     mixer: AnimationMixer
     idle: AnimationAction
     walk: AnimationAction
     attack: AnimationAction
+    swordAttack?: AnimationAction
     chop: AnimationAction
+    build: AnimationAction
     lastAction: HumanActor['lastAction']
     handVisual: EquipmentVisual
     carryPose: ReturnType<typeof bindCarryPose>
     x: number
     z: number
     blend: number
+    swingElapsed: number
+}
+
+function getMotionWeight(action: AnimationAction, entryWeight: number, looping = false) {
+    if (!action.isRunning()) return 0
+    if (looping) return entryWeight
+    const remaining = (action.getClip().duration - action.time) / action.timeScale
+    return Math.min(entryWeight, MathUtils.smoothstep(remaining, 0, motionTransitionTime))
 }
 
 // Placeholder clips share the same action slots as future captured animations.
@@ -68,8 +81,8 @@ const attackClip = createSwingClip(
     [0, 0.06, 0.13, 0.24],
     [0, -0.55, 0.9, 0],
 )
-const chopClip = createSwingClip(
-    'chop',
+const buildClip = createSwingClip(
+    'build',
     new Vector3(1, 0, 0),
     [0, 0.17, 0.25, 0.44],
     [0, -1.7, 0.65, 0],
@@ -132,13 +145,23 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         loadRawGLTF(humanModelUrl).then((gltf) => {
             if (this.actorGroupMap.get(actor) !== group) return
 
-            const [idleClip, walkClip] = gltf.animations
+            const [idleClip, walkClip, chopClip] = gltf.animations
             if (idleClip && walkClip) {
                 const mixer = new AnimationMixer(gltf.scene)
                 const idle = mixer.clipAction(idleClip).play()
                 const walk = mixer.clipAction(walkClip).setEffectiveWeight(0).play()
                 const attack = mixer.clipAction(attackClip).setLoop(LoopOnce, 1)
-                const chop = mixer.clipAction(chopClip).setLoop(LoopOnce, 1)
+                const swordClip = AnimationClip.findByName(gltf.animations, 'swordAttack')
+                const swordAttack = swordClip
+                    ? mixer.clipAction(swordClip).setLoop(LoopOnce, 1)
+                    : undefined
+                const build = mixer.clipAction(buildClip).setLoop(LoopOnce, 1)
+                const chop = chopClip
+                    ? mixer
+                          .clipAction(chopClip)
+                          .setLoop(LoopOnce, 1)
+                          .setEffectiveTimeScale(1.15)
+                    : build
                 mixer.update(0)
 
                 const { x, z } = group.position
@@ -147,13 +170,16 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                     idle,
                     walk,
                     attack,
+                    swordAttack,
                     chop,
+                    build,
                     lastAction: actor.lastAction,
                     handVisual: actor.getEquippedItem('Hands'),
                     carryPose: bindCarryPose(gltf.scene),
                     x,
                     z,
                     blend: 0,
+                    swingElapsed: 0,
                 })
             }
 
@@ -229,10 +255,21 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         if (!animation || !action || !isSamePosition(actor.position, action.origin))
             return
 
-        const swing = action.kind === 'attack' ? animation.attack : animation.chop
+        const swing = this.getSwing(actor, animation, action.kind)
         if (animation.lastAction !== action || swing.isRunning()) {
             return action.target
         }
+    }
+
+    private getSwing(
+        actor: HumanActor,
+        animation: HumanLocomotion,
+        kind: NonNullable<HumanActor['lastAction']>['kind'],
+    ) {
+        if (kind === 'attack' && actor.getEquippedItem('Hands') === 'sword') {
+            return animation.swordAttack ?? animation.attack
+        }
+        return animation[kind]
     }
 
     protected updatePosition(clockInfo: ClockInfo) {
@@ -254,8 +291,6 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
             const speed = distance / (deltaTime * config.renderer.tileSize)
             const targetBlend = MathUtils.smoothstep(speed, 0.08, 1.5)
             animation.blend = MathUtils.damp(animation.blend, targetBlend, 12, deltaTime)
-            animation.idle.setEffectiveWeight(1 - animation.blend)
-            animation.walk.setEffectiveWeight(animation.blend)
             // Keep the stride advancing as the walk fades into idle.
             animation.walk.setEffectiveTimeScale(MathUtils.clamp(speed / 2, 0.5, 1.5))
             // Restore the mixer's last result before it evaluates the next frame.
@@ -266,24 +301,64 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                 }
             }
             const action = actor.lastAction
-            const swing = action?.kind === 'attack' ? animation.attack : animation.chop
+            const swing = action && this.getSwing(actor, animation, action.kind)
             const atOrigin = action && isSamePosition(actor.position, action.origin)
+            const swordAttack = animation.swordAttack
+            if (swordAttack && (!atOrigin || swing !== swordAttack)) swordAttack.stop()
             if (animation.lastAction !== action) {
-                // Deliveries can tick faster than a swing. Let the hammer reach the site.
+                // Repeated simulation ticks can arrive before the visual swing finishes.
                 const finishingSwing =
                     atOrigin &&
-                    action.kind === 'build' &&
-                    animation.lastAction?.kind === 'build' &&
-                    swing.isRunning()
+                    (action.kind !== 'attack' || swing === swordAttack) &&
+                    animation.lastAction?.kind === action.kind &&
+                    swing?.isRunning()
                 animation.lastAction = action
                 if (!finishingSwing) {
                     animation.attack.stop()
+                    swordAttack?.stop()
                     animation.chop.stop()
-                    if (atOrigin) swing.reset().play()
+                    animation.build.stop()
+                    if (atOrigin) {
+                        animation.swingElapsed = 0
+                        swing?.reset().play()
+                    }
                 }
             }
-            if (action && !atOrigin) swing.stop()
+            if (!atOrigin) swing?.stop()
+            const chop = animation.chop
+            const keepChopping =
+                atOrigin &&
+                action.kind === 'chop' &&
+                actor.profession instanceof WoodcutterProfession &&
+                actor.profession.isChopping
+            if (chop !== animation.build) {
+                chop.setLoop(
+                    keepChopping ? LoopRepeat : LoopOnce,
+                    keepChopping ? Infinity : 1,
+                )
+            }
+            const entryWeight = MathUtils.smoothstep(
+                animation.swingElapsed,
+                0,
+                motionTransitionTime,
+            )
+            const chopWeight =
+                chop === animation.build
+                    ? 0
+                    : getMotionWeight(chop, entryWeight, keepChopping)
+            if (chop !== animation.build) chop.setEffectiveWeight(chopWeight)
+            const swordWeight = swordAttack
+                ? getMotionWeight(swordAttack, entryWeight)
+                : 0
+            swordAttack?.setEffectiveWeight(swordWeight)
+            const locomotionWeight = 1 - Math.max(chopWeight, swordWeight)
+            animation.idle.setEffectiveWeight((1 - animation.blend) * locomotionWeight)
+            animation.walk.setEffectiveWeight(animation.blend * locomotionWeight)
             animation.mixer.update(deltaTime)
+            animation.swingElapsed = Math.min(
+                animation.swingElapsed + deltaTime,
+                motionTransitionTime,
+            )
             animation.handVisual = this.getHandVisual(actor, animation)
             if (animation.handVisual === 'carriedLog') {
                 for (const { bone, rotation, animatedRotation } of animation.carryPose) {
@@ -299,10 +374,11 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         animation: HumanLocomotion,
     ): EquipmentVisual {
         const equipped = actor.getEquippedItem('Hands')
-        if (animation.attack.isRunning()) return equipped
-        if (animation.chop.isRunning()) {
-            return animation.lastAction?.kind === 'build' ? 'hammer' : 'hatchet'
-        }
+        if (animation.attack.isRunning() || animation.swordAttack?.isRunning())
+            return equipped
+        if (animation.lastAction?.kind === 'build' && animation.build.isRunning())
+            return 'hammer'
+        if (animation.chop.isRunning()) return 'hatchet'
 
         const profession = actor.profession
         if (profession instanceof WoodcutterProfession) {

@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import '+game/actors'
+import { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
 import { HunterHutActor } from '+game/actors/buildings/hunterHut/HunterHutActor'
 import { BoarActor } from '+game/actors/units/boars/BoarActor'
 import { DeerActor } from '+game/actors/units/deer/DeerActor'
@@ -255,4 +256,40 @@ test('restores the clock and starts new hunts only during daytime', () => {
     game.setTimeOfDay(6 * 60)
     game.tick()
     expect(hunter.preyId).toBe(prey.id)
+})
+
+test('meals use one meat per living human from their own stores', () => {
+    const { game, player, hut } = fixture()
+    const hall = game.spawnActor(GuildhallActor, player, [25, 25])!
+    hall.traits = []
+    game.spawnActor(HumanActor, player, [11, 16])!
+    const dead = game.spawnActor(HumanActor, player, [12, 16])!
+    dead.hp = 0
+    dead.hpRegen = 0
+    const otherHut = game.spawnActor(HunterHutActor, new HumanPlayer(), [40, 10])!
+    otherHut.collectMeat(5)
+    hut.collectMeat(3)
+    hall.meatStock = 2
+
+    game.setTimeOfDay(7 * 60 + 59)
+    game.tick(1_000)
+    expect(hut.meatStock).toBe(1)
+    expect(hall.meatStock).toBe(2)
+    game.tick()
+    expect(hut.meatStock).toBe(1)
+
+    game.setTimeOfDay(11 * 60 + 59)
+    game.tick(1_000)
+    expect(hut.meatStock).toBe(0)
+    expect(hall.meatStock).toBe(1)
+
+    hall.collectMeat(4)
+    game.tick(20 * 60 * 1_000)
+    expect(hall.meatStock).toBe(1)
+
+    game.setTimeOfDay(11 * 60 + 59)
+    expect(hall.meatStock).toBe(1)
+    game.tick(1_000)
+    expect(hall.meatStock).toBe(0)
+    expect(otherHut.meatStock).toBe(5)
 })

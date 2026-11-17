@@ -14,6 +14,7 @@ export abstract class Profession {
     public readonly defaultHeldItem: ItemId | null = null
     public selectImportance = 4
     public isPristine = true
+    public onMoveOrder?(): void
 
     constructor(
         public game: Game,

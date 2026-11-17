@@ -29,6 +29,10 @@ it.each(['left', 'right', 'both', 'random'] as const)(
                 [0, -1, 0],
             ],
             [
+                [0.15, 0.4, 0.26],
+                [0, 1, 0],
+            ],
+            [
                 [-0.1, 0.25, 0.18],
                 [1, -0.8, 0.2],
             ],
@@ -51,7 +55,7 @@ it.each(['left', 'right', 'both', 'random'] as const)(
                 new Vector3(...origin),
                 new Vector3(...direction).normalize(),
             )
-            for (const far of [0.15, 2]) {
+            for (const far of [0.15, 2, Infinity]) {
                 raycaster.far = far
                 const expected = raycaster.intersectObject(mesh, false)[0]?.distance
                 const actual = raycastGround(raycaster.ray, geometry, 7, 6, tileSize, far)

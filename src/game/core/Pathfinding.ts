@@ -1,5 +1,5 @@
-import { getCliffFaceSurfaces } from '+game/world/cliffFaceSurfaces'
 import { type Path, type PathStep, type Position } from '+game/types'
+import { getCliffFaceSurfaces } from '+game/world/cliffFaceSurfaces'
 import { getCliffShelves } from '+game/world/cliffShelves'
 import { SMALL_ROCK_TOP } from '+game/world/rockPlacement'
 import { RockTile } from '+game/world/Tile'
@@ -55,14 +55,28 @@ export interface RouteGoal<T> {
 export class Pathfinding {
     private easyStar = new EasyStar.js()
     private pending = new Map<number, { ticksAtFront: number; expire: () => void }>()
-    private gridRevision = -1
-    private lowCliffClearance = new Set<string>()
+    private readonly changedTiles = new Set<number>()
+    private readonly grid: number[][]
+    private rockSurfaces: StandingSurface[] = []
+    private cliffRevision = -1
+    private rockRevision = -1
+    private lowCliffClearance = new Set<number>()
 
     public readonly surfaces: StandingSurfaces
 
     constructor(private word: World) {
         this.surfaces = new StandingSurfaces(word)
-        this.loadTilesGrid()
+        this.grid = word.tiles.map((row) => row.map(() => 0))
+        this.refreshTerrainSurfaces()
+        word.forEachTile((_, [x, y]) => this.updateGridTile(x, y, true))
+        this.easyStar.setGrid(this.grid)
+        this.easyStar.setTileCost(1, 1)
+        this.easyStar.setAcceptableTiles([1])
+        this.easyStar.enableDiagonals()
+        // A diagonal line of wall tiles must block movement between its segments.
+        this.easyStar.disableCornerCutting()
+        this.easyStar.setIterationsPerCalculation(1000)
+        word.trackTileChanges(this.changedTiles)
     }
 
     public tick() {
@@ -77,12 +91,46 @@ export class Pathfinding {
     }
 
     public update() {
-        if (this.gridRevision !== this.word.tileRevision) this.loadTilesGrid()
+        if (this.word.batchingTiles || !this.changedTiles.size) return
+        const [width, height] = this.word.getSize()
+        if (
+            this.cliffRevision !== this.word.cliffRevision ||
+            this.rockRevision !== this.word.rockRevision
+        ) {
+            const oldClearance = this.lowCliffClearance
+            this.refreshTerrainSurfaces()
+            for (const index of oldClearance)
+                if (!this.lowCliffClearance.has(index)) this.changedTiles.add(index)
+            for (const index of this.lowCliffClearance)
+                if (!oldClearance.has(index)) this.changedTiles.add(index)
+        }
+        const affected = new Set<number>()
+        for (const index of this.changedTiles) {
+            const x = index % width
+            const y = Math.floor(index / width)
+            // Incoming cardinal and diagonal steps can read any of these neighbors.
+            for (
+                let row = Math.max(0, y - 1);
+                row <= Math.min(height - 1, y + 1);
+                row++
+            ) {
+                for (
+                    let col = Math.max(0, x - 1);
+                    col <= Math.min(width - 1, x + 1);
+                    col++
+                )
+                    affected.add(row * width + col)
+            }
+        }
+        for (const index of affected)
+            this.updateGridTile(index % width, Math.floor(index / width))
+        this.changedTiles.clear()
     }
 
     public async findPath(start: Position, end: Position, signal?: AbortSignal) {
-        if (signal?.aborted || !this.word.hasTile(start) || !this.canStandOnGround(end))
-            return
+        if (signal?.aborted || !this.word.hasTile(start)) return
+        this.update()
+        if (!this.canStandOnGround(end)) return
         const [sx, sy] = start
         const [ex, ey] = end
 
@@ -223,8 +271,13 @@ export class Pathfinding {
 
         const horizontal = this.word.hasTile([nextX, y])
         const vertical = this.word.hasTile([x, nextY])
-        if (!horizontal || !vertical ||
-            !this.canStandOnGround([nextX, y]) || !this.canStandOnGround([x, nextY])) return false
+        if (
+            !horizontal ||
+            !vertical ||
+            !this.canStandOnGround([nextX, y]) ||
+            !this.canStandOnGround([x, nextY])
+        )
+            return false
         // A diagonal needs a walkable way around the slope within the same square.
         return (
             Math.max(
@@ -306,64 +359,66 @@ export class Pathfinding {
     }
 
     public canStandOnGround(position: Position) {
-        return !!this.word.hasTile(position)?.canWalk &&
-            !this.lowCliffClearance.has(position.join(','))
+        return (
+            !!this.word.hasTile(position)?.canWalk &&
+            !this.lowCliffClearance.has(position[1] * this.grid[0]!.length + position[0])
+        )
     }
 
-    private loadTilesGrid() {
-        this.easyStar.removeAllAdditionalPointCosts()
-        this.easyStar.removeAllDirectionalConditions()
-
-        const rocks: StandingSurface[] = []
-        this.word.forEachTile((tile, [x, y]) => {
-            if (tile instanceof RockTile && tile.rockSize === 1) {
-                const ground = steps
-                    .slice(0, 4)
-                    .map(([dx, dy]): Position => [x + dx, y + dy])
-                rocks.push({
-                    id: rockSurfaceId([x, y]),
-                    position: [x, y],
-                    height: tile.height + SMALL_ROCK_TOP,
-                    ground,
-                    links: [],
-                    halfWidth: 0.22,
-                })
-            }
-        })
-
-        this.surfaces.replace('rocks', rocks)
+    private refreshTerrainSurfaces() {
+        if (this.rockRevision !== this.word.rockRevision) {
+            const rocks: StandingSurface[] = []
+            this.word.forEachTile((tile, [x, y]) => {
+                if (tile instanceof RockTile && tile.rockSize === 1) {
+                    const ground = steps
+                        .slice(0, 4)
+                        .map(([dx, dy]): Position => [x + dx, y + dy])
+                    rocks.push({
+                        id: rockSurfaceId([x, y]),
+                        position: [x, y],
+                        height: tile.height + SMALL_ROCK_TOP,
+                        ground,
+                        links: [],
+                        halfWidth: 0.22,
+                    })
+                }
+            })
+            this.rockSurfaces = rocks
+            this.surfaces.replace('rocks', rocks)
+        }
         const shelves = getCliffShelves(this.word).flatMap(({ surfaces }) => surfaces)
-        const occupied = new Set([...rocks, ...shelves].map(({ position }) => position.join(',')))
+        const occupied = new Set(
+            [...this.rockSurfaces, ...shelves].map(({ position }) => position.join(',')),
+        )
         const cliffs = [...shelves, ...getCliffFaceSurfaces(this.word, occupied)]
         this.surfaces.replace('cliffs', cliffs)
-        this.lowCliffClearance.clear()
+        this.lowCliffClearance = new Set()
         for (const { position, height } of cliffs) {
             const clearance = height - this.word.getTile(position).height
             if (clearance > 0 && clearance < 2.4) {
-                this.lowCliffClearance.add(position.join(','))
+                this.lowCliffClearance.add(
+                    position[1] * this.grid[0]!.length + position[0],
+                )
             }
         }
-        const tiles = this.word.tiles.map((row, y) =>
-            row.map((_, x) => this.canStandOnGround([x, y]) ? 1 : 0),
-        )
-        this.word.forEachTile((tile, [x, y]) => {
-            if (tile.walkCost) this.easyStar.setAdditionalPointCost(x, y, tile.walkCost)
-            if (!this.canStandOnGround([x, y])) return
-            const allowed = entryDirections.filter((_, i) => {
-                const [dx, dy] = steps[i]!
-                return this.canStep([x + dx, y + dy], [x, y])
-            })
-            if (allowed.length !== entryDirections.length) {
-                this.easyStar.setDirectionalCondition(x, y, allowed)
-            }
-        })
+        this.cliffRevision = this.word.cliffRevision
+        this.rockRevision = this.word.rockRevision
+    }
 
-        this.easyStar.setGrid(tiles)
-        this.easyStar.setAcceptableTiles([1])
-        this.easyStar.enableDiagonals()
-        // A diagonal line of wall tiles must block movement between its segments.
-        this.easyStar.disableCornerCutting()
-        this.easyStar.setIterationsPerCalculation(1000)
-        this.gridRevision = this.word.tileRevision
+    private updateGridTile(x: number, y: number, initializing = false) {
+        const { walkCost } = this.word.tiles[y]![x]!
+        const walkable = this.canStandOnGround([x, y])
+        this.grid[y]![x] = walkable ? 1 : 0
+        if (walkCost) this.easyStar.setAdditionalPointCost(x, y, walkCost)
+        else if (!initializing) this.easyStar.removeAdditionalPointCost(x, y)
+
+        if (!walkable) return
+        const allowed = entryDirections.filter((_, i) => {
+            const [dx, dy] = steps[i]!
+            return this.canStep([x + dx, y + dy], [x, y])
+        })
+        // EasyStar accepts all entry directions when this list contains every direction.
+        if (!initializing || allowed.length !== entryDirections.length)
+            this.easyStar.setDirectionalCondition(x, y, allowed)
     }
 }

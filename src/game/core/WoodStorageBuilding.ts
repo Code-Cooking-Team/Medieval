@@ -1,4 +1,5 @@
 import { type Position } from '+game/types'
+import { addPosition, rotatePositionOnGrind } from '+helpers/math'
 
 import { BuildingActor, type BuildingActorJSON } from './BuildingActor'
 
@@ -6,7 +7,20 @@ export abstract class WoodStorageBuilding extends BuildingActor {
     public readonly woodCapacity = 500
     public woodStock = 0
 
-    public abstract getDeliveryPosition(): Position
+    protected abstract readonly deliveryOffsets: readonly Position[]
+
+    public getDeliveryPositions(): Position[] {
+        return this.deliveryOffsets.map((offset) =>
+            addPosition(
+                this.position,
+                rotatePositionOnGrind(offset, [0, 0], this.rotation),
+            ),
+        )
+    }
+
+    public getDeliveryPosition(): Position {
+        return this.getDeliveryPositions()[0]!
+    }
 
     public getFreeWoodStorage() {
         return this.woodCapacity - this.woodStock
