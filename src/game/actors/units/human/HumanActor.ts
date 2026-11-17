@@ -104,6 +104,11 @@ export class HumanActor extends WalkableActor {
         return damage + (heldItem ? items[heldItem].damageBonus : 0)
     }
 
+    public orderMoveTo(position: Position | PathStep) {
+        this.profession?.onMoveOrder?.()
+        return super.orderMoveTo(position)
+    }
+
     public setPathTo(position: Position | PathStep, cancelTarget = true, clip = false) {
         if (cancelTarget) {
             this.target = undefined

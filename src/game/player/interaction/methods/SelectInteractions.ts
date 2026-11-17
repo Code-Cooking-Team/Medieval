@@ -202,7 +202,7 @@ export class SelectInteractions {
             }
             walkableActors.forEach((actor, index) => {
                 const destination = destinations[index]
-                if (destination) actor.setPathTo(destination)
+                if (destination) actor.orderMoveTo(destination)
             })
             return
         }
@@ -224,7 +224,7 @@ export class SelectInteractions {
 
         walkableActors.forEach((actor, index) => {
             const newPosition = positions[index]
-            if (newPosition) actor.setPathTo(newPosition)
+            if (newPosition) actor.orderMoveTo(newPosition)
         })
     }
 

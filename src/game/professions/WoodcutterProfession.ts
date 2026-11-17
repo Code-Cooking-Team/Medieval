@@ -28,6 +28,8 @@ export class WoodcutterProfession extends Profession {
     public treeId?: string
     public campId?: string
     private collectedTreeHP = 0
+    private movingByOrder = false
+    private checkRestoredTree = false
 
     protected material = new MeshStandardMaterial({ color: config.woodcutter.color })
     protected geometry = new SphereGeometry(0.5, 5, 5)
@@ -85,11 +87,37 @@ export class WoodcutterProfession extends Profession {
 
     public async tick() {
         super.tick()
-        if (!this.getCamp()) {
+        const camp = this.getCamp()
+        const tree = this.getTree()
+        if (
+            !tree ||
+            !camp ||
+            (this.checkRestoredTree && this.reservedTrees().has(tree.id))
+        ) {
+            this.treeId = undefined
+        }
+        this.checkRestoredTree = false
+
+        if (this.movingByOrder) {
+            if (this.actor.isFindingPath || this.hasPath()) {
+                this.move()
+                return
+            }
+            this.movingByOrder = false
+            if (camp) this.treeId = this.findAvailableTree()?.id
+            this.machine.setState('Idle')
+        }
+        if (!camp) {
             this.move()
             return
         }
         await this.machine.send('TICK')
+    }
+
+    public onMoveOrder() {
+        this.actor.cancelPath()
+        this.treeId = undefined
+        this.movingByOrder = true
     }
 
     public reset() {
@@ -100,6 +128,7 @@ export class WoodcutterProfession extends Profession {
     public setCamp(camp: WoodStorageBuilding) {
         if (this.campId === camp.id) return
         this.campId = camp.id
+        this.movingByOrder = false
         this.actor.cancelPath()
         this.actor.target = undefined
         this.machine.setState(this.hasWood ? 'HaveWood' : 'Idle')
@@ -131,6 +160,7 @@ export class WoodcutterProfession extends Profession {
             machineState: this.machine.currentState,
             treeId: this.treeId,
             campId: this.campId,
+            movingByOrder: this.movingByOrder,
         }
     }
 
@@ -139,6 +169,7 @@ export class WoodcutterProfession extends Profession {
         collectedTreeHP,
         treeId,
         campId,
+        movingByOrder = false,
         ...json
     }: WoodcutterProfessionJSON) {
         super.fromJSON(json)
@@ -149,12 +180,16 @@ export class WoodcutterProfession extends Profession {
             collectedTreeHP,
             treeId,
             campId,
+            movingByOrder,
         })
+        // Older saves can have several workers assigned to the same tree.
+        this.checkRestoredTree = treeId !== undefined
     }
 
     private getTree() {
         if (!this.treeId) return
-        return this.game.getActorById(this.treeId) as TreeActor
+        const tree = this.game.getActorById(this.treeId)
+        if (tree?.type === ActorType.Tree && !tree.isDead()) return tree as TreeActor
     }
 
     private getCamp() {
@@ -172,13 +207,43 @@ export class WoodcutterProfession extends Profession {
     }
 
     private findTree() {
-        const tree = this.game.findClosestActorByType(ActorType.Tree, this.actor.position)
-
+        const tree = this.getTree() ?? this.findAvailableTree()
         if (!tree) return
-        this.actor.cancelPath()
         this.treeId = tree.id
+        if (this.isWithinChoppingRange(tree)) return
 
         return this.actor.setPathTo(tree.position, false, true)
+    }
+
+    private reservedTrees() {
+        const reserved = new Set<string>()
+        for (const actor of this.game.findActorsByType(ActorType.Human) as HumanActor[]) {
+            const job = actor.profession
+            if (
+                job instanceof WoodcutterProfession &&
+                job !== this &&
+                job.treeId &&
+                job.getCamp()
+            ) {
+                reserved.add(job.treeId)
+            }
+        }
+        return reserved
+    }
+
+    private findAvailableTree() {
+        const reserved = this.reservedTrees()
+        let closest: TreeActor | undefined
+        let closestDistance = Infinity
+        for (const tree of this.game.findActorsByType(ActorType.Tree) as TreeActor[]) {
+            if (reserved.has(tree.id)) continue
+            const distance = distanceBetweenPoints(this.actor.position, tree.position)
+            if (distance < closestDistance) {
+                closest = tree
+                closestDistance = distance
+            }
+        }
+        return closest
     }
 
     private chopTree() {
@@ -254,4 +319,5 @@ interface WoodcutterProfessionJSON extends ProfessionJSON {
     machineState: string
     treeId?: string
     campId?: string
+    movingByOrder?: boolean
 }
