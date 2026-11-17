@@ -12,6 +12,7 @@ interface SpawnListProps {
 }
 
 const actorLabels: Partial<Record<ActorType, string>> = {
+    [ActorType.TimberGate]: 'Timber Gate',
     [ActorType.Gallery]: 'Timber Gallery',
     [ActorType.GalleryStairs]: 'Gallery Stairs',
     [ActorType.SmallRock]: 'Small rock (1 × 1)',

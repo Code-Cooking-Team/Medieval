@@ -126,6 +126,10 @@ export abstract class ActorRenderer<TActor extends Actor> extends BasicRenderer 
         return selected
     }
 
+    public getSolidMeshes(): Mesh[] {
+        return []
+    }
+
     public getInteractionShapes(): Object3D[] {
         return Array.from(this.actorInteractionShapeMap.keys())
     }

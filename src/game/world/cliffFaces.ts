@@ -46,13 +46,22 @@ export type CliffVertex = [x: number, height: number, z: number]
 export function forEachCliffFace(
     world: World,
     visit: (vertices: CliffVertex[], shelf: boolean, triangles: number[]) => void,
+    bounds?: { left: number; top: number; right: number; bottom: number },
 ) {
     const [width, height] = world.getSize()
     const fractureNoise = createTerrainNoise((world.seed ?? 0) ^ 0x17b54f)
     const elevation = (x: number, y: number) => cliffElevation(world, x, y)
 
-    for (let top = 5; top < height - 5; top += spacing) {
-        for (let left = 5; left < width - 5; left += spacing) {
+    for (
+        let top = bounds?.top ?? 5;
+        top < (bounds?.bottom ?? height - 5);
+        top += spacing
+    ) {
+        for (
+            let left = bounds?.left ?? 5;
+            left < (bounds?.right ?? width - 5);
+            left += spacing
+        ) {
             const random = seededRandom(
                 (world.seed ?? 0) ^ Math.imul(left, 73856093) ^ Math.imul(top, 19349663),
             )
@@ -176,7 +185,8 @@ export function forEachCliffFace(
                 const offset = side * random(2.4, 3.1)
                 const nextX = pivotX + downhillZ * offset
                 const nextZ = pivotZ - downhillX * offset
-                if (nextX < 2 || nextZ < 2 || nextX >= width - 3 || nextZ >= height - 3) continue
+                if (nextX < 2 || nextZ < 2 || nextX >= width - 3 || nextZ >= height - 3)
+                    continue
                 const nextLevel = elevation(nextX, nextZ)
                 const nextDrop =
                     elevation(nextX - downhillX, nextZ - downhillZ) -
@@ -196,7 +206,13 @@ export function forEachCliffFace(
                         nextZ + localX * sin + localZ * cos,
                     ]
                 })
-                if (copy.some(([vx, , vz]) => vx < 0 || vz < 0 || vx >= width - 1 || vz >= height - 1)) continue
+                if (
+                    copy.some(
+                        ([vx, , vz]) =>
+                            vx < 0 || vz < 0 || vx >= width - 1 || vz >= height - 1,
+                    )
+                )
+                    continue
                 visit(copy, true, triangles)
             }
         }

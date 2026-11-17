@@ -1,8 +1,8 @@
-import { expect, test } from 'bun:test'
 import '+game/actors'
 import { BarracksActor } from '+game/actors/buildings/barracks/BarracksActor'
 import { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
 import { HouseActor } from '+game/actors/buildings/house/HouseActor'
+import { StakewallActor } from '+game/actors/buildings/stakewall/StakewallActor'
 import { WoodCampActor } from '+game/actors/buildings/woodCamp/WoodCampActor'
 import { TreeActor } from '+game/actors/flora/tree/TreeActor'
 import { HumanActor } from '+game/actors/units/human/HumanActor'
@@ -14,6 +14,8 @@ import { type WoodcutterProfession } from '+game/professions/WoodcutterProfessio
 import { ActorType, type Position } from '+game/types'
 import { ImportantFootpathTile, InsideTile, Tile, WallTile } from '+game/world/Tile'
 import { World } from '+game/world/World'
+
+import { expect, test } from 'bun:test'
 
 import { type ConstructionSiteActor } from './ConstructionSiteActor'
 import { type ConstructionType } from './costs'
@@ -69,7 +71,11 @@ test('reserves the rotated footprint and completes a house after partial deliver
     tickUntil(game, () => house.deliveredWood > 0)
     expect(house.deliveredWood).toBe(2)
     expect(builder.carriedWood).toBe(148)
-    expect(human.lastAction).toMatchObject({ kind: 'build', target: house.position })
+    expect(human.lastAction?.kind).toBe('build')
+    expect(game.getConstructionWorkSpots(house)).toContainEqual({
+        position: human.position,
+        target: human.lastAction!.target,
+    })
     expect(house.hp).toBe(house.maxHp)
     game.tick()
     expect(house.deliveredWood).toBe(4)
@@ -159,8 +165,15 @@ test('two builders can share a site without duplicating it in either queue', () 
 
     firstBuilder.carriedWood = 15
     secondBuilder.carriedWood = 15
-    game.tick()
-    expect(site.deliveredWood).toBe(4)
+    tickUntil(game, () => !!human.lastAction && !!second.lastAction)
+    expect(human.position).not.toEqual(second.position)
+    for (const worker of [human, second]) {
+        expect(worker.lastAction?.target).toEqual(site.position)
+        expect(
+            Math.abs(worker.position[0] - site.position[0]) +
+                Math.abs(worker.position[1] - site.position[1]),
+        ).toBe(1)
+    }
     tickUntil(game, () => !game.getActorById(site.id))
     expect(firstBuilder.queue).toEqual([])
     expect(secondBuilder.queue).toEqual([])
@@ -334,13 +347,54 @@ test.each([0, 1, 2, 3])(
         const hall = game.spawnActor(GuildhallActor, player, [34, 20], rotation)!
         expect(hall.woodStock).toBe(500)
         expect(hall.meatStock).toBe(300)
-        expect(game.world.hasTile(hall.getDeliveryPosition())).toBeInstanceOf(
-            ImportantFootpathTile,
-        )
+        for (const position of hall.getDeliveryPositions()) {
+            expect(game.world.hasTile(position)).toBeInstanceOf(ImportantFootpathTile)
+        }
         expect(hall.collectTree(10)).toBe(0)
         expect(hall.collectMeat(10)).toBe(0)
     },
 )
+
+test.each([0, 1, 2, 3])(
+    'the Wood Camp stockyard is reachable at rotation %i',
+    (rotation) => {
+        const { game, player } = fixture()
+        const camp = game.spawnActor(WoodCampActor, player, [34, 20], rotation)!
+        for (const position of camp.getDeliveryPositions()) {
+            expect(
+                game.pf.findRoute([25, 20], [{ target: camp, positions: [position] }]),
+            ).toBeDefined()
+        }
+    },
+)
+
+test('builders and woodcutters use the remaining wood point when others are blocked', async () => {
+    const { game, camp, human, player, sites } = fixture()
+    const [site] = sites(ActorType.Stakewall, [[23, 20]]) as [ConstructionSiteActor]
+    const points = camp.getDeliveryPositions()
+    const open = points.at(-1)!
+    game.world.setMultipleTiles((set) => {
+        for (const point of points) {
+            if (point !== open) set(point, new WallTile())
+        }
+    })
+    camp.collectTree(30)
+    const builder = human.profession as BuilderProfession
+    tickUntil(game, () => builder.carriedWood > 0)
+    expect(human.position).toEqual(open)
+    tickUntil(game, () => !game.getActorById(site.id))
+
+    const worker = game.spawnActor(HumanActor, player, [17, 18])!
+    camp.interact([worker])
+    const woodcutter = worker.profession as WoodcutterProfession
+    woodcutter.fromJSON({ ...woodcutter.toJSON(), collectedTreeHP: 50 })
+    for (let tick = 0; tick < 100 && woodcutter.hasWood; tick++) {
+        game.tick()
+        await Bun.sleep(1)
+    }
+    expect(camp.woodStock).toBe(50)
+    expect(worker.position).toEqual(open)
+})
 
 test('builders use Guildhall wood and a reassigned woodcutter refills it after reload', async () => {
     const { game, player, camp, sites } = fixture()
@@ -365,4 +419,33 @@ test('builders use Guildhall wood and a reassigned woodcutter refills it after r
         await new Promise<void>((resolve) => setTimeout(resolve, 0))
     }
     expect(savedHall.woodStock).toBe(370)
+})
+
+test('spawning a wall line publishes one terrain update and blocks the route', async () => {
+    const player = new HumanPlayer()
+    const world = new World(
+        Array.from({ length: 3 }, () => Array.from({ length: 5 }, () => new Tile())),
+    )
+    const game = new Game(world, [player])
+    const updates: number[] = []
+    world.emitter.on('tailUpdate', () => {
+        updates.push(world.tileRevision)
+    })
+    const placements = [0, 1, 2].map((y) => ({ position: [2, y] as Position }))
+    expect(game.spawnActors(StakewallActor, player, placements, 0)).toBe(true)
+    expect(updates).toEqual([])
+    await Promise.resolve()
+    expect(updates).toEqual([3])
+
+    const across = game.pf.findPath([1, 1], [3, 1])
+    game.pf.tick()
+    expect(await across).toBeUndefined()
+
+    game.removeActor(game.findActorsByType(ActorType.Stakewall)[1]!)
+    const through = game.pf.findPath([1, 1], [3, 1])
+    game.pf.tick()
+    expect(await through).toEqual([
+        { x: 2, y: 1 },
+        { x: 3, y: 1 },
+    ])
 })

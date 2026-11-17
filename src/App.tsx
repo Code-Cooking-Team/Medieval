@@ -2,6 +2,7 @@ import { FloraSpawner } from '+game/actors/flora/FloraSpawner'
 import { hasWoodStorage, isGuildhallActor, isHunterHutActor } from '+game/actors/helpers'
 import { Game, type GameJSON } from '+game/Game'
 import { HumanPlayer } from '+game/player/HumanPlayer'
+import type { ControlHints } from '+game/player/interaction/ControlHints'
 import { InteractionsManager } from '+game/player/interaction/InteractionsManager'
 import { NaturePlayer } from '+game/player/NaturePlayer'
 import { PlayerType } from '+game/player/types'
@@ -17,6 +18,7 @@ import { Tabs } from '+ui/components/tabs/Tabs'
 import { useLocalStorage } from '+ui/hooks/useLocalStorage'
 import { ConfigForm } from '+ui/modules/config/ConfigForm'
 import { GameClock } from '+ui/modules/config/GameClock'
+import { ControlHintBar } from '+ui/modules/selected/ControlHintBar'
 import { SelectedList } from '+ui/modules/selected/SelectedList'
 import { SpawnList } from '+ui/modules/spawn/SpawnList'
 import { TerrainSeed } from '+ui/modules/terrain/TerrainSeed'
@@ -46,6 +48,7 @@ const gameRootEl = document.getElementById('game-root') as HTMLElement
 
 function App() {
     const [selectedBuilding, setSelectedBuilding] = useState<ActorType>()
+    const [controlHints, setControlHints] = useState<ControlHints>()
     const [renderer, setRenderer] = useState<Renderer>()
     const [started, setStarted] = useState(false)
     const [rightMenuOpen, setRightMenuOpen] = useState(false)
@@ -63,8 +66,10 @@ function App() {
         true,
     )
     const [toLoadJSON, setToLoadJSON] = useState<GameJSON | undefined>()
+    const [newGameSeed, setNewGameSeed] = useState<number>()
 
     const newGame = () => {
+        setNewGameSeed(isShowcase ? game.world.seed : undefined)
         setToLoadJSON(undefined)
         setMode('play')
         setGameMenuOpen(false)
@@ -93,9 +98,11 @@ function App() {
 
         const seedParam = new URLSearchParams(window.location.search).get('seed')?.trim()
         const requestedSeed = seedParam ? Number(seedParam) : NaN
-        const seed = Number.isSafeInteger(requestedSeed)
-            ? requestedSeed
-            : Math.floor(random(0, 2 ** 32))
+        const seed =
+            newGameSeed ??
+            (Number.isSafeInteger(requestedSeed)
+                ? requestedSeed
+                : Math.floor(random(0, 2 ** 32)))
         const world = generateWorld(seed)
         const humanPlayer = new HumanPlayer()
         const naturePlayer = new NaturePlayer()
@@ -108,11 +115,16 @@ function App() {
         if (!isShowcase) humanPlayer.selectBuilding(ActorType.Guildhall, undefined, true)
 
         return { game, humanPlayer }
-    }, [toLoadJSON, forceReloadCount, isShowcase])
+    }, [toLoadJSON, forceReloadCount, isShowcase, newGameSeed])
 
     useEffect(() => {
         const renderer = new Renderer(game, humanPlayer, gameRootEl)
-        const interactions = new InteractionsManager(game, renderer, humanPlayer)
+        const interactions = new InteractionsManager(
+            game,
+            renderer,
+            humanPlayer,
+            setControlHints,
+        )
         interactionsRef.current = interactions
 
         renderer.init(isShowcase)
@@ -174,7 +186,10 @@ function App() {
                 />
             )}
             {!isShowcase && !gameMenuOpen && (
-                <SelectedList humanPlayer={humanPlayer} renderer={renderer} />
+                <div className="game-selection-hud">
+                    {controlHints && <ControlHintBar hints={controlHints} />}
+                    <SelectedList humanPlayer={humanPlayer} renderer={renderer} />
+                </div>
             )}
             {(isShowcase || gameMenuOpen) && (
                 <div

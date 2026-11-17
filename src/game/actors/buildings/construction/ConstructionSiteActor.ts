@@ -1,7 +1,9 @@
 import { isHumanActor } from '+game/actors/helpers'
+import type { HumanActor } from '+game/actors/units/human/HumanActor'
 import { type Actor } from '+game/core/Actor'
 import { BuildingActor, type BuildingActorJSON } from '+game/core/BuildingActor'
 import { BuilderProfession } from '+game/professions/BuilderProfession'
+import { ProfessionType } from '+game/professions/types'
 import { ActorType } from '+game/types'
 
 import { buildingBlueprints } from './blueprints'
@@ -31,14 +33,19 @@ export class ConstructionSiteActor extends BuildingActor {
         )
     }
 
-    public assign(actor: Actor) {
-        if (
-            !isHumanActor(actor) ||
-            actor.isDead() ||
-            actor.player !== this.player ||
-            this.game.getActorById(this.id) !== this
+    public readonly workerAssignmentLabel: string = `Assign as ${ProfessionType.Builder}`
+
+    public canAssignWorker(actor: Actor): actor is HumanActor {
+        return (
+            isHumanActor(actor) &&
+            actor.player === this.player &&
+            !actor.isDead() &&
+            this.game.getActorById(this.id) === this
         )
-            return false
+    }
+
+    public assign(actor: Actor) {
+        if (!this.canAssignWorker(actor)) return false
 
         const builder =
             actor.profession instanceof BuilderProfession

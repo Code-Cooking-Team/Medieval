@@ -15,7 +15,14 @@ export interface CliffShelf {
     size: 2 | 3
 }
 
-const cache = new WeakMap<World, { revision: number; shelves: CliffShelf[] }>()
+const cache = new WeakMap<
+    World,
+    {
+        revision: number
+        shelves: CliffShelf[]
+        blocks: Map<string, { revision: number; shelf?: CliffShelf }>
+    }
+>()
 const spacing = 36
 const directions: Position[] = [
     [1, 0],
@@ -26,52 +33,29 @@ const directions: Position[] = [
 
 export function getCliffShelves(world: World) {
     const cached = cache.get(world)
-    if (cached?.revision === world.tileRevision) return cached.shelves
+    if (cached?.revision === world.cliffRevision) return cached.shelves
 
     const [width, depth] = world.getSize()
     const shelves: CliffShelf[] = []
+    const blocks = cached?.blocks ?? new Map<string, { revision: number; shelf?: CliffShelf }>()
     for (let blockY = 2; blockY < depth - 3; blockY += spacing) {
         for (let blockX = 2; blockX < width - 3; blockX += spacing) {
-            const seed =
-                (world.seed ?? 0) ^
-                Math.imul(blockX, 73856093) ^
-                Math.imul(blockY, 19349663)
-            let shelf: CliffShelf | undefined
-            let bestScore = -Infinity
-            for (let y = blockY; y < Math.min(blockY + spacing, depth - 3); y++) {
-                for (let x = blockX; x < Math.min(blockX + spacing, width - 3); x++) {
-                    const crest = world.hasTile([x, y])
-                    if (
-                        !crest?.canWalk ||
-                        crest.buildingId ||
-                        crest.type !== TileType.Step
-                    )
-                        continue
-                    for (const direction of directions) {
-                        const [dx, dy] = direction
-                        const height = crest.height
-                        const behind = cliffElevation(world, x - dx, y - dy)
-                        const below = cliffElevation(world, x + 2 * dx, y + 2 * dy)
-                        if (Math.abs(behind - height) > 0.75 || height - below < 2.8)
-                            continue
-
-                        // A rim that also drops sideways is a shoulder or a bend.
-                        const sideDrop = Math.max(
-                            height - cliffElevation(world, x - 2 * dy, y + 2 * dx),
-                            height - cliffElevation(world, x + 2 * dy, y - 2 * dx),
-                        )
-                        const score =
-                            Math.min(sideDrop, 8) * 2 + Math.min(height - below, 8) * 0.4
-                        if (score <= bestScore) continue
-                        const candidate =
-                            makeShelf(world, [x, y], direction, seed, 3) ??
-                            makeShelf(world, [x, y], direction, seed, 2)
-                        if (!candidate) continue
-                        shelf = candidate
-                        bestScore = score
-                    }
-                }
+            const key = `${blockX},${blockY}`
+            const right = Math.min(blockX + spacing, width - 3)
+            const bottom = Math.min(blockY + spacing, depth - 3)
+            const revision = world.getCliffRevisionForArea(
+                blockX,
+                blockY,
+                right - 1,
+                bottom - 1,
+            )
+            let block = blocks.get(key)
+            if (block?.revision !== revision) {
+                const shelf = findShelf(world, blockX, blockY, right, bottom)
+                block = { revision, shelf }
+                blocks.set(key, block)
             }
+            const { shelf } = block
             if (
                 shelf &&
                 !shelves.some((other) =>
@@ -86,8 +70,51 @@ export function getCliffShelves(world: World) {
                 shelves.push(shelf)
         }
     }
-    cache.set(world, { revision: world.tileRevision, shelves })
+    cache.set(world, { revision: world.cliffRevision, shelves, blocks })
     return shelves
+}
+
+function findShelf(
+    world: World,
+    blockX: number,
+    blockY: number,
+    right: number,
+    bottom: number,
+) {
+    const seed =
+        (world.seed ?? 0) ^ Math.imul(blockX, 73856093) ^ Math.imul(blockY, 19349663)
+    let shelf: CliffShelf | undefined
+    let bestScore = -Infinity
+    for (let y = blockY; y < bottom; y++) {
+        for (let x = blockX; x < right; x++) {
+            const crest = world.hasTile([x, y])
+            if (!crest?.canWalk || crest.buildingId || crest.type !== TileType.Step)
+                continue
+            for (const direction of directions) {
+                const [dx, dy] = direction
+                const height = crest.height
+                const behind = cliffElevation(world, x - dx, y - dy)
+                const below = cliffElevation(world, x + 2 * dx, y + 2 * dy)
+                if (Math.abs(behind - height) > 0.75 || height - below < 2.8) continue
+
+                // A rim that also drops sideways is a shoulder or a bend.
+                const sideDrop = Math.max(
+                    height - cliffElevation(world, x - 2 * dy, y + 2 * dx),
+                    height - cliffElevation(world, x + 2 * dy, y - 2 * dx),
+                )
+                const score =
+                    Math.min(sideDrop, 8) * 2 + Math.min(height - below, 8) * 0.4
+                if (score <= bestScore) continue
+                const candidate =
+                    makeShelf(world, [x, y], direction, seed, 3) ??
+                    makeShelf(world, [x, y], direction, seed, 2)
+                if (!candidate) continue
+                shelf = candidate
+                bestScore = score
+            }
+        }
+    }
+    return shelf
 }
 
 // The walkable tile centers and the rock mesh sample the same folds.
@@ -126,7 +153,7 @@ function makeShelf(
     const height = world.getTile([x, y]).height
     const farRim = world.getTile(at(width - 1, 0)).height
     const tilt = Math.max(-0.45, Math.min(0.45, (farRim - height) / (width - 1)))
-    const base = height + tilt * (width - 1) / 2
+    const base = height + (tilt * (width - 1)) / 2
     const surfaces: StandingSurface[] = []
     let lowest = height
     for (let column = 0; column < width; column++) {
@@ -135,7 +162,13 @@ function makeShelf(
         const lateral = column - (width - 1) / 2
         for (let row = 1; row <= width; row++) {
             const position = at(column, row)
-            const top = cliffShelfTop(base, lateral, row - (width + 1) / 2, width / 2, tilt)
+            const top = cliffShelfTop(
+                base,
+                lateral,
+                row - (width + 1) / 2,
+                width / 2,
+                tilt,
+            )
             const tile = world.hasTile(position)
             if (
                 !tile ||
@@ -162,7 +195,11 @@ function makeShelf(
             })
         }
     }
-    if (height - lowest < 2 || surfaces.filter(({ ground }) => ground.length).length < width - 1) return
+    if (
+        height - lowest < 2 ||
+        surfaces.filter(({ ground }) => ground.length).length < width - 1
+    )
+        return
     for (const surface of surfaces) {
         surface.links = surfaces
             .filter(

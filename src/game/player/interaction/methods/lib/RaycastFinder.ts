@@ -2,11 +2,11 @@ import { config } from '+config'
 import { type Actor } from '+game/core/Actor'
 import { toStep } from '+game/core/StandingSurfaces'
 import { type Game } from '+game/Game'
-import { pickCliffShelfTop } from '+game/renderer/lib/createCliffShelfGeometry'
 import { type Renderer } from '+game/Renderer'
+import { pickCliffShelfTop } from '+game/renderer/lib/createCliffShelfGeometry'
 import { type Position } from '+game/types'
 
-import { InstancedMesh, Matrix3, Matrix4, Raycaster, Vector2 } from 'three'
+import { InstancedMesh, Matrix3, Matrix4, Raycaster, Vector2, Vector3 } from 'three'
 
 export class RaycastFinder {
     constructor(
@@ -23,10 +23,9 @@ export class RaycastFinder {
         this.renderer.rtsCamera.camera.updateMatrixWorld()
         rayCaster.setFromCamera(pointer, this.renderer.rtsCamera.camera)
 
-        const intersects = rayCaster.intersectObjects(this.renderer.getGroundChildren())
-        const intersectPoint = intersects[0]?.point
-
-        if (!intersectPoint) return
+        const distance = this.renderer.groundDistance(rayCaster)
+        if (distance === undefined) return
+        const intersectPoint = rayCaster.ray.at(distance, new Vector3())
 
         const [width, height] = this.game.world.getRealSize()
 

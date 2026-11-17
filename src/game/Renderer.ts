@@ -29,7 +29,6 @@ import { EnvironmentRenderer } from './renderer/EnvironmentRenderer'
 import { GroundRenderer } from './renderer/GroundRenderer'
 import { type ActorRenderer } from './renderer/lib/ActorRenderer'
 import { type BasicRenderer } from './renderer/lib/BasicRenderer'
-import { InstancedBuildingRenderer } from './renderer/lib/InstancedBuildingRenderer'
 import { SelectionPortraitRenderer } from './renderer/SelectionPortraitRenderer'
 import { StandingSurfaceRenderer } from './renderer/StandingSurfaceRenderer'
 import { WaterRenderer } from './renderer/WaterRenderer'
@@ -172,8 +171,8 @@ export class Renderer {
         }
     }
 
-    public getGroundChildren() {
-        return this.ground!.group.children
+    public groundDistance(raycaster: Raycaster) {
+        return this.ground?.groundDistance(raycaster)
     }
 
     public pickStandingSurfaceMarker(raycaster: Raycaster) {
@@ -182,17 +181,16 @@ export class Renderer {
 
     public getStandingSurfaceHit(raycaster: Raycaster) {
         const buildings = this.actorRendererList.flatMap((renderer) =>
-            renderer instanceof InstancedBuildingRenderer
-                ? renderer.getSolidMeshes()
-                : [],
+            renderer.getSolidMeshes(),
         )
         for (const mesh of buildings) mesh.updateWorldMatrix(true, false)
-        const ground = raycaster.intersectObjects(this.getGroundChildren())[0]
+        const groundDistance = this.groundDistance(raycaster)
         const hit = [
             ...raycaster.intersectObjects(buildings, false),
             ...(this.ground?.raycastRocks(raycaster) ?? []),
         ].sort((a, b) => a.distance - b.distance)[0]
-        if (hit && (!ground || hit.distance < ground.distance)) return hit
+        if (hit && (groundDistance === undefined || hit.distance < groundDistance))
+            return hit
     }
 
     public getInteractionObjectList() {

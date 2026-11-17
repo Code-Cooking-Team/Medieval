@@ -22,6 +22,8 @@ import { HunterHutActor } from './buildings/hunterHut/HunterHutActor'
 import { HunterHutRenderer } from './buildings/hunterHut/HunterHutRenderer'
 import { StakewallActor } from './buildings/stakewall/StakewallActor'
 import { StakewallRenderer } from './buildings/stakewall/StakewallRenderer'
+import { TimberGateActor } from './buildings/timberGate/TimberGateActor'
+import { TimberGateRenderer } from './buildings/timberGate/TimberGateRenderer'
 import { WoodCampActor } from './buildings/woodCamp/WoodCampActor'
 import { WoodCampRenderer } from './buildings/woodCamp/WoodCampRenderer'
 import { BushActor } from './flora/bush/BushActor'
@@ -45,6 +47,7 @@ export const actorRenderers = [
     HunterHutRenderer,
     BarracksRenderer,
     StakewallRenderer,
+    TimberGateRenderer,
     GalleryRenderer,
     GalleryStairsRenderer,
     BoarRenderer,
@@ -86,6 +89,10 @@ export const actorByType: Record<
     [ActorType.Stakewall]: {
         actorClass: StakewallActor,
         blueprint: buildingBlueprints[ActorType.Stakewall],
+    },
+    [ActorType.TimberGate]: {
+        actorClass: TimberGateActor,
+        blueprint: buildingBlueprints[ActorType.TimberGate],
     },
     [ActorType.Gallery]: {
         actorClass: GalleryActor,

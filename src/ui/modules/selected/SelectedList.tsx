@@ -6,6 +6,7 @@ import {
 } from '+game/actors/buildings/construction/costs'
 import type { GuildhallActor } from '+game/actors/buildings/guildhall/GuildhallActor'
 import type { HunterHutActor } from '+game/actors/buildings/hunterHut/HunterHutActor'
+import { TimberGateActor } from '+game/actors/buildings/timberGate/TimberGateActor'
 import {
     hasWoodStorage,
     isGuildhallActor,
@@ -24,7 +25,7 @@ import { Button } from '+ui/components/base/Button'
 import { ActorIcon } from '+ui/components/icons/ActorIcon'
 
 import { groupBy } from 'lodash'
-import { Axe, Hammer, X } from 'lucide-react'
+import { Axe, DoorClosed, DoorOpen, Hammer, X } from 'lucide-react'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { SelectionPortrait } from './SelectionPortrait'
@@ -154,6 +155,10 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
                         )}
                     </div>
                 )}
+                {singleActor instanceof TimberGateActor &&
+                    singleActor.player === humanPlayer && (
+                        <GateControls key={singleActor.id} gate={singleActor} />
+                    )}
                 {canBuild && (
                     <BuildControls
                         humans={[singleActor]}
@@ -261,9 +266,12 @@ export const SelectedList = ({ humanPlayer, renderer }: SelectedListProps) => {
     }
 }
 
-const buildOptions = Object.keys(constructionCosts) as ConstructionType[]
+const buildSections = Object.entries(actorTypesByCategory)
+    .map(([label, types]) => ({ label, options: types.filter(isConstructionType) }))
+    .filter(({ options }) => options.length > 0)
 
 function buildingName(type: ConstructionType) {
+    if (type === ActorType.TimberGate) return 'Timber Gate'
     if (type === ActorType.Gallery) return 'Timber Gallery'
     if (type === ActorType.GalleryStairs) return 'Gallery Stairs'
     return type === ActorType.WoodCamp ? 'Wood Camp' : type
@@ -286,6 +294,29 @@ const HumanDetails = ({ human, player }: { human: HumanActor; player: HumanPlaye
                 {profession?.type || noProfession}
             </span>
         </>
+    )
+}
+
+const GateControls = ({ gate }: { gate: TimberGateActor }) => {
+    const [open, setOpen] = useState(gate.open)
+    const [occupied, setOccupied] = useState(false)
+    const action = open ? 'Close gate' : 'Open gate'
+    const Icon = open ? DoorClosed : DoorOpen
+    return (
+        <div className="pointer-events-auto ml-auto flex flex-col items-end gap-1">
+            <Button
+                className="size-16 min-w-16 shrink-0 rounded-full p-0 text-[0px]"
+                aria-label={action}
+                label=""
+                icon={<Icon size={30} aria-hidden="true" />}
+                onClick={() => {
+                    const changed = gate.setOpen(!gate.open)
+                    setOpen(gate.open)
+                    setOccupied(!changed)
+                }}
+            />
+            {occupied && <span role="status">Clear the gateway to close it.</span>}
+        </div>
     )
 }
 
@@ -324,19 +355,24 @@ const BuildControls = ({
                         icon={<X size={24} aria-hidden="true" />}
                         onClick={() => setShowPicker(false)}
                     />
-                    <div className="flex w-full flex-wrap justify-end gap-2">
-                        {buildOptions.map((type) => (
-                            <Button
-                                key={type}
-                                icon={<ActorIcon type={type} />}
-                                label={buildingName(type)}
-                                onClick={() => {
-                                    player.selectBuilding(type, humans)
-                                    setShowPicker(false)
-                                }}
-                            />
-                        ))}
-                    </div>
+                    {buildSections.map(({ label, options }) => (
+                        <div key={label} className="flex w-full flex-col items-end gap-2">
+                            <div>{label}</div>
+                            <div className="flex flex-wrap justify-end gap-2">
+                                {options.map((type) => (
+                                    <Button
+                                        key={type}
+                                        icon={<ActorIcon type={type} />}
+                                        label={buildingName(type)}
+                                        onClick={() => {
+                                            player.selectBuilding(type, humans)
+                                            setShowPicker(false)
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <Button

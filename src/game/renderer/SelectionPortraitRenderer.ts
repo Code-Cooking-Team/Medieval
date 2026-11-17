@@ -17,7 +17,7 @@ import {
 } from 'three'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 
-import { selectionPortraitLayout } from './selectionPortraitLayout'
+import { selectionPortraitSize } from './selectionPortraitLayout'
 
 /** A transparent, shadow-free view. Geometry/materials remain owned by the game. */
 export class SelectionPortraitRenderer {
@@ -32,25 +32,25 @@ export class SelectionPortraitRenderer {
     private copies: Object3D[] = []
     private disposed = false
     private framed = false
+    private human: boolean
+    private aspect: number
+    private bounds = new Box3()
+    private bodyBounds = new Box3()
     private size = new Vector3()
 
-    constructor(
-        canvas: HTMLCanvasElement,
-        private actor: Actor,
-    ) {
+    constructor(canvas: HTMLCanvasElement, actor: Actor) {
+        this.human = isHumanActor(actor)
+        const { width, height } = selectionPortraitSize(this.human)
+        this.aspect = width / height
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true })
         this.renderer.setClearColor(0, 0)
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-        this.renderer.setSize(
-            selectionPortraitLayout.width,
-            selectionPortraitLayout.height,
-            false,
-        )
+        this.renderer.setSize(width, height, false)
         this.scene.add(this.root, this.sun, this.sun.target, this.ambient)
         if (isBuildingActor(actor)) {
             const { model, promise } = actor.blueprint.getPlaceholder(actor.seed)
             void promise.then(() => {
-                if (this.disposed) return
+                if (this.disposed || this.model) return
                 model.traverse((node) => {
                     if (node instanceof LOD) node.autoUpdate = false
                 })
@@ -67,7 +67,7 @@ export class SelectionPortraitRenderer {
         sun: DirectionalLight,
         ambient: AmbientLight,
     ) {
-        if (!isBuildingActor(this.actor) && source) {
+        if (source) {
             const nodes: Object3D[] = []
             source.traverse((node) => nodes.push(node))
             if (
@@ -92,7 +92,7 @@ export class SelectionPortraitRenderer {
             })
         }
         if (!this.model) return
-        if (!this.framed) this.frameModel()
+        if (this.human || !this.framed) this.frameModel()
         this.sun.color.copy(sun.color)
         this.sun.intensity = sun.intensity
         this.sun.position.copy(sun.position).sub(sun.target.position)
@@ -107,35 +107,56 @@ export class SelectionPortraitRenderer {
 
     private frameModel() {
         this.root.updateMatrixWorld(true)
-        const bounds = new Box3().setFromObject(this.root)
+        const bounds = this.bounds.setFromObject(this.root, this.human)
         if (bounds.isEmpty()) return
-        bounds.getSize(this.size)
-        const center = bounds.getCenter(new Vector3())
-        const human = isHumanActor(this.actor)
-        const height = Math.max(this.size.y, 0.01)
-        const target = center.clone()
-        if (human) target.y = bounds.max.y - height * 0.19
-        this.camera.position
-            .copy(target)
-            .add(
-                new Vector3(human ? 0.15 : 1, human ? 0.02 : 0.65, 1)
-                    .normalize()
-                    .multiplyScalar(height * 5),
-            )
-        this.camera.lookAt(target)
-        // Humans fill the canvas from chest to crown; buildings fit in full.
-        const halfHeight = human
-            ? height * 0.23
-            : Math.max(height, this.size.length() * 0.8) * 0.62
-        this.camera.top = halfHeight
-        this.camera.bottom = -halfHeight
-        this.camera.left =
-            (-halfHeight * selectionPortraitLayout.width) / selectionPortraitLayout.height
-        this.camera.right =
-            (halfHeight * selectionPortraitLayout.width) / selectionPortraitLayout.height
-        this.camera.far = height * 12 + 100
+        if (!this.framed) {
+            const frameBounds = this.human ? this.humanBodyBounds() : bounds
+            frameBounds.getSize(this.size)
+            const height = Math.max(this.size.y, 0.01)
+            const target = frameBounds.getCenter(new Vector3())
+            // Aim at the bust's lower edge, which lines up with the panel bottom.
+            if (this.human) target.y = frameBounds.max.y - height * 0.42
+            this.camera.position
+                .copy(target)
+                .add(
+                    new Vector3(this.human ? 0.15 : 1, this.human ? 0.02 : 0.65, 1)
+                        .normalize()
+                        .multiplyScalar(height * 5),
+                )
+            this.camera.lookAt(target)
+            this.camera.updateMatrixWorld()
+            this.camera.far = height * 12 + 100
+            const halfHeight = Math.max(height, this.size.length() * 0.8) * 0.62
+            if (this.human) this.resizeFrame(0, height * 0.66)
+            else this.resizeFrame(-halfHeight, halfHeight)
+            this.framed = true
+        }
+        if (!this.human) return
+
+        bounds.applyMatrix4(this.camera.matrixWorldInverse)
+        // Grow from the bottom edge so raised tools fit without revealing the legs.
+        const top = Math.max(
+            bounds.max.y * 1.16,
+            (Math.max(-bounds.min.x, bounds.max.x) * 2.32) / this.aspect,
+        )
+        if (top > this.camera.top) this.resizeFrame(0, top)
+    }
+
+    private humanBodyBounds() {
+        this.bodyBounds.makeEmpty()
+        this.root.traverse((node) => {
+            if (node instanceof SkinnedMesh) this.bodyBounds.expandByObject(node, true)
+        })
+        return this.bodyBounds.isEmpty() ? this.bounds : this.bodyBounds
+    }
+
+    private resizeFrame(bottom: number, top: number) {
+        const halfWidth = ((top - bottom) * this.aspect) / 2
+        this.camera.top = top
+        this.camera.bottom = bottom
+        this.camera.left = -halfWidth
+        this.camera.right = halfWidth
         this.camera.updateProjectionMatrix()
-        this.framed = true
     }
 
     private releaseModel() {

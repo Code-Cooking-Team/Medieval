@@ -6,6 +6,12 @@ import { addPosition, rotatePositionOnGrind } from '+helpers/math'
 import { Actor, type ActorJSON } from './Actor'
 
 export abstract class BuildingActor extends Actor {
+    public readonly workerAssignmentLabel?: string
+
+    public canAssignWorker(_actor: Actor): boolean {
+        return false
+    }
+
     public selectImportance = 1
     public blueprint = {} as ActorBlueprint
 
