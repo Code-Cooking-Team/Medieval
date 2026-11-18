@@ -1,3 +1,4 @@
+import { isWalkableActor } from '+game/actors/helpers'
 import { type Game } from '+game/Game'
 import { type HumanPlayer } from '+game/player/HumanPlayer'
 import { type Renderer } from '+game/Renderer'
@@ -35,11 +36,21 @@ export class KeyboardInteractions {
     }
 
     private handleKeyUp = (event: KeyboardEvent) => {
+        const target = event.target
+        if (
+            target instanceof HTMLElement &&
+            target.closest('input, textarea, select, [contenteditable="true"]')
+        )
+            return
         const key = normalizeEventKeyName(event.key)
 
         if (key === 'Escape') {
             event.preventDefault()
             event.stopImmediatePropagation()
+            if (this.renderer.rtsCamera.isFollowing) {
+                this.renderer.rtsCamera.stopFollowing()
+                return
+            }
             if (this.menuOpen) {
                 window.dispatchEvent(new CustomEvent('game-menu-toggle'))
                 return
@@ -59,6 +70,17 @@ export class KeyboardInteractions {
         }
 
         if (this.menuOpen) return
+
+        if (
+            event.code === 'Period' &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey
+        ) {
+            const actor = this.player.selectedActors.find(isWalkableActor)
+            if (actor) this.renderer.followActor(actor)
+            return
+        }
 
         switch (key) {
             case ' ':
