@@ -16,7 +16,7 @@ Medieval is an evolving RTS sandbox. The settlement systems, world, and developm
 
 Maps are generated from a seed, with forests, mountain regions, cliffs, lakes, and river networks. Drainage and runoff shape the rivers; channel levels and terrain blending produce banks and waterfalls. Replay a world with `?seed=18` when you need to reproduce a terrain or pathfinding problem.
 
-![Procedural forests and a river cutting through the terrain, generated with seed 18](docs/screenshots/world-seed-18.jpg)
+![Procedural mountain valleys with branching rivers, forests, and a settlement building](docs/screenshots/procedural-terrain.png)
 
 The settlement systems connect to that world:
 
