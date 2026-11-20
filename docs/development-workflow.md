@@ -15,6 +15,10 @@ Tests live beside the code. [Bun test setup](../test/setup.ts) supplies Happy DO
 
 Use the browser for WebGL, camera, pointer input, and model loading changes. The **Spawn** tab gives you actors to exercise selection, movement, and placement. **Stop** pauses simulation ticks; **Tick** advances one step while stopped. The console exposes `window.game` and `window.logStats()` for inspecting live state and renderer counts. Save and config values persist across reloads; use a fresh browser profile if you need clean defaults without deleting local state.
 
+For presentation recordings, select a unit and press `.` to follow it. `A`/`D` or left/right arrows orbit around the unit; `W`/`S` or up/down arrows change the viewing angle. The mouse wheel changes distance. `Esc` exits follow mode and leaves the camera at its current position.
+
 Drag with two fingers on the game canvas to pan, or pinch to zoom. A single tap still selects or places actors. The `bokehAutofocus` setting in **Config → postProcessing** controls whether gameplay depth of field follows the terrain and actors at the center of the view.
 
 [Vite](../vite.config.ts) serves under `/Medieval/` and treats `.gltf` and `.hdr` as assets. For changes to model imports or asset paths, check the production preview as well as dev. The [Pages workflow](../.github/workflows/deploy.yml) installs from the Bun lockfile and runs lint, type checks, and tests before publishing `dist/` to `gh-pages` on pushes to `main`.
+
+For the standalone human animation lab, run the dev server and open `http://localhost:3333/Medieval/animation-debug.html`. Switch between the model’s Idle, walk, chop, and swordAttack clips, adjust transition duration and playback speed, pause or step frames, and run an automatic A ↔ B comparison with live animation weights. The equipment selector uses the game’s sword, spear, hatchet, hammer, and carried log models, with an optional shared carry pose for the log. This lab previews clip blending independently; gameplay still computes its own weights from movement and jobs.

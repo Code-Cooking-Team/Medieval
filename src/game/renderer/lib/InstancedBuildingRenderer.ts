@@ -11,6 +11,7 @@ import { type BuildingModel, type BuildingPrimitive } from './BuildingModel'
 
 interface Placement {
     level: number
+    modelState: number
     outlined: boolean
     matrix: Matrix4
     primitives: BuildingPrimitive[]
@@ -56,15 +57,20 @@ export abstract class InstancedBuildingRenderer<
                 .distanceTo(this.cameraPosition)
             const level = this.getLevel(distance, previous?.level ?? 0)
             const outlined = selected.has(actor)
+            const modelState = this.getModelState(actor)
             group.rotation.y = rotationIndexToDeg(actor.rotation)
             group.updateMatrix()
 
-            if (previous?.level !== level || previous.outlined !== outlined) {
+            if (
+                previous?.level !== level ||
+                previous.outlined !== outlined ||
+                previous.modelState !== modelState
+            ) {
                 if (previous) this.release(previous)
                 const primitives =
-                    previous?.level === level
+                    previous?.level === level && previous.modelState === modelState
                         ? previous.primitives
-                        : this.buildingModel.getPrimitives(level, actor.seed)
+                        : this.getActorPrimitives(actor, level, modelState)
                 const slots = primitives.map(({ mesh, matrix }) => {
                     const batch = this.getBatch(mesh, level, outlined)
                     const slot = batch.add(
@@ -74,6 +80,7 @@ export abstract class InstancedBuildingRenderer<
                 })
                 this.placements.set(actor, {
                     level,
+                    modelState,
                     outlined,
                     matrix: group.matrix.clone(),
                     primitives,
@@ -118,6 +125,14 @@ export abstract class InstancedBuildingRenderer<
         this.batches.clear()
         this.outlinedBatches.clear()
         this.placements.clear()
+    }
+
+    protected getModelState(_actor: TActor): number {
+        return 0
+    }
+
+    protected getActorPrimitives(actor: TActor, level: number, _state: number) {
+        return this.buildingModel.getPrimitives(level, actor.seed)
     }
 
     private getLevel(distance: number, previous: number) {

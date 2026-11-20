@@ -17,6 +17,18 @@ export class WoodCampRenderer extends InstancedBuildingRenderer<WoodCampActor> {
             .buildingModel
     }
 
+    protected getModelState(actor: WoodCampActor): number {
+        if (actor.woodStock <= 0) return 0
+        if (actor.woodStock >= actor.woodCapacity * 0.8) return 3
+        return actor.woodStock < actor.woodCapacity / 2 ? 1 : 2
+    }
+
+    protected getActorPrimitives(actor: WoodCampActor, level: number, state: number) {
+        return super
+            .getActorPrimitives(actor, level, state)
+            .filter(({ stockLayer }) => stockLayer === undefined || stockLayer <= state)
+    }
+
     public createActorModel(actor: WoodCampActor, tile: Tile) {
         const { group, interactionShape } = super.createActorModel(actor, tile)
 

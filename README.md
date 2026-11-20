@@ -1,210 +1,143 @@
-# Medieval - Realtime 3D RTS Game
+# Medieval
 
-![Screenshot](./docs/game.png)
+**A browser RTS with a custom TypeScript game engine, a low-poly world, and tools for looking closely at how it all works.**
 
-**Medieval** is a real-time 3D RTS game built with React, TypeScript, Three.js, and Vite. This repository contains everything you need to run, develop, and build the game.
+Build a settlement, put people to work, and watch them carry out their jobs. Woodcutters fell trees and bring logs back to camp. Builders haul timber to construction sites. Hunters track deer, return meat to their huts, and fight back when threatened.
 
-## Demo
+The engine behind those small interactions is part of this repository: the simulation loop, actors, profession state machines, terrain generation, movement rules, construction, saves, and the rendering layer built on Three.js. React handles the interface around the game.
 
-Access the latest deploy at: https://code-cooking-team.github.io/Medieval/
+[Play the demo](https://code-cooking-team.github.io/Medieval/) · [Run locally](#run-it-locally) · [Animation lab](#the-animation-lab) · [Explore the engine](#inside-the-engine)
 
-## Table of Contents
+![A Medieval settlement with timber buildings, workers, and palisades](docs/game.png)
 
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Available Scripts](#available-scripts)
-- [Project Structure](#project-structure)
-- [Running Tests](#running-tests)
-- [Contributing](#contributing)
+Medieval is an evolving RTS sandbox. The settlement systems, world, and development tools are playable; the project is still being built and refined.
 
-## Tech Stack
+## A world that gives the simulation somewhere to live
 
-- React 19
-- TypeScript
-- Vite
-- Three.js
-- Tailwind CSS
-- Radix UI (Accordion, Slider, Switch, Tabs)
-- Bun tests + Happy DOM
-- Oxlint
+Maps are generated from a seed, with forests, mountain regions, cliffs, lakes, and river networks. Drainage and runoff shape the rivers; channel levels and terrain blending produce banks and waterfalls. Replay a world with `?seed=18` when you need to reproduce a terrain or pathfinding problem.
 
-## Getting Started
+![Procedural forests and a river cutting through the terrain, generated with seed 18](docs/screenshots/world-seed-18.jpg)
 
-### Prerequisites
+The settlement systems connect to that world:
 
-- Node.js 24 LTS
-- Bun (see `packageManager` in `package.json`)
+- **Jobs and resources.** Woodcutters, builders, hunters, and guardians have their own behavior. Workers collect, carry, and deliver resources rather than adding them straight to a global counter.
+- **Construction and placement.** Building footprints, rotation, terrain, and obstacles determine where a structure fits. Construction sites wait for materials and builders before becoming finished buildings.
+- **Movement and elevation.** Units find routes across the tile grid with height limits and obstacle checks. Raised building surfaces have their own standing heights and connections.
+- **Wildlife and combat.** Deer and boars inhabit the map. Humans can hunt, defend themselves, and use weapons attached to their animated hands.
+- **Visible state.** Equipment follows the character skeleton, and a wood camp’s log pile changes with its stock level. The scene reflects what the simulation is doing.
+- **Save and resume.** Browser saves preserve the world, actors, ownership, and resources.
 
-### Installation
+## The animation lab
+
+A wrist bent the wrong way is easy to miss from an RTS camera. The standalone animation lab brings one character up close, with the same equipment models and shared walk correction and log carry pose used in the game.
+
+![The animation lab with an orbitable character, equipment selector, animation controls, and fade duration](docs/screenshots/animation-lab.jpg)
+
+Run the dev server and open [the animation lab](http://localhost:3333/Medieval/animation-debug.html). It loads the real human GLTF model without starting the world simulation.
+
+- Switch between **Idle, Walk, Chop, and Sword attack**.
+- Equip a **sword, spear, hatchet, hammer, or log**, or leave the hands empty.
+- Adjust **fade duration** and **playback speed**. The default fade is one second.
+- **Pause, restart, or advance one frame** to inspect a pose or grip.
+- Run an **A ↔ B transition test** and watch the live animation weights.
+- Orbit and zoom around the character. Toggle the log carry pose to compare the grip with and without the shoulder pose.
+
+The lab lets you combine clips and equipment freely. In gameplay, professions and actions choose the equipment and animation: builders use the chopping motion with a hammer; sword, hatchet, and unarmed attacks share the melee clip. The lab’s fade slider controls its own preview blend; gameplay calculates weights from movement and work.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/animation-walk-log.jpg" alt="Walking while carrying a log on the shoulder"><br><strong>Walk + log</strong> · Check the shoulder pose while the legs keep moving.</td>
+    <td width="50%"><img src="docs/screenshots/animation-chop.jpg" alt="Chopping animation with a hatchet"><br><strong>Chop + hatchet</strong> · Inspect the swing and hand attachment.</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/animation-sword.jpg" alt="Melee attack animation with a sword"><br><strong>Sword attack</strong> · Check the blade angle throughout the motion.</td>
+    <td width="50%"><img src="docs/screenshots/animation-build.jpg" alt="Chopping motion previewed with a builder's hammer"><br><strong>Chop + hammer</strong> · The motion used for building in the game.</td>
+  </tr>
+</table>
+
+Padded armor exists as an equipment item but does not yet have a visual model.
+
+## Inside the engine
+
+Medieval’s game-specific engine is written here in TypeScript. Three.js supplies the graphics primitives and WebGL renderer; EasyStar supplies the path search. The code in this repository connects those pieces into an RTS simulation.
+
+| System | What it owns | Start reading |
+| --- | --- | --- |
+| Simulation | Tick loop, actor lifecycle, players, events, and snapshots | [Game.ts](src/game/Game.ts) |
+| Actors and blueprints | Unit state, building footprints, interactions, and serialization | [core/](src/game/core/), [actors/](src/game/actors/) |
+| Profession behavior | Work routines, resource hauling, and state transitions | [professions/](src/game/professions/), [state machines](src/game/core/machine/) |
+| World generation | Heightfields, regional terrain, drainage, rivers, and lakes | [world/](src/game/world/) |
+| Navigation | Walkability, elevation limits, routes, and raised surfaces | [Pathfinding.ts](src/game/core/Pathfinding.ts), [StandingSurfaces.ts](src/game/core/StandingSurfaces.ts) |
+| Rendering | Scene, camera, terrain, water, shadows, and post-processing | [Renderer.ts](src/game/Renderer.ts), [renderer/](src/game/renderer/) |
+| Character animation | Locomotion blending, work and combat clips, and equipment attachments | [HumanRenderer.ts](src/game/actors/units/human/HumanRenderer.ts) |
+| Input and UI | Selection, orders, placement, HUD, and developer controls | [player/](src/game/player/), [ui/](src/ui/), [App.tsx](src/App.tsx) |
+
+The simulation ticks independently of the render loop, so the renderer can interpolate movement between updates. Buildings use instanced batches and distance-based levels of detail. Actor state, blueprint data, and rendering live in separate layers, allowing the same building or unit to take part in simulation, placement previews, and visual debugging.
+
+For a more detailed route through the code, read the [game code map](docs/game-code-map.md).
+
+## Tools for working on the game
+
+The animation lab sits alongside the in-game development controls:
+
+- **Spawn** places finished actors so you can try a unit or building without waiting for construction.
+- **Build** exercises the construction workflow, including material delivery.
+- **Stop / Tick** pauses simulation updates or advances them one step at a time.
+- **Config** exposes rendering and simulation settings.
+- **`window.game` and `window.logStats()`** expose live state and renderer statistics in the browser console.
+- **Follow camera** keeps a selected unit in view, useful for inspecting work routines and recording movement.
+
+## Run it locally
+
+Use **Node.js 24 LTS**, the **Bun version pinned in `package.json`**, and a browser with **WebGL 2**.
 
 ```bash
 bun install --frozen-lockfile
-```
-
-### Development Server
-
-```bash
 bun run dev
-# opens http://localhost:3333/Medieval/
 ```
 
-### Building for Production
+Open [the game](http://localhost:3333/Medieval/) or [the animation lab](http://localhost:3333/Medieval/animation-debug.html). Vite uses port `3333` by default and prints another port if it is already occupied. The animation lab is a development entry point; the demo link above opens the game.
+
+### Controls
+
+| Action | Input |
+| --- | --- |
+| Select units | Left-click or drag a selection box |
+| Move, interact, or assign work | Right-click a destination or building |
+| Pan the camera | `WASD` or arrow keys |
+| Rotate / tilt the camera | `Q` / `E` and `Z` / `X` |
+| Pan faster | Hold `Shift` |
+| Zoom | Mouse wheel |
+| Rotate a building during placement | `R` |
+| Cancel placement or exit follow mode | `Esc` |
+| Follow a selected unit | `.` |
+
+In follow mode, `A` / `D` orbit around the unit and `W` / `S` change the viewing angle. Touch input supports two-finger panning and pinch zoom.
+
+### Checks and production build
 
 ```bash
+bun run lint
+bun run ts
+bun run test
 bun run build
 bun run preview
 ```
 
-## Available Scripts
-
-| Command             | Description                         |
-| ------------------- | ----------------------------------- |
-| `bun run dev`      | Start the development server        |
-| `bun run build`    | Compile TypeScript and build assets |
-| `bun run preview`  | Preview production build locally    |
-| `bun run format`   | Format code with Prettier           |
-| `bun run test`     | Run unit tests with Bun          |
-| `bun run coverage` | Run tests with coverage report      |
-| `bun run ts`       | Type-check the project              |
-| `bun run lint`     | Check the project with Oxlint      |
-
-## Project Structure
-
-```plaintext
-Medieval/
-├── src/
-│   ├── App.tsx             # Root React component
-│   ├── main.tsx            # Application entry point
-│   ├── index.css           # Global styles
-│   ├── config/             # Configuration loader & schemas
-│   ├── game/               # Core game engine
-│   │   ├── const.ts        # Engine constants (e.g., model names)
-│   │   ├── types.ts        # Common engine types & enums
-│   │   ├── Game.ts         # Main game loop, actor management & events
-│   │   ├── Renderer.ts     # Rendering pipeline setup (Three.js)
-│   │   ├── actors/         # Actor definitions, blueprints, renderers, & 3D models
-│   │   │   ├── buildings/      # Building actors (house, barracks, etc.)
-│   │   │   ├── buildingTraits/ # Shared building capabilities
-│   │   │   ├── flora/          # Plant/Tree actors & renderers
-│   │   │   └── units/          # Unit actors (humans, boars) & renderers
-│   │   ├── algorithm/      # Utility algorithms (e.g., flood fill)
-│   │   ├── core/           # Core classes (Actor, Pathfinding, FSM machine, Camera)
-│   │   ├── maps/           # Map configurations & tile data (de_grass, Island, etc.)
-│   │   ├── player/         # Player implementations, interactions & helpers
-│   │   │   └── interaction/   # Input & selection handlers
-│   │   ├── professions/    # Professions & related machines (woodcutter, guardian)
-│   │   ├── renderer/       # Rendering utilities & helper classes
-│   │   │   └── textures/      # Environment textures
-│   │   └── world/          # World grid, tiles, codes & World class
-│   ├── helpers/            # General utility functions & tests
-│   ├── lib/                # Shared libraries (Event Emitter)
-│   └── ui/                 # UI components, hooks, and styles
-│       ├── components/     # Reusable UI components
-│       ├── hooks/          # Custom React hooks
-│       ├── modules/        # Domain-specific UI modules
-│       └── styles/         # Design system & snippets
-├── public/                 # Static files and assets (if any)
-├── index.html              # HTML template
-├── vite.config.ts          # Vite configuration
-├── bunfig.toml             # Bun install and test configuration
-├── tsconfig.json           # TypeScript configuration
-└── package.json            # Project metadata & scripts
-```
-
-## Engine Deep Dive
-
-### Actors & Blueprints
-
-Actors extend core classes and use Blueprints for static data (meshes, config points). A Blueprint defines mesh paths and layout, while an Actor class handles state, interactions, and serialization.
-
-Example: `src/game/actors/buildings/woodCamp/WoodCampActor.ts`
-
-```ts
-export class WoodCampActor extends BuildingActor {
-  type = ActorType.WoodCamp
-  blueprint = actorByType[this.type].blueprint as WoodCampBlueprint
-  collectedTreeHP = 0
-
-  getDeliveryPosition() {
-    return this.getGlobalPositionOfLocalPoint(this.blueprint.config.deliveryPoint)
-  }
-
-  interact(actors: Actor[]) {
-    actors.filter(isHumanActor).forEach((actor) => {
-      const profession = new WoodcutterProfession(this.game, actor)
-      profession.setCamp(this)
-      actor.setProfession(profession)
-    })
-  }
-}
-```
-
-### Rendering Pipeline
-
-`Renderer.ts` establishes the Three.js scene, camera, WebGLRenderer, and post-processing (EffectComposer, passes). It drives the animation loop and handles resize and stats.
-
-```ts
-// In src/game/Renderer.ts
-export class Renderer {
-  private composer: EffectComposer
-  private clock: Clock
-  public rtsCamera: RTSCamera
-  public scene: Scene
-  public webGLRenderer: WebGLRenderer
-  private ground: GroundRenderer
-  private environment: EnvironmentRenderer
-  private water: WaterRenderer
-
-  private basicRendererList: BasicRenderer[] = []
-  private actorRendererList: ActorRenderer<Actor>[] = []
-
-  constructor(canvas: HTMLCanvasElement) {
-    // setup scene, camera, lights, renderer, passes
-  }
-
-  start(): void {
-    // start the animation loop
-  }
-}
-```
-
-For clarity, the `Renderer` maintains two renderer lists:
-
-- **BasicRenderer[]** (`basicRendererList`): handles static or environment elements (e.g., ground, UI overlays).
-- **ActorRenderer<Actor>[]** (`actorRendererList`): handles dynamic game entities (units, buildings, flora), loading meshes and updating transforms each frame.
-
-During each loop iteration, the `Renderer`:
-
-1. Invokes all BasicRenderers to draw environment and helper layers.
-2. Updates and invokes each ActorRenderer to sync actor meshes, animations, and shadows with the scene.
-
-### Professions & State Machines
-
-Professions encapsulate AI logic via a finite state machine interpreter (`MachineInterpreter`), combining actions and guards maps with a JSON-defined machine.
-
-![Machine](./docs/machine.png)
-
-Example: `src/game/professions/WoodcutterProfession.ts`
-
-```ts
-export class WoodcutterProfession extends Profession {
-  private machine = new MachineInterpreter(woodcutterMachine, this.actions, this.guards)
-
-  public async tick() {
-    super.tick()
-    await this.machine.send('TICK')
-  }
-}
-```
-
-## Running Tests
-
-Place unit tests next to the code using the `.test.ts` suffix:
+Tests live beside the code and run with Bun and Happy DOM. For a focused run:
 
 ```bash
-bun run test src/game/algorithm/squareFloodFill.test.ts
+bun run test src/game/core/Pathfinding.test.ts
 ```
+
+Use the browser to verify real model loading, WebGL rendering, camera behavior, and animation changes. Unit tests use stand-in model groups. See the [development workflow](docs/development-workflow.md) for save behavior, configuration, and more debugging notes.
+
+## Stack
+
+**TypeScript · Three.js · React 19 · Vite · Tailwind CSS · Radix UI · EasyStar · Bun · Happy DOM · Oxlint**
+
+The simulation and rendering code are under [`src/game/`](src/game/). The React interface is under [`src/ui/`](src/ui/). The standalone animation viewer is under [`src/debug/`](src/debug/), with its entry point at [`animation-debug.html`](animation-debug.html).
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request with clear descriptions and examples.
+Found an awkward animation, an unreachable construction site, or a river that looks wrong? Open an issue with a screenshot and steps to reproduce it. For world-generation bugs, include the seed. For animation bugs, include the clip, held item, and transition settings so the same pose can be checked in the lab.

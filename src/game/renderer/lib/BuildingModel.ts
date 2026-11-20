@@ -11,6 +11,7 @@ export interface BuildingLevel {
 export interface BuildingPrimitive {
     mesh: Pick<Mesh, 'geometry' | 'material' | 'castShadow' | 'receiveShadow'>
     matrix: Matrix4
+    stockLayer?: number
 }
 
 export class BuildingModel {
@@ -60,7 +61,13 @@ export class BuildingModel {
             if (object instanceof Mesh) {
                 const { geometry, material, castShadow, receiveShadow, matrixWorld } =
                     object
+                let stockLayer: number | undefined
+                for (let node: Object3D | null = object; node; node = node.parent) {
+                    const match = /^wood_stock_([123])$/.exec(node.name)
+                    if (match) stockLayer = Number(match[1])
+                }
                 primitives.push({
+                    stockLayer,
                     mesh: { geometry, material, castShadow, receiveShadow },
                     matrix: matrixWorld,
                 })

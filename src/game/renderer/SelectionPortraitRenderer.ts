@@ -92,7 +92,7 @@ export class SelectionPortraitRenderer {
             })
         }
         if (!this.model) return
-        if (this.human || !this.framed) this.frameModel()
+        if (!this.framed) this.frameModel()
         this.sun.color.copy(sun.color)
         this.sun.intensity = sun.intensity
         this.sun.position.copy(sun.position).sub(sun.target.position)
@@ -127,19 +127,11 @@ export class SelectionPortraitRenderer {
             this.camera.updateMatrixWorld()
             this.camera.far = height * 12 + 100
             const halfHeight = Math.max(height, this.size.length() * 0.8) * 0.62
-            if (this.human) this.resizeFrame(0, height * 0.66)
+            // Keep a close bust crop; animated tools may extend outside the canvas.
+            if (this.human) this.resizeFrame(0, height * 0.55)
             else this.resizeFrame(-halfHeight, halfHeight)
             this.framed = true
         }
-        if (!this.human) return
-
-        bounds.applyMatrix4(this.camera.matrixWorldInverse)
-        // Grow from the bottom edge so raised tools fit without revealing the legs.
-        const top = Math.max(
-            bounds.max.y * 1.16,
-            (Math.max(-bounds.min.x, bounds.max.x) * 2.32) / this.aspect,
-        )
-        if (top > this.camera.top) this.resizeFrame(0, top)
     }
 
     private humanBodyBounds() {

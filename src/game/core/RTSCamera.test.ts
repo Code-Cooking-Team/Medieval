@@ -112,3 +112,42 @@ it('pans and pinches with two touches while leaving single taps available', () =
     expect(touch('touchstart', [[250, 220]])).toBe(false)
     expect(gestures).toBe(1)
 })
+
+it('follows a moving subject, orbits without drifting, and releases the camera', () => {
+    const subject = new Vector3(4, 2, 3)
+    rtsCamera.follow(() => subject)
+    const offset = rtsCamera.camera.position.clone().sub(subject)
+    subject.x += 2
+    subject.y += 1
+    rtsCamera.render({ deltaTime: 1 / 60, elapsedTime: 1 })
+    expect(rtsCamera.camera.position.clone().sub(subject).distanceTo(offset)).toBeCloseTo(
+        0,
+    )
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }))
+    rtsCamera.render({ deltaTime: 0.5, elapsedTime: 1.5 })
+    const rotated = rtsCamera.camera.position.clone().sub(subject)
+    expect(rotated.length()).toBeCloseTo(offset.length())
+    expect(rotated.distanceTo(offset)).toBeGreaterThan(0)
+    const direction = rtsCamera.camera.getWorldDirection(new Vector3())
+    expect(direction.distanceTo(rotated.clone().normalize().negate())).toBeCloseTo(0)
+
+    rtsCamera.stopFollowing()
+    const released = rtsCamera.camera.position.clone()
+    subject.x += 5
+    rtsCamera.render({ deltaTime: 1 / 60, elapsedTime: 2 })
+    expect(rtsCamera.isFollowing).toBe(false)
+    expect(rtsCamera.camera.position.distanceTo(released)).toBeCloseTo(0)
+})
+
+it('zooms toward the followed subject and stops when it disappears', () => {
+    let subject: Vector3 | undefined = new Vector3(1, 2, 3)
+    rtsCamera.follow(() => subject)
+    const distance = rtsCamera.camera.position.distanceTo(subject!)
+    config.camera.scrollToPan = true
+    scroll({ deltaY: -100 })
+    expect(rtsCamera.camera.position.distanceTo(subject!)).toBeLessThan(distance)
+    subject = undefined
+    rtsCamera.render({ deltaTime: 1 / 60, elapsedTime: 1 })
+    expect(rtsCamera.isFollowing).toBe(false)
+})

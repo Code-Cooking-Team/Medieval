@@ -9,6 +9,7 @@ import {
     Scene,
     Timer,
     Vector2,
+    Vector3,
     WebGLRenderer,
 } from 'three'
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js'
@@ -218,6 +219,20 @@ export class Renderer {
         }
         // Start throttled rendering
         this.throttledAnimate()
+    }
+
+    public followActor(actor: Actor) {
+        const position = new Vector3()
+        this.rtsCamera.follow(() => {
+            if (actor.isDead()) return undefined
+            const model = this.actorRendererList
+                .find((renderer) => renderer.actorType === actor.type)
+                ?.getPortraitModel(actor)
+            if (!model) return undefined
+            model.getWorldPosition(position)
+            position.y += config.renderer.tileSize
+            return position
+        })
     }
 
     private getSelectedGroupList() {
@@ -432,10 +447,10 @@ export class Renderer {
         const clockInfo: ClockInfo = { deltaTime, elapsedTime }
 
         this.basicRendererList.forEach((renderer) => renderer.render(clockInfo))
-        this.rtsCamera.render(clockInfo)
         this.actorRendererList.forEach((renderer) =>
             renderer.render(clockInfo, this.rtsCamera.camera),
         )
+        this.rtsCamera.render(clockInfo)
         if (this.portrait) {
             const { view, actor } = this.portrait
             const source = this.actorRendererList

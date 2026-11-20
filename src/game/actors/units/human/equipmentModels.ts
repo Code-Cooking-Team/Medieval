@@ -71,13 +71,15 @@ hammer.add(part(wood, [4, 48, 4], [0, 16, 0]), part(steel, [24, 12, 10], [0, 36,
 
 const grip = {
     bone: 'mixamorig:RightHand',
-    position: [-8, 2, 0] as Vector,
+    // Local -X runs toward the fingers; -Y points into the palm.
+    // Seat handles inside the palm, toward the base of the fingers.
+    position: [-12, -2, 0] as Vector,
     rotation: [Math.PI / 2, 0, 0] as Vector,
     scale: [1, 1, 1] as Vector,
 }
 
 export const equipmentModels: Partial<Record<ItemId, EquipmentModel>> = {
-    sword: { ...grip, model: sword },
+    sword: { ...grip, model: sword, rotation: [Math.PI / 2, 0, Math.PI / 4] },
     spear: { ...grip, model: spear },
     hatchet: { ...grip, model: hatchet, rotation: [Math.PI / 2, 0, Math.PI / 4] },
     hammer: { ...grip, model: hammer },
@@ -99,5 +101,5 @@ log.add(trunk)
 export const carriedLogModel: EquipmentModel = {
     ...grip,
     model: log,
-    position: [-9, 0, 5],
+    position: [-13, -4, 5],
 }

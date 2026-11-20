@@ -8,6 +8,7 @@ import {
     PerspectiveCamera,
     Quaternion,
     Raycaster,
+    Spherical,
     Vector2,
     Vector3,
 } from 'three'
@@ -28,6 +29,65 @@ export class RTSCamera implements Renderable {
     )
 
     private showcaseOrbit?: { radius: number; height: number }
+    private followTarget?: () => Vector3 | undefined
+    private followOrbit = new Spherical(
+        7 * config.renderer.tileSize,
+        Math.PI / 3,
+        Math.PI / 4,
+    )
+    private followPosition = new Vector3()
+    private followOffset = new Vector3()
+
+    public get isFollowing() {
+        return Boolean(this.followTarget)
+    }
+
+    public follow(target: () => Vector3 | undefined) {
+        if (!target()) return
+        this.followTarget = target
+        this.keyPressed = {}
+        this.followOrbit.set(
+            7 * config.renderer.tileSize,
+            Math.PI / 3,
+            this.camera.rotation.y,
+        )
+        if (this.controls) this.controls.enabled = false
+        this.updateFollow(0)
+    }
+
+    public stopFollowing() {
+        if (!this.followTarget) return
+        this.followTarget = undefined
+        this.keyPressed = {}
+        if (this.controls) {
+            this.controls.target.copy(this.followPosition)
+            this.controls.enabled = true
+        }
+    }
+
+    private updateFollow(deltaTime: number) {
+        const target = this.followTarget?.()
+        if (!target) {
+            this.stopFollowing()
+            return
+        }
+        const pressed = (...keys: string[]) =>
+            keys.some((key) => this.keyPressed[key]) ? 1 : 0
+        const speed = deltaTime * 1.2
+        this.followOrbit.theta +=
+            (pressed('KeyD', 'ArrowRight') - pressed('KeyA', 'ArrowLeft')) * speed
+        this.followOrbit.phi = MathUtils.clamp(
+            this.followOrbit.phi +
+                (pressed('KeyS', 'ArrowDown') - pressed('KeyW', 'ArrowUp')) * speed,
+            0.15,
+            Math.PI / 2 - 0.08,
+        )
+        this.followPosition.copy(target)
+        this.followOffset.setFromSpherical(this.followOrbit)
+        this.camera.position.copy(target).add(this.followOffset)
+        this.camera.lookAt(target)
+    }
+
     private controls?: OrbitControls
     private keyPressed: { [key: string]: number } = {}
     private wheelRay = new Raycaster()
@@ -76,6 +136,7 @@ export class RTSCamera implements Renderable {
         if (config.core.orbitalControls) this.orbitalControls()
         window.document.addEventListener('keydown', this.handleKeyDown)
         window.document.addEventListener('keyup', this.handleKeyUp)
+        window.addEventListener('blur', this.clearKeys)
         this.domElement.addEventListener('wheel', this.handleWheel, { passive: false })
         this.domElement.addEventListener('touchstart', this.handleTouch, {
             passive: false,
@@ -90,7 +151,9 @@ export class RTSCamera implements Renderable {
     }
 
     public destroy() {
+        this.stopFollowing()
         this.controls?.dispose()
+        window.removeEventListener('blur', this.clearKeys)
         window.document.removeEventListener('keydown', this.handleKeyDown)
         window.document.removeEventListener('keyup', this.handleKeyUp)
         this.domElement.removeEventListener('wheel', this.handleWheel)
@@ -121,6 +184,11 @@ export class RTSCamera implements Renderable {
                 z + sin * ahead - cos * inward,
             )
             this.camera.rotateZ(-Math.PI / 36)
+            return
+        }
+
+        if (this.followTarget) {
+            this.updateFollow(deltaTime)
             return
         }
 
@@ -228,7 +296,32 @@ export class RTSCamera implements Renderable {
         }
     }
 
+    private clearKeys = () => {
+        this.keyPressed = {}
+    }
+
     private handleKeyDown = (event: KeyboardEvent) => {
+        const target = event.target
+        if (
+            target instanceof HTMLElement &&
+            target.closest('input, textarea, select, [contenteditable="true"]')
+        )
+            return
+        if (event.ctrlKey || event.metaKey || event.altKey) return
+        if (
+            this.isFollowing &&
+            [
+                'KeyW',
+                'KeyA',
+                'KeyS',
+                'KeyD',
+                'ArrowUp',
+                'ArrowDown',
+                'ArrowLeft',
+                'ArrowRight',
+            ].includes(event.code)
+        )
+            event.preventDefault()
         if (event.key === 'Escape') return
         if (!this.keyPressed[event.code]) {
             this.keyPressed[event.code] = new Date().getTime()
@@ -251,6 +344,15 @@ export class RTSCamera implements Renderable {
                   ? bounds.height
                   : 1
         const deltaY = event.deltaY * scale
+        if (this.isFollowing) {
+            this.followOrbit.radius = MathUtils.clamp(
+                this.followOrbit.radius * Math.exp(deltaY * 0.001),
+                2 * config.renderer.tileSize,
+                40 * config.renderer.tileSize,
+            )
+            this.updateFollow(0)
+            return
+        }
 
         // Browsers can report trackpad scroll and mouse wheel input identically.
         if (config.camera.scrollToPan && !event.ctrlKey && !event.metaKey) {
@@ -300,6 +402,7 @@ export class RTSCamera implements Renderable {
     }
 
     private pan(dx: number, dy: number, speed: number) {
+        if (this.isFollowing) return
         this.scrollMovement
             .set(dx, 0, dy)
             .applyAxisAngle(UP, this.camera.rotation.y)
@@ -308,6 +411,7 @@ export class RTSCamera implements Renderable {
     }
 
     private zoom(x: number, y: number, distance: number, bounds: DOMRect) {
+        if (this.isFollowing) return
         if (distance === 0 || bounds.width === 0 || bounds.height === 0) return
         this.camera.updateMatrixWorld()
         this.wheelPointer.set(
