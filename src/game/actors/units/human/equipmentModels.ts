@@ -79,7 +79,7 @@ const grip = {
 }
 
 export const equipmentModels: Partial<Record<ItemId, EquipmentModel>> = {
-    sword: { ...grip, model: sword },
+    sword: { ...grip, model: sword, rotation: [Math.PI / 2, 0, Math.PI / 4] },
     spear: { ...grip, model: spear },
     hatchet: { ...grip, model: hatchet, rotation: [Math.PI / 2, 0, Math.PI / 4] },
     hammer: { ...grip, model: hammer },

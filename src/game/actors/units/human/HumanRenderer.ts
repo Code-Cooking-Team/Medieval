@@ -28,14 +28,19 @@ import {
     Vector3,
 } from 'three'
 
+import { bindCarryPose } from './carryPose'
 import { type EquipmentSlot, type ItemId } from './equipment'
 import { carriedLogModel, equipmentModels } from './equipmentModels'
 import { type HumanActor } from './HumanActor'
 import humanModelUrl from './models/human.gltf'
+import {
+    humanMotionTransitionTime,
+    prepareHumanAnimations,
+} from './prepareHumanAnimations'
 
 type EquipmentVisual = ItemId | 'carriedLog' | null
 
-const motionTransitionTime = 0.28
+const motionTransitionTime = humanMotionTransitionTime
 
 interface HumanLocomotion {
     mixer: AnimationMixer
@@ -87,30 +92,6 @@ const buildClip = createSwingClip(
     [0, 0.17, 0.25, 0.44],
     [0, -1.7, 0.65, 0],
 )
-// These bones extend along local -X. Raise the hand to the shoulder with the
-// elbow forward, and keep the log aligned with the model's forward (+Z) axis.
-const armAxis = new Vector3(-1, 0, 0)
-const carryArm = new Quaternion().setFromUnitVectors(
-    armAxis,
-    new Vector3(-0.22, -0.6, 0.77).normalize(),
-)
-const carryForearm = new Quaternion().setFromUnitVectors(
-    armAxis,
-    new Vector3(0.14, 0.9, -0.41).normalize(),
-)
-const carryHand = new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), -Math.PI / 2)
-const carryPose = [
-    ['RightArm', carryArm],
-    ['RightForeArm', carryArm.clone().invert().multiply(carryForearm)],
-    ['RightHand', carryForearm.clone().invert().multiply(carryHand)],
-] as const
-
-function bindCarryPose(model: Object3D) {
-    return carryPose.flatMap(([name, rotation]) => {
-        const bone = model.getObjectByName(`mixamorig${name}`)
-        return bone ? [{ bone, rotation, animatedRotation: new Quaternion() }] : []
-    })
-}
 
 const equipmentSlots: EquipmentSlot[] = ['Hands', 'Armor']
 
@@ -145,7 +126,7 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         loadRawGLTF(humanModelUrl).then((gltf) => {
             if (this.actorGroupMap.get(actor) !== group) return
 
-            const [idleClip, walkClip, chopClip] = gltf.animations
+            const [idleClip, walkClip, chopClip] = prepareHumanAnimations(gltf.animations)
             if (idleClip && walkClip) {
                 const mixer = new AnimationMixer(gltf.scene)
                 const idle = mixer.clipAction(idleClip).play()
@@ -155,7 +136,9 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                 const swordAttack = swordClip
                     ? mixer.clipAction(swordClip).setLoop(LoopOnce, 1)
                     : undefined
-                const build = mixer.clipAction(buildClip).setLoop(LoopOnce, 1)
+                const build = mixer
+                    .clipAction(chopClip?.clone() ?? buildClip)
+                    .setLoop(LoopOnce, 1)
                 const chop = chopClip
                     ? mixer
                           .clipAction(chopClip)
@@ -266,7 +249,11 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
         animation: HumanLocomotion,
         kind: NonNullable<HumanActor['lastAction']>['kind'],
     ) {
-        if (kind === 'attack' && actor.getEquippedItem('Hands') === 'sword') {
+        const weapon = actor.getEquippedItem('Hands')
+        if (
+            kind === 'attack' &&
+            (weapon === null || weapon === 'sword' || weapon === 'hatchet')
+        ) {
             return animation.swordAttack ?? animation.attack
         }
         return animation[kind]
@@ -337,6 +324,15 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                     keepChopping ? Infinity : 1,
                 )
             }
+            const keepBuilding =
+                atOrigin &&
+                action.kind === 'build' &&
+                actor.profession instanceof BuilderProfession &&
+                actor.profession.isBuilding
+            animation.build.setLoop(
+                keepBuilding ? LoopRepeat : LoopOnce,
+                keepBuilding ? Infinity : 1,
+            )
             const entryWeight = MathUtils.smoothstep(
                 animation.swingElapsed,
                 0,
@@ -351,7 +347,13 @@ export class HumanRenderer extends WalkableActorRenderer<HumanActor> {
                 ? getMotionWeight(swordAttack, entryWeight)
                 : 0
             swordAttack?.setEffectiveWeight(swordWeight)
-            const locomotionWeight = 1 - Math.max(chopWeight, swordWeight)
+            const fullBodyBuild =
+                animation.build.getClip().blendMode !== AdditiveAnimationBlendMode
+            const buildWeight = fullBodyBuild
+                ? getMotionWeight(animation.build, entryWeight, keepBuilding)
+                : 0
+            if (fullBodyBuild) animation.build.setEffectiveWeight(buildWeight)
+            const locomotionWeight = 1 - Math.max(chopWeight, swordWeight, buildWeight)
             animation.idle.setEffectiveWeight((1 - animation.blend) * locomotionWeight)
             animation.walk.setEffectiveWeight(animation.blend * locomotionWeight)
             animation.mixer.update(deltaTime)
